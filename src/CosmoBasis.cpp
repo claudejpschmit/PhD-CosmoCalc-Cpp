@@ -1,20 +1,24 @@
 #include "CosmoBasis.hpp"
 #include <iostream>
-
+#include <string>
 using namespace std;
 
-CosmoBasis::CosmoBasis(map<char*,double> params)
-    :
-        c(299792458.0),
-        k_b(1.3806488*pow(10,-23)),
-        m_b(1.674927351*pow(10,-27)),
-        m_e(9.10938291*pow(10,-31)),
-        e(1.60217657*pow(10,-19)),
-        h_planck(6.62606957*pow(10,-34)),
-        G(6.67384*pow(10,-11))
+CosmoBasis::CosmoBasis(map<string,double> params)
 {
+    // Initializing parameters
+    fiducial_params = params;
+    this->check_params();
+    current_params = fiducial_params;
+    this->generate_params(fiducial_params);
+    
     T_star = h_planck * c / (k_b *0.21);
-    this->params = params;
+    b_bias = pow(O_M,0.6) / beta;
+    k_eq = 0.073 * O_M * pow(h,2);
+
+}
+
+CosmoBasis::~CosmoBasis()
+{
 }
 
 void CosmoBasis::show_params()
@@ -27,4 +31,48 @@ void CosmoBasis::show_params()
     cout << e << endl;
     cout << G << endl;
     cout << T_star << endl;
+    
+    cout << "ombh2 = "<< fiducial_params["ombh2"] << endl;
+    cout << "hubble = "<< fiducial_params["hubble"] << endl;
+    cout << T_CMB << endl;
+}
+
+void CosmoBasis::check_params()
+{
+    // insert automatically checks if the key is present and only adds if it isn't.
+    // There isn't really a convenient way in C++ to store pairs with different
+    // types in the same map, so I keep all as double so one might need to cast some 
+    // to integers when used later on.
+    this->fiducial_params.insert(pair<string,double>("ombh2",0.0226));
+    this->fiducial_params.insert(pair<string,double>("omch2",0.112));
+    this->fiducial_params.insert(pair<string,double>("omnuh2",0.00064));
+    this->fiducial_params.insert(pair<string,double>("omk",0.0));
+    this->fiducial_params.insert(pair<string,double>("hubble",70.0));
+    this->fiducial_params.insert(pair<string,double>("T_CMB",2.7255));
+    this->fiducial_params.insert(pair<string,double>("zmin",7.0));
+    this->fiducial_params.insert(pair<string,double>("zmax",9.0));
+    this->fiducial_params.insert(pair<string,double>("zsteps",100));
+    this->fiducial_params.insert(pair<string,double>("Pk_steps",3));
+    this->fiducial_params.insert(pair<string,double>("k_steps",40000));
+}
+
+void CosmoBasis::generate_params(map<string,double> params)
+{
+    T_CMB = params["T_CMB"];
+    T_gamma = T_CMB;
+    H_0 = params["hubble"];
+    h = H_0 / 100.0;
+    O_b = params["ombh2"] / pow(h,2);
+    O_cdm = params["omch2"] / pow(h,2);
+    O_nu = params["omnuh2"] / pow(h,2);
+    O_gamma = pow(pi,2) * pow(T_CMB/11605.0,4) / (15.0*8.098*pow(10,-11)*pow(h,2));
+    O_nu_rel = O_gamma * 3.0 * 7.0/8.0 * pow(4.0/11.0, 4.0/3.0);
+    O_R = O_gamma + O_nu_rel;
+    O_k = params["omk"];
+    O_M = O_b + O_cdm + O_nu;
+    O_tot = 1.0 - O_k;
+    O_V = O_tot - O_M - O_R;
+    D_H = c / (1000.0 * H_0);
+    t_H = 1.0 / H_0;
+         
 }
