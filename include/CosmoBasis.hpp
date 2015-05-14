@@ -10,6 +10,9 @@ using namespace std;
 class CosmoBasis {
     
     public:
+        
+        // ------------ Functions -------------- //
+
         /**
          * Constructor that initializes all the parameters for the CosmoCalc backbone.
          *
@@ -27,6 +30,16 @@ class CosmoBasis {
          * Tester function to output some parameters for inspection.
          */
         void show_params();
+        
+        /**
+         * This functions return the spherical bessel j as calculated by boost.
+         *
+         * @param l is the integer index of the spherical bessel function.
+         *
+         * @param x is the argument of the spherical bessel function.
+         */
+        double sph_bessel(unsigned int l, double x);
+
 
     protected:
         
@@ -55,6 +68,49 @@ class CosmoBasis {
          */
         void generate_params(map<string,double> params);
 
+        /**
+         * Helper function to determine the denominator for various integrals, E(z) = H(z)/H_0.
+         *
+         * @param z redshift at which the function is evaluated.
+         */
+        double E(double z);
+
+        /**
+         * Helper function to integrate 1/E(z) between 0 and z.
+         *
+         * @param z redshift up to which E^-1 is to be integrated.
+         */
+        double Z(double z);
+
+        /**
+         * This function determines the curvature term in the metric. It is either sinhx, x or sin x.
+         *
+         * @param x where the curvature term is to be evaluated.
+         */
+        double S_k(double x);
+
+        /**
+         * Helper function to conver Mpc to m
+         *
+         * @param x distance in Mpc to be converted.
+         */
+        double mpc_to_m(double x);
+
+        /**
+         * Helper function to convert m to Mpc
+         *
+         * @param x distance in m to be converted.
+         */
+        double m_to_mpc(double x);
+
+        /**
+         * Function which sets the parameters defined in the given object to
+         * the newest Planck 2015 results.
+         *
+         * @param params
+         */
+        void params_to_planck15(map<string, double> params);
+ 
         // ------------ Variables -------------- //
 
         /// \brief params contains the working parameters.
@@ -141,6 +197,4 @@ class CosmoBasis {
         /// \brief Beta factor.
         const double beta = 0.7;
         
-       
-
 };

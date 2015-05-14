@@ -1,6 +1,8 @@
 #include "CosmoBasis.hpp"
 #include <iostream>
 #include <string>
+#include "Integrator.hpp"
+#include <boost/math/special_functions/bessel.hpp>
 using namespace std;
 
 CosmoBasis::CosmoBasis(map<string,double> params)
@@ -75,4 +77,47 @@ void CosmoBasis::generate_params(map<string,double> params)
     D_H = c / (1000.0 * H_0);
     t_H = 1.0 / H_0;
          
+}
+
+double CosmoBasis::sph_bessel(unsigned int l, double x)
+{
+    return boost::math::sph_bessel(l,x);
+}
+
+
+double CosmoBasis::E(double z)
+{
+    return sqrt(O_V + O_R * pow(1+z,4) + O_M * pow(1+z,3) + O_k * pow(1+z,2));
+}
+
+double CosmoBasis::Z(double z)
+{
+    auto integrand = [&](double x){return 1/E(x);};
+    return integrate(integrand, 0.0, z, 1000, simpson());
+}
+
+double CosmoBasis::S_k(double x)
+{
+    if (O_tot < 1.0)
+        return sinh(x);
+    else if (O_tot == 1.0)
+        return x;
+    else
+        return sin(x);
+}
+
+double CosmoBasis::mpc_to_m(double x)
+{
+    const double conv_factor = 3.0856776 * pow(10,22);
+    return x*conv_factor;
+}
+
+double CosmoBasis::m_to_mpc(double x)
+{
+    const double conv_factor = 3.0856776 * pow(10,22);
+    return x*conv_factor;
+}
+void CosmoBasis::params_to_planck15(map<string, double> params)
+{
+    (void) params;
 }
