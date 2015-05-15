@@ -1,6 +1,6 @@
 #include "CosmologyCalculatorClass.hpp"
 #include <string>
-
+#include <iostream>
 CosmoCalc::CosmoCalc(map<string, double> params)
     :
         CosmoBasis(params)
@@ -12,43 +12,72 @@ CosmoCalc::~CosmoCalc()
 }
 void CosmoCalc::show_cosmo_calcs()
 {
+    cout << hubble_time() << endl;
+    cout << hubble_dist() << endl;
+    cout << comoving_radial_dist(10) << endl;
+
 }
 
 double CosmoCalc::hubble_time()
 {
-    return 0;
+    return this->t_H;
 }
 double CosmoCalc::hubble_dist()
 {
-    return 0;
+    return this->D_H;
 }
 double CosmoCalc::comoving_radial_dist(double z)
 {
-    return 0;
+    return this->hubble_dist() * this->Z(z);
 }
 double CosmoCalc::D_C(double z)
 {
-    return 0;
+    return this->comoving_radial_dist(z);
 }
 
 double CosmoCalc::D_now(double z)
 {
-    return 0;
+    return this->comoving_radial_dist(z);
 }
 
 double CosmoCalc::comoving_dist_transverse(double z)
 {
-    return 0;
+    const double Ok = 1 - this->O_M - this->O_V;
+    const double arg = sqrt(abs(1-Ok))*this->D_C(z)/this->D_H;
+
+    return this->D_H / sqrt(abs(1-Ok)) * this->S_k(arg);
 }
 
 double CosmoCalc::D_M(double z)
 {
-    return 0;
+    return this->comoving_dist_transverse(z);
 }
 
+//TODO: Check this formula, I think it is wrong in the second case.
 double CosmoCalc::angular_diam_dist(double z, double z2 = -1)
 {
-    return 0;
+    const double Ok = 1 - this->O_M - this->O_V;
+    const double root = sqrt(abs(1-this->O_tot));
+    double result;
+    if (z2 < 0.0)
+    {
+        result = this->D_H * this->S_k(root * this-> Z(z)) / ((1+z) * root);
+    }
+    else if (this->O_V + this->O_M <= 1.0)
+    {
+        const double dm = this->D_M(z);
+        const double dm2 = this->D_M(z2);
+        result = 1.0 / (1.0 + z2) *\
+                 ( dm2 * (1+sqrt(1-Ok) * pow(dm,2) / pow(this->D_H, 2)) -\
+                   dm * (1+sqrt(1 - Ok) * pow(dm2,2) / pow(this->D_H,2)) );
+    }
+    else
+    {
+        cout << "Error: D_A12 formula invalid for O_tot > 1.0" << endl;
+        result = 1.0;
+    }
+
+    return result;
 }
 
 double CosmoCalc::D_A(double z, double z2 = -1)

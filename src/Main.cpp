@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include "Integrator.hpp"
+#include "CosmologyCalculatorClass.hpp"
 
 using namespace std;
 
@@ -51,11 +52,14 @@ int main(int argc, char* argv[])
     strcat(path, filename);
     cout << path << endl;
     output.open(path);
-    for (int n = 0; n < 1000000; ++n)
+    for (int n = 0; n < 10000; ++n)
     {
         output << n << " " << base.sph_bessel(10,double(n)/10.0) << endl;
     }
     output.close();
+    
+    CosmoCalc calc(params);
+    calc.show_cosmo_calcs();
 
     return 0;
 }
