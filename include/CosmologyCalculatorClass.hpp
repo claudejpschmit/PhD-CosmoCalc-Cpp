@@ -68,10 +68,14 @@ class CosmoCalc : public CosmoBasis
         double x_HI(double z);
         double T_K(double z);
         double I(int l1, int l2, double k1, double k2, double z, double r);
-        double N_bar(int l, double k1, double k2, double z_low, double z_high);
+        double N_bar(int l, double k1, double k2);
 
 
 
+    protected:
 
         // ------------ Variables -------------- //
+        int k_steps, zsteps_Ml, Pk_steps;
+        double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml;
+
 };

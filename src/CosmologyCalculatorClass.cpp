@@ -6,6 +6,15 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     :
         CosmoBasis(params)
 {
+    this->k_steps = this->fiducial_params["k_steps"];
+    this->prefactor_Ml = 2*this->b_bias*this->c/pi;
+    this->zmin_Ml = this->fiducial_params["zmin"];
+    this->zmax_Ml = this->fiducial_params["zmax"];
+    this->zsteps_Ml = this->fiducial_params["zsteps"];
+    this->stepsize_Ml = (this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
+    this->Pk_steps = this->fiducial_params["Pk_steps"];
+    this->k_steps = this->fiducial_params["k_steps"];
+    //TODO: Now we need to predefine the lists q_Ml & r_Ml & H_f....
 }
 
 CosmoCalc::~CosmoCalc()
@@ -292,16 +301,64 @@ double CosmoCalc::transfer(double x)
 
 double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low, double k_high)
 {
-    return 0;
+    if (k1 == k2)
+    {
+        auto integrand = [&](double k){return pow(k,2) * pow(this->M(l,k1,k),2);};
+        return integrate(integrand, k_low, k_high, this->k_steps, simpson());     
+    }
+    else
+    {
+        auto integrand = [&](double k){return pow(k,2) * this->M(l,k1,k) * this->M(l,k2,k);};
+        return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+    }
 }
 
 double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low, double k_high)
 {
-    return 0;
+    auto integrand = [&](double k)
+    {
+        double m1,n1,m2,n2;
+        m1 = this->M(l,k1,k);
+        n1 = this->N_bar(l,k1,k);
+        if (k1 == k2)
+        {
+            m2 = m1;
+            n2 = n1;
+        }
+        else
+        {
+            m2 = this->M(l,k2,k);
+            n2 = this->N_bar(l,k2,k);
+        }
+        const double bb = this->b_bias * this->beta;
+        const double bb2 = pow(bb,2);
+        return pow(k,2) * m1 * m2 + bb * k * (m1*n2 + n1*m2) + bb2 * n1 * n2;
+    };
+
+    return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+
 }
 
 double CosmoCalc::M(int l, double k1, double k2)
 {
+    auto integrand = [&](double z)
+    {
+        const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
+        int n;
+        int n_old_int = (int)n_old;
+        if (abs(n_old - (double)n_old_int) > 0.5
+            n = n_old_int + 1;
+        else
+            n = n_old_int;
+        double r,q;
+        r = 1;
+        q = 1;
+        
+        return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel(l,k1*r) *\
+                this->sph_bessel(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/pow(this->h,3)/\
+                (this->H_f[n]*1000.0);
+    };
+
     return 0;
 }
 
@@ -330,7 +387,7 @@ double CosmoCalc::I(int l1, int l2, double k1, double k2, double z, double r)
     return 0;
 }
 
-double CosmoCalc::N_bar(int l, double k1, double k2, double z_low, double z_high)
+double CosmoCalc::N_bar(int l, double k1, double k2)
 {
     return 0;
 }
