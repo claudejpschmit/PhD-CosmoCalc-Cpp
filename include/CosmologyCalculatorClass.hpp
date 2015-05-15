@@ -53,11 +53,11 @@ class CosmoCalc : public CosmoBasis
         double n_p(double z);
         double n_e(double z);
 
-        void Pk_update_interpolator(map<string, double> params, double zi, double zf, int nsteps);
+        void Pk_update_interpolator(map<string, double> params);
         double Pkz_calc(double k, double z);
         double P_growth(double z);
         double D1(double z);
-        double P_delta(double k, string units_k, string units_P);
+        double P_delta(double k, string units_k = "default", string units_P = "default");
         double transfer(double x);
 
         double corr_Tb(int l, double k1, double k2, double k_low, double k_high);
