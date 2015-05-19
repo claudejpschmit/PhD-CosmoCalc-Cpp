@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include "Integrator.hpp"
+#include <fstream>
 CosmoCalc::CosmoCalc(map<string, double> params)
     :
         CosmoBasis(params)
@@ -15,13 +16,41 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_steps = this->fiducial_params["k_steps"];
     //TODO: Now we need to predefine the lists q_Ml & r_Ml & H_f....
+
+    cout << "inside CosmoCalc initializer" << endl;
+    pars.add("100*theta_s",1.04);
+    pars.add("omega_b",0.0220);
+    pars.add("omega_cdm",0.1116);
+    pars.add("A_s",2.42e-9);
+    pars.add("n_s",.96);
+    pars.add("tau_reio",0.09);
+
+    pars.add("k_pivot",0.05);
+    pars.add("YHe",0.25);
+    pars.add("output","mPk"); //pol +clphi
+    pars.add("P_k_max_h/Mpc", 100);
+    pars.add("z_pk", 2.0);
+
+    KKK = new ClassEngine(pars);
 }
 
 CosmoCalc::~CosmoCalc()
 {
+    delete KKK;
+}
+
+void CosmoCalc::write_pks()
+{
+    ofstream file;
+    file.open("outputtest.dat");
+    cout.precision( 16 );
+    this->KKK->writePks(file);
+    file.close();
+
 }
 void CosmoCalc::show_cosmo_calcs()
 {
+    write_pks();
     cout << hubble_time() << endl;
     cout << hubble_dist() << endl;
     cout << comoving_radial_dist(10) << endl;

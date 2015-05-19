@@ -103,10 +103,10 @@ ClassEngine::ClassEngine(const ClassParams& pars): cl(0),dofree(true){
     }
 
     // The compute cls function takes the most time!
-    //cout << "before cls" << endl;
+    cout << "before cls" << endl;
     //calcul class
     computeCls();
-    //cout << "after cls" << endl;   
+    cout << "after cls" << endl;   
     //cout <<"creating " << sp.ct_size << " arrays" <<endl;
     cl=new double[sp.ct_size];
 

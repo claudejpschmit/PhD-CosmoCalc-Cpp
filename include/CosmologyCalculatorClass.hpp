@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <cmath>
+#include "ClassEngine.hpp"
 
 
 using namespace std;
@@ -19,6 +20,7 @@ class CosmoCalc : public CosmoBasis {
         ~CosmoCalc();
 
         void show_cosmo_calcs();
+        void write_pks();
 
         double hubble_time();
         double hubble_dist();
@@ -78,5 +80,6 @@ class CosmoCalc : public CosmoBasis {
         // ------------ Variables -------------- //
         int k_steps, zsteps_Ml, Pk_steps;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml;
-
+        ClassParams pars;
+        ClassEngine *KKK;
 };

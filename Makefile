@@ -65,12 +65,12 @@ SOURCE = input.o background.o thermodynamics.o perturbations.o primordial.o nonl
 CLASS = class.o
 OUTPUT = output.o
 
-SRC = CosmoBasis.o CosmologyCalculatorClass.o
+SRC = CosmoBasis.o CosmologyCalculatorClass.o Engine.o ClassEngine.o
 MAIN = Main.o
 
 all: calc class_test
 
-calc: $(SRC) $(SOURCE) $(TOOLS) $(EXTERNAL) $(MAIN) 
+calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(MAIN) 
 	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm
 
 class_test: $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(CLASS) 
