@@ -223,6 +223,9 @@ double CosmoCalc::n_e(double z)
     return this->n_p(z);
 }
 
+void CosmoCalc::update_q()
+{
+}
 
 void CosmoCalc::Pk_update_interpolator(map<string, double> params)
 {
@@ -346,7 +349,7 @@ double CosmoCalc::M(int l, double k1, double k2)
         const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
         int n;
         int n_old_int = (int)n_old;
-        if (abs(n_old - (double)n_old_int) > 0.5
+        if (abs(n_old - (double)n_old_int)) > 0.5
             n = n_old_int + 1;
         else
             n = n_old_int;

@@ -53,6 +53,7 @@ class CosmoCalc : public CosmoBasis
         double n_p(double z);
         double n_e(double z);
 
+        void update_q();
         void Pk_update_interpolator(map<string, double> params);
         double Pkz_calc(double k, double z);
         double P_growth(double z);
