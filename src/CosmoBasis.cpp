@@ -43,7 +43,7 @@ void CosmoBasis::check_params()
 {
     // insert automatically checks if the key is present and only adds if it isn't.
     // There isn't really a convenient way in C++ to store pairs with different
-    // types in the same map, so I keep all as double so one might need to cast some 
+    // types in the same map, so I keep all as double so one might need to cast some
     // to integers when used later on.
     this->fiducial_params.insert(pair<string,double>("ombh2",0.0226));
     this->fiducial_params.insert(pair<string,double>("omch2",0.112));

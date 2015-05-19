@@ -14,10 +14,12 @@ class CosmoBasis {
         // ------------ Functions -------------- //
 
         /**
-         * Constructor that initializes all the parameters for the CosmoCalc backbone.
+         * Constructor that initializes all the parameters 
+         * for the CosmoCalc backbone.
          *
          * @param params is a dictionary containing the programme parameters. 
-         *               The key to the dictionary is a string, and the value a double.
+         *               The key to the dictionary is a string, 
+         *               and the value a double.
          */
         CosmoBasis(map<string,double> params);
 
@@ -52,16 +54,19 @@ class CosmoBasis {
         void check_params();
         
         /**
-         * This function takes the list of cosmological parameters and translates it 
-         * to the parameters which will actually be used in cosmological computations.
+         * This function takes the list of cosmological parameters and translates it
+         * to the parameters which will actually be used in cosmological 
+         * computations.
          *
          * Note on Neutrinos:
-         * Here we add the neutino density to the matter density as well as to the radiation 
-         * density. For high redshifts, radiation is dominating so having the neutrinos in
-         * has a great effect, since O_nu is of the same order as O_gamma.
-         * At late times O_R becomes very unimportant so adding O_nu in has a very minor effect.
-         * As for adding O_nu to O_M, O_b/O_nu = 100 and O_CDM/O_nu = 1000 so adding it in
-         * or not should not have a great effect at any epoch.
+         * Here we add the neutino density to the matter density 
+         * as well as to the radiation density. For high redshifts, radiation is 
+         * dominating so having the neutrinos in has a great effect, since O_nu 
+         * is of the same order as O_gamma.
+         * At late times O_R becomes very unimportant so adding O_nu 
+         * in has a very minor effect.
+         * As for adding O_nu to O_M, O_b/O_nu = 100 and O_CDM/O_nu = 1000,
+         * so adding it in or not should not have a great effect at any epoch.
          * 
          * @param params is a dictionary containing the parameters to be translated.
          *
@@ -69,7 +74,8 @@ class CosmoBasis {
         void generate_params(map<string,double> params);
 
         /**
-         * Helper function to determine the denominator for various integrals, E(z) = H(z)/H_0.
+         * Helper function to determine the denominator for various integrals, 
+         * E(z) = H(z)/H_0.
          *
          * @param z redshift at which the function is evaluated.
          */
@@ -83,7 +89,8 @@ class CosmoBasis {
         double Z(double z);
 
         /**
-         * This function determines the curvature term in the metric. It is either sinhx, x or sin x.
+         * This function determines the curvature term in the metric. 
+         * It is either sinhx, x or sin x.
          *
          * @param x where the curvature term is to be evaluated.
          */
@@ -184,7 +191,8 @@ class CosmoBasis {
         const double A_10 = 2.85*pow(10,-15);
         /// \brief Logarithmic tilt of the spectrum of fluctuations.
         const double n_s = 0.95;
-        /// \brief Variance of the matter fluctuations today smoothed on a scale of 8 h^-1 Mpc.
+        /// \brief Variance of the matter fluctuations today 
+        //         smoothed on a scale of 8 h^-1 Mpc.
         const double sigma_8 = 0.8;
 
         /// \brief Width of the Reionization regime.

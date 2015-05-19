@@ -8,8 +8,8 @@
 
 using namespace std;
     
-class CosmoCalc : public CosmoBasis
-{
+class CosmoCalc : public CosmoBasis {
+    
     public:
 
  
@@ -58,11 +58,13 @@ class CosmoCalc : public CosmoBasis
         double Pkz_calc(double k, double z);
         double P_growth(double z);
         double D1(double z);
-        double P_delta(double k, string units_k = "default", string units_P = "default");
+        double P_delta(double k, string units_k = "default",\
+                       string units_P = "default");
         double transfer(double x);
 
         double corr_Tb(int l, double k1, double k2, double k_low, double k_high);
-        double corr_Tb_rsd(int l, double k1, double k2, double k_low, double k_high);
+        double corr_Tb_rsd(int l, double k1, double k2,\
+                           double k_low, double k_high);
         double M(int l, double k1, double k2);
         double delta_Tb_bar(double z);
         double T_S(double z);
@@ -70,8 +72,6 @@ class CosmoCalc : public CosmoBasis
         double T_K(double z);
         double I(int l1, int l2, double k1, double k2, double z, double r);
         double N_bar(int l, double k1, double k2);
-
-
 
     protected:
 

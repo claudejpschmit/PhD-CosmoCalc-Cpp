@@ -22,17 +22,17 @@ int main(int argc, char* argv[])
     struct stat sb;
     
     const char output_path[] = "output";
-    if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode))
-    {
+    if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
         cout << "output directory already exists." << endl;
-    }
-    else 
-    {
+    } else {
         mkdir(output_path, 0700);
         cout << "output directory generated!" << endl; 
     }
 
-    auto g = [](double x) {return 2*f(x);};
+    auto g = [](double x) 
+    {
+        return 2*f(x);
+    };
     cout << "integration yields "<< integrate(g, 0.0, 1.0, 100, simpson()) << endl;
 
     map<string,double> params;
@@ -52,8 +52,7 @@ int main(int argc, char* argv[])
     strcat(path, filename);
     cout << path << endl;
     output.open(path);
-    for (int n = 0; n < 10000; ++n)
-    {
+    for (int n = 0; n < 100000; ++n) {
         output << n << " " << base.sph_bessel(10,double(n)/100.0) << endl;
     }
     output.close();
