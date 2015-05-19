@@ -1,7 +1,7 @@
 PhD-CosmoCalc-Cpp
 =================
 
-This is the C++ version of the PhD-CosmoCalc program, used to calculate basic cosmological functions and Fisher matrix analysis of the 21cm Brightness Temperature fluctuations.
+This is the C++ version of the PhD-CosmoCalc program, used to calculate basic cosmological functions and Fisher matrix analysis of the 21cm Brightness Temperature fluctuations. It utilizes Lesgourgues et al's CLASS code, available at class-code.net. All necessary files are included in this project (due to compatibility requirements), so no external download is required. 
 
 ## Programming Style
 
@@ -9,26 +9,38 @@ We are generally following the [kernel style guide](https://www.kernel.org/doc/D
 
 ## Building
 
-We are using [CMake](http://www.cmake.org/) to govern the build process, the only supported platform is Linux/gcc. Others can be added in CMakeLists.txt
+A makefile for the application is provided.
 
 ### Building the application
 
-In order to build the code, you need to create a build directory, generate the makefile and build:
+In order to build the code, simply cd to the folder containing the Makefile and type:
 
-    mkdir build
-    cd build
-    cmake ..
-    make -j3
+    make calc
 
-which should produce a '---' executable for you.
+in order to generate the cosmology calculator with the excecutable 'calc'. To test whether CLASS works as intended, type:
+    
+    make class_test
+
+This generates an excexutable that runs the standard CLASS excecutable as given from the code directly downloaded from class-code.net. To run the test, type:
+
+    ./class_test lcdm.ini
+
+This should not generate any errors.
+Simply typing:
+    
+    make
+
+produces both excecutables.
 
 ### Building the documentation
 
-To do that you need to be inside the build directory and make doc:
+EDIT: DOCUMENTATION BUILDING NOT UPDATED YET!
 
-    cd build
-    make doc
-
+/To do that you need to be inside the build directory and make doc:
+/
+/    cd build
+/    make doc
+/
 
 ## Documentation
 
