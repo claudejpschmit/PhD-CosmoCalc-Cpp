@@ -349,7 +349,7 @@ double CosmoCalc::M(int l, double k1, double k2)
         const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
         int n;
         int n_old_int = (int)n_old;
-        if (abs(n_old - (double)n_old_int)) > 0.5
+        if (abs(n_old - (double)n_old_int) > 0.5)
             n = n_old_int + 1;
         else
             n = n_old_int;
@@ -357,7 +357,9 @@ double CosmoCalc::M(int l, double k1, double k2)
         r = 1;
         q = 1;
         
-        return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel(l,k1*r) *\
+        return 0;
+
+        //return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel(l,k1*r) *\
                 this->sph_bessel(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/pow(this->h,3)/\
                 (this->H_f[n]*1000.0);
     };

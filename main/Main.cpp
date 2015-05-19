@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     output.open(path);
     for (int n = 0; n < 10000; ++n)
     {
-        output << n << " " << base.sph_bessel(10,double(n)/10.0) << endl;
+        output << n << " " << base.sph_bessel(10,double(n)/100.0) << endl;
     }
     output.close();
     
