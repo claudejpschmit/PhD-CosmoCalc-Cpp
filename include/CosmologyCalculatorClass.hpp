@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <cmath>
+#include <vector>
 #include "ClassEngine.hpp"
 
 
@@ -20,7 +21,8 @@ class CosmoCalc : public CosmoBasis {
         ~CosmoCalc();
 
         void show_cosmo_calcs();
-        void write_pks();
+        void write_pks(string filename);
+        void updateClass(map<string, double> params);
 
         double hubble_time();
         double hubble_dist();
@@ -57,6 +59,7 @@ class CosmoCalc : public CosmoBasis {
 
         void update_q();
         void Pk_update_interpolator(map<string, double> params);
+        double Pk_interp(double k, double z);
         double Pkz_calc(double k, double z);
         double P_growth(double z);
         double D1(double z);
@@ -72,7 +75,6 @@ class CosmoCalc : public CosmoBasis {
         double T_S(double z);
         double x_HI(double z);
         double T_K(double z);
-        double I(int l1, int l2, double k1, double k2, double z, double r);
         double N_bar(int l, double k1, double k2);
 
     protected:
@@ -80,6 +82,7 @@ class CosmoCalc : public CosmoBasis {
         // ------------ Variables -------------- //
         int k_steps, zsteps_Ml, Pk_steps;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml;
+        vector<double> q_Ml, r_Ml, H_f;
         ClassParams pars;
-        ClassEngine *KKK;
+        ClassEngine *CLASS;
 };

@@ -71,7 +71,7 @@ class Engine
         inline int lmax() {return _lmax;}
 
         //write Pk's ---CLAUDE
-        void writePks(std::ostream &o);
+        void writePks(std::ostream &o, double z);
 
     protected:
         int _lmax;

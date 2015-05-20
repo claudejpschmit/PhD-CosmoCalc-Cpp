@@ -17,46 +17,94 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->k_steps = this->fiducial_params["k_steps"];
     //TODO: Now we need to predefine the lists q_Ml & r_Ml & H_f....
 
-    cout << "inside CosmoCalc initializer" << endl;
-    pars.add("100*theta_s",1.04);
-    pars.add("omega_b",0.0220);
-    pars.add("omega_cdm",0.1116);
-    pars.add("A_s",2.42e-9);
-    pars.add("n_s",.96);
-    pars.add("tau_reio",0.09);
+    pars.add("100*theta_s",0);
+    pars.add("omega_b",0);
+    pars.add("omega_cdm",0);
+    pars.add("A_s",0);
+    pars.add("n_s",0);
+    pars.add("tau_reio",0);
+    pars.add("k_pivot",0);
+    pars.add("YHe",0);
+    pars.add("z_pk", 0);
+    //This doesn't work currently
+    //pars.add("h", 0);
+    pars.add("Omega_k", 0);
+    //pars.add("Omega_Lambda", 0);
+    pars.add("T_cmb", 0);
+    //pars.add("bias", 0);
 
-    pars.add("k_pivot",0.05);
-    pars.add("YHe",0.25);
+    //Unchanging
     pars.add("output","mPk"); //pol +clphi
     pars.add("P_k_max_h/Mpc", 100);
-    pars.add("z_pk", 2.0);
+        
+    updateClass(this->fiducial_params);
 
-    KKK = new ClassEngine(pars);
+    this->update_q();
+    this->r_Ml = this->q_Ml;
+    
+    double z;
+    for (int i = 0; i <= this->zsteps_Ml; ++i) {
+        z = this->zmin_Ml + i * this->stepsize_Ml;
+        this->H_f.push_back(this->H(z));
+    }
+    this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
+
 }
 
 CosmoCalc::~CosmoCalc()
 {
-    delete KKK;
+    delete CLASS;
 }
 
-void CosmoCalc::write_pks()
+void CosmoCalc::write_pks(string filename)
 {
     ofstream file;
-    file.open("outputtest.dat");
+    file.open(filename);
     cout.precision( 16 );
-    this->KKK->writePks(file);
+    this->CLASS->writePks(file, current_params["z_pk"]);
     file.close();
 
 }
 void CosmoCalc::show_cosmo_calcs()
 {
-    write_pks();
+    write_pks("outputtest.dat");
+    current_params["z_pk"] = 1.0;
+    //updateClass(current_params);
+    write_pks("outputtestz1.dat");
+    current_params["ombh2"] = 0.04;
+    updateClass(current_params);
+    write_pks("outputtestuuu.dat");
+    
     cout << hubble_time() << endl;
     cout << hubble_dist() << endl;
     cout << comoving_radial_dist(10) << endl;
     cout << "O_m = " << O_M << ", O_V = " << O_V << "." << endl;
-    cout << "Age in Gigayears "<< age_of_universe(0) * pow(10,10) * 3.08568 / (365.25 * 24 * 3600) << endl;
+    cout << "Age in Gigayears "<< age_of_universe(0) * pow(10,10) *\
+        3.08568 / (365.25 * 24 * 3600) << endl;
 
+}
+
+void CosmoCalc::updateClass(map<string, double> params)
+{
+    pars.updateParam("omega_b", params["ombh2"]);
+    pars.updateParam("omega_cdm", params["omch2"]);
+    //This doesn't work currently
+    //pars.updateParam("h", params["hubble"]/100.0);
+    pars.updateParam("Omega_k", params["omk"]);
+    //pars.updateParam("Omega_Lambda", this->O_V);
+    pars.updateParam("T_cmb", params["T_CMB"]);
+    pars.updateParam("A_s", params["A_s"]);
+    pars.updateParam("n_s", params["n_s"]);
+    pars.updateParam("tau_reio", params["tau_reio"]);
+    pars.updateParam("k_pivot", params["k_pivot"]);
+    pars.updateParam("YHe", params["YHe"]);
+    pars.updateParam("z_pk", params["z_pk"]);
+    pars.updateParam("100*theta_s", params["100*theta_s"]);
+    
+    //Not quite sure if this is = b_bias...
+    //pars.updateParam("bias", 1);
+    
+    CLASS = new ClassEngine(pars);
 }
 
 double CosmoCalc::hubble_time()
@@ -259,10 +307,36 @@ double CosmoCalc::n_e(double z)
 
 void CosmoCalc::update_q()
 {
+    double z;
+    for (int n = 0; n <= this->zsteps_Ml; ++n) {
+        z = this->zmin_Ml + n * this->stepsize_Ml;
+        this->q_Ml.push_back(this->D_C(z));
+    }
 }
 
 void CosmoCalc::Pk_update_interpolator(map<string, double> params)
 {
+    double z;
+    vector<double> table_z;
+    double zi = this->zmin_Ml;
+    double zf = this->zmax_Ml;
+    int nsteps = this->Pk_steps;
+    double z_stepsize = (zf-zi)/(double)nsteps;
+
+    for (int n = 0; n <= nsteps; ++n) {
+        z = zi + n * z_stepsize;
+        table_z.push_back(z);
+
+        // compute Pk at z & store in res, table.append(res);
+    }
+    //this stores the number of k values 
+    int nkvals;
+
+}
+
+double CosmoCalc::Pk_interp(double k, double z)
+{
+    return 0;
 }
 
 double CosmoCalc::Pkz_calc(double k, double z)
@@ -387,46 +461,106 @@ double CosmoCalc::M(int l, double k1, double k2)
         else
             n = n_old_int;
         double r,q;
-        r = 1;
-        q = 1;
+        r = this->r_Ml[n];
+        q = this->q_Ml[n];
         
-        return 0;
-
-        //return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel(l,k1*r) *\
-                this->sph_bessel(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/pow(this->h,3)/\
-                (this->H_f[n]*1000.0);
+        return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel(l,k1*r) *\
+                this->sph_bessel(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
+                pow(this->h,3)) / (this->H_f[n]*1000.0);
     };
 
-    return 0;
-}
-
-double CosmoCalc::delta_Tb_bar(double z)
-{
-    return 0;
-}
-
-double CosmoCalc::T_S(double z)
-{
-    return 0;
-}
-
-double CosmoCalc::x_HI(double z)
-{
-    return 0;
-}
-
-double CosmoCalc::T_K(double z)
-{
-    return 0;
-}
-
-double CosmoCalc::I(int l1, int l2, double k1, double k2, double z, double r)
-{
-    return 0;
+    double integral = integrate(integrand, this->zmin_Ml, this->zmax_Ml,\
+                                this->zsteps_Ml, simpson());
+    return this->prefactor_Ml * integral;
 }
 
 double CosmoCalc::N_bar(int l, double k1, double k2)
 {
-    return 0;
+    auto integrand = [&](double z)
+    {
+        const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
+        int n;
+        int n_old_int = (int)n_old;
+        if (abs(n_old - (double)n_old_int) > 0.5)
+            n = n_old_int + 1;
+        else
+            n = n_old_int;
+        double r,q;
+        r = this->r_Ml[n];
+        q = this->q_Ml[n];
+        
+        double pref = 1.0 / (this->H_f[n]*1000.0*(1+z)) * this->prefactor_Ml;
+        double pk = sqrt(this->Pk_interp(k2*this->h, z)/pow(this->h, 3));
+        double dtb = this->delta_Tb_bar(z);
+        double pkdtb = pk * dtb;
+        double jl1r = this->sph_bessel(l - 1, k1 * r);
+        double jl2r = this->sph_bessel(l, k1 * r);
+        double jl1q = this->sph_bessel(l - 1, k2 * q);
+        double jl2q = this->sph_bessel(l, k2 * q);
+
+        double sums = k1 * r * jl1r * jl1q -\
+                      k1 * r * (l+1) / (k2 * q) * jl1r * jl2q -\
+                      (l+1) * jl2r * jl1q +\
+                      pow(l+1,2) / (k2 * q) * jl2r * jl2q;
+        return pref * r * pkdtb * sums;
+  
+    };
+    
+    double integral = integrate(integrand, this->zmin_Ml, this->zmax_Ml,\
+                                this->zsteps_Ml, simpson());
+    return integral;
 }
+
+double CosmoCalc::delta_Tb_bar(double z)
+{
+    double constant_A = 27 * this->O_b * pow(this->h, 2) / 0.023 *\
+                        sqrt(0.015 / (this->O_M * pow(this->h,2)));
+    double T_S = this->T_S(z);
+    return constant_A * this->x_HI(z) * (T_S - this->T(z))/T_S * sqrt(1+z);
+}
+
+double CosmoCalc::T_S(double z)
+{
+    double Ti = 10.0;
+    double Tf = 500.0;
+    double rate = 2.0;
+
+    double zi = this->z_rei;
+    double zf = zi - this->delta_z_rei;
+    double deltaT = abs(Ti -Tf);
+
+    return deltaT * (1.0/this->pi * atan(rate * (-(z - (zi + zf)/2.0))) +\
+                    0.5) + Ti;
+}
+
+double CosmoCalc::x_HI(double z)
+{
+    double rate = 2.0;
+    double zi = this->z_rei;
+    double zf = zi - this->delta_z_rei;
+    
+    return 1.0/this->pi * atan(rate * (z - (zi + zf)/2.0)) + 0.5;
+}
+
+double CosmoCalc::T_K(double z)
+{
+    double zd = 200.0;
+    double res;
+    if (z > zd)
+        res = this->T(z);
+    else {
+        double Td = this->T(zd);
+        double Tf = 1000.0;
+        double rate = 1.0;
+        double z_on = this->z_rei;
+        double z0 = (2 * z_on - 4)/2.0;
+        double tanh_term = (0.5 * (tanh(rate * (-(z-z0)))+1)) * Tf;
+        res = Td * pow(1+z,2) / pow(1+zd,2) + tanh_term;
+    }
+    return res;
+}
+
+
+
+
 

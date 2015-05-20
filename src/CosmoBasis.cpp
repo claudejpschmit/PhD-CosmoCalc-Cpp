@@ -56,6 +56,14 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("zsteps",100));
     this->fiducial_params.insert(pair<string,double>("Pk_steps",3));
     this->fiducial_params.insert(pair<string,double>("k_steps",40000));
+    
+    this->fiducial_params.insert(pair<string,double>("100*theta_s",1.04));
+    this->fiducial_params.insert(pair<string,double>("A_s",2.42e-9));
+    this->fiducial_params.insert(pair<string,double>("n_s",0.96));
+    this->fiducial_params.insert(pair<string,double>("tau_reio",0.09));
+    this->fiducial_params.insert(pair<string,double>("k_pivot",0.05));
+    this->fiducial_params.insert(pair<string,double>("YHe",0.25));
+    this->fiducial_params.insert(pair<string,double>("z_pk",7.0));
 }
 
 void CosmoBasis::generate_params(map<string,double> params)

@@ -8,8 +8,11 @@
 #include "Integrator.hpp"
 #include "CosmologyCalculatorClass.hpp"
 #include "ClassEngine.hpp"
+#include "stdafx.h"
+#include "interpolation.h"
 
 using namespace std;
+using namespace alglib;
 
 double f (double x)
 {
@@ -22,50 +25,6 @@ int main(int argc, char* argv[])
     (void) argv;
     struct stat sb;
 
-    const int l_max_scalars=5000;
-
-    /*
-    ClassParams pars;
-    //pars.add("H0",70.3);
-    pars.add("100*theta_s",1.04);
-    pars.add("omega_b",0.0220);
-    pars.add("omega_cdm",0.1116);
-    pars.add("A_s",2.42e-9);
-    pars.add("n_s",.96);
-    pars.add("tau_reio",0.09);
-
-    pars.add("k_pivot",0.05);
-    pars.add("YHe",0.25);
-    pars.add("output","mPk"); //pol +clphi
-    pars.add("P_k_max_h/Mpc", 100);
-    pars.add("z_pk", 2.0);
-    //pars.add("l_max_scalars",l_max_scalars);
-    //pars.add("lensing",false); //note boolean
-
-    ClassEngine * KKK(0);
-    cout << "before initialize" << endl;
-    try{
-        //le calculateur de spectres
-        if (argc==2){
-            string pre=string(argv[1]);
-            KKK=new ClassEngine(pars,pre);
-        }
-        else{
-            KKK=new ClassEngine(pars);
-        }
-
-        cout << "after initialize" << endl;
-        ofstream file;
-        file.open("outputtest.dat");
-        cout.precision( 16 );
-        KKK->writePks(file);
-        file.close();
-        //KKK->writeCls(cout);
-    }
-    catch (std::exception &e){
-        cout << "GIOSH" << e.what() << endl;
-    }
-    */
     const char output_path[] = "output";
     if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
         cout << "output directory already exists." << endl;
@@ -104,6 +63,28 @@ int main(int argc, char* argv[])
 
     CosmoCalc calc(params);
     calc.show_cosmo_calcs();
+    
+    // testing interpolator
+    real_1d_array x;
+    double _x[] = {0.0, 0.0, 0.0, 0, 0};
+    x.setcontent(5,_x);
+    x(0) = 0.0;
+    x(1) = 0.25;
+    x(2) = 0.5;
+    x(3) = 0.75;
+    x(4) = 1.0;
+    real_1d_array y = "[0.0, 0.5, 1.0]";
+    real_1d_array f = "[0.00, 0.0625, 0.25, 0.5625, 1.0, 0.5, 0.5625, 0.75, 1.0625, 1.5, 2.00, 2.0625, 2.25, 2.5625, 3.00]";
+    double vx = 0.4214;
+    double vy = 0.621;
+    double v, dx, dy, dxy;
+    spline2dinterpolant s;
+
+    spline2dbuildbicubicv(x, 5, y, 3, f, 1, s);
+    v = spline2dcalc(s, vx, vy);
+    cout << v << endl;
+
+
 
     return 0;
 }

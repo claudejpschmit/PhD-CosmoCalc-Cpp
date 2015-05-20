@@ -68,9 +68,8 @@ Engine::writeCls(std::ostream &of){
 
 }
 
-void Engine::writePks(std::ostream &o)
+void Engine::writePks(std::ostream &o, double z)
 {
-    double z = 2;
     double k = 0.0001;
     double kstep = k;
     for (int n = 0; n < 10000; ++n) {

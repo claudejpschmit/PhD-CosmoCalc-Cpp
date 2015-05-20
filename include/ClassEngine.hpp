@@ -55,7 +55,15 @@ class ClassParams{
         inline unsigned size() const {return pars.size();}
         inline string key(const unsigned& i) const {return pars[i].first;}
         inline string value(const unsigned& i) const {return pars[i].second;}
-
+        template<typename T> void updateParam(const string& paramKey, const T& val){
+            int n = 0;
+            while (pars[n].first != paramKey && n < pars.size()){
+                ++n;
+            }
+            if (n < pars.size()){
+                pars[n].second = str(val);
+            }
+        }
 
     private:
         std::vector<std::pair<string,string> > pars;

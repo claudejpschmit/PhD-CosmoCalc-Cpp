@@ -189,8 +189,6 @@ class CosmoBasis {
         
         /// \brief Spontaneous decay rate of the spin flip transition [s^-1].
         const double A_10 = 2.85*pow(10,-15);
-        /// \brief Logarithmic tilt of the spectrum of fluctuations.
-        const double n_s = 0.95;
         /// \brief Variance of the matter fluctuations today 
         //         smoothed on a scale of 8 h^-1 Mpc.
         const double sigma_8 = 0.8;
