@@ -7,9 +7,9 @@
 #include <vector>
 #include "ClassEngine.hpp"
 
-
 using namespace std;
-    
+  
+
 class CosmoCalc : public CosmoBasis {
     
     public:
@@ -21,7 +21,7 @@ class CosmoCalc : public CosmoBasis {
         ~CosmoCalc();
 
         void show_cosmo_calcs();
-        void write_pks(string filename);
+        void write_pks(string filename, double z);
         void updateClass(map<string, double> params);
 
         double hubble_time();
@@ -85,4 +85,6 @@ class CosmoCalc : public CosmoBasis {
         vector<double> q_Ml, r_Ml, H_f;
         ClassParams pars;
         ClassEngine *CLASS;
+       
+
 };

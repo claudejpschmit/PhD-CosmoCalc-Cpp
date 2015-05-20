@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Integrator.hpp"
 #include <fstream>
+
 CosmoCalc::CosmoCalc(map<string, double> params)
     :
         CosmoBasis(params)
@@ -56,24 +57,36 @@ CosmoCalc::~CosmoCalc()
     delete CLASS;
 }
 
-void CosmoCalc::write_pks(string filename)
+void CosmoCalc::write_pks(string filename, double z)
 {
     ofstream file;
     file.open(filename);
     cout.precision( 16 );
-    this->CLASS->writePks(file, current_params["z_pk"]);
+    this->CLASS->writePks(file, z);
+    file.close();
+
+    filename = "new_"+filename;
+    file.open(filename);
+    
+    double k = 0.0001;
+    double kstep = k;
+    for (int n = 0; n < 10000; ++n) {
+        k += kstep;
+        file << k << " " << this->Pk_interp(k,z) << endl; 
+    }
     file.close();
 
 }
 void CosmoCalc::show_cosmo_calcs()
 {
-    write_pks("outputtest.dat");
-    current_params["z_pk"] = 1.0;
+    write_pks("outputtest_z0.dat", 0);
+    write_pks("outputtest_z1.dat", 1);
+    write_pks("outputtest_z2.dat", 2);
+    write_pks("outputtest_z755.dat", 7.55);
     //updateClass(current_params);
-    write_pks("outputtestz1.dat");
     current_params["ombh2"] = 0.04;
     updateClass(current_params);
-    write_pks("outputtestuuu.dat");
+    write_pks("outputtestuuu.dat", 0);
     
     cout << hubble_time() << endl;
     cout << hubble_dist() << endl;
@@ -316,27 +329,12 @@ void CosmoCalc::update_q()
 
 void CosmoCalc::Pk_update_interpolator(map<string, double> params)
 {
-    double z;
-    vector<double> table_z;
-    double zi = this->zmin_Ml;
-    double zf = this->zmax_Ml;
-    int nsteps = this->Pk_steps;
-    double z_stepsize = (zf-zi)/(double)nsteps;
-
-    for (int n = 0; n <= nsteps; ++n) {
-        z = zi + n * z_stepsize;
-        table_z.push_back(z);
-
-        // compute Pk at z & store in res, table.append(res);
-    }
-    //this stores the number of k values 
-    int nkvals;
-
+   // Now unecessary. Update_class does this as well! 
 }
 
 double CosmoCalc::Pk_interp(double k, double z)
 {
-    return 0;
+    return this->CLASS->return_Pkz(k,z);
 }
 
 double CosmoCalc::Pkz_calc(double k, double z)

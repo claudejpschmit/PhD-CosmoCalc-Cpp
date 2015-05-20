@@ -8,11 +8,10 @@
 #include "Integrator.hpp"
 #include "CosmologyCalculatorClass.hpp"
 #include "ClassEngine.hpp"
-#include "stdafx.h"
-#include "interpolation.h"
+
 
 using namespace std;
-using namespace alglib;
+
 
 double f (double x)
 {
@@ -64,27 +63,5 @@ int main(int argc, char* argv[])
     CosmoCalc calc(params);
     calc.show_cosmo_calcs();
     
-    // testing interpolator
-    real_1d_array x;
-    double _x[] = {0.0, 0.0, 0.0, 0, 0};
-    x.setcontent(5,_x);
-    x(0) = 0.0;
-    x(1) = 0.25;
-    x(2) = 0.5;
-    x(3) = 0.75;
-    x(4) = 1.0;
-    real_1d_array y = "[0.0, 0.5, 1.0]";
-    real_1d_array f = "[0.00, 0.0625, 0.25, 0.5625, 1.0, 0.5, 0.5625, 0.75, 1.0625, 1.5, 2.00, 2.0625, 2.25, 2.5625, 3.00]";
-    double vx = 0.4214;
-    double vy = 0.621;
-    double v, dx, dy, dxy;
-    spline2dinterpolant s;
-
-    spline2dbuildbicubicv(x, 5, y, 3, f, 1, s);
-    v = spline2dcalc(s, vx, vy);
-    cout << v << endl;
-
-
-
     return 0;
 }
