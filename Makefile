@@ -16,7 +16,8 @@ vpath %.o build
 vpath .base build
 
 # Compiler required for c++ code.
-CXX = g++ -Wall -std=c++11
+# including -ffast-math may not be as bad as anticipated.
+CXX = g++ -Wall -std=c++11 -ffast-math
 # Compiler required for c code.
 CC = gcc -Wall
 
@@ -65,7 +66,7 @@ SOURCE = input.o background.o thermodynamics.o perturbations.o primordial.o nonl
 CLASS = class.o
 OUTPUT = output.o
 
-SRC = CosmoBasis.o CosmologyCalculatorClass.o Engine.o ClassEngine.o
+SRC = CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o Engine.o ClassEngine.o
 MAIN = Main.o
 
 all: calc class_test

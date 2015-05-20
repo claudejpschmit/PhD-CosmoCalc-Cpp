@@ -9,7 +9,6 @@
 
 using namespace std;
   
-
 class CosmoCalc : public CosmoBasis {
     
     public:
@@ -31,8 +30,8 @@ class CosmoCalc : public CosmoBasis {
         double D_now(double z);
         double comoving_dist_transverse(double z);
         double D_M(double z);
-        double angular_diam_dist(double z, double z2);
-        double D_A(double z, double z2);
+        double angular_diam_dist(double z, double z2 = -1);
+        double D_A(double z, double z2 = -1);
         double luminosity_dist(double z);
         double D_L(double z);
         double comoving_volume(double z);
@@ -58,7 +57,6 @@ class CosmoCalc : public CosmoBasis {
         double n_e(double z);
 
         void update_q();
-        void Pk_update_interpolator(map<string, double> params);
         double Pk_interp(double k, double z);
         double Pkz_calc(double k, double z);
         double P_growth(double z);

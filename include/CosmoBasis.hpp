@@ -41,7 +41,8 @@ class CosmoBasis {
          * @param x is the argument of the spherical bessel function.
          */
         double sph_bessel(unsigned int l, double x);
-
+    
+        double sph_bessel_camb(unsigned int l, double x);
 
     protected:
         

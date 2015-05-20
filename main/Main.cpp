@@ -8,7 +8,8 @@
 #include "Integrator.hpp"
 #include "CosmologyCalculatorClass.hpp"
 #include "ClassEngine.hpp"
-
+#include "CosmologyWriterClass.hpp"
+#include <time.h>
 
 using namespace std;
 
@@ -60,8 +61,17 @@ int main(int argc, char* argv[])
     }
     output.close();
 
-    CosmoCalc calc(params);
-    calc.show_cosmo_calcs();
+    //CosmoCalc calc(params);
+    //calc.show_cosmo_calcs();
+    
+    clock_t t1, t2;
+    CosmoWrite writer(params);
+    t1 = clock();
+    //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
+    writer.calculate_distances(10);
+    t2 = clock();
+    float diff ((float)t2 - (float)t1);
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
     
     return 0;
 }

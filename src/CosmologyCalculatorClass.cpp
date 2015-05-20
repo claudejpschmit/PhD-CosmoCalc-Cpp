@@ -16,7 +16,6 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->stepsize_Ml = (this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_steps = this->fiducial_params["k_steps"];
-    //TODO: Now we need to predefine the lists q_Ml & r_Ml & H_f....
 
     pars.add("100*theta_s",0);
     pars.add("omega_b",0);
@@ -158,13 +157,16 @@ double CosmoCalc::D_M(double z)
     return this->comoving_dist_transverse(z);
 }
 
-double CosmoCalc::angular_diam_dist(double z, double z2 = -1)
+double CosmoCalc::angular_diam_dist(double z, double z2)
 {
     const double Ok = 1 - this->O_M - this->O_V;
     const double root = sqrt(abs(1-this->O_tot));
     double result;
     if (z2 < 0.0) {
-        result = this->D_H * this->S_k(root * this-> Z(z)) / ((1+z) * root);
+        if (this->O_tot == 1.0)
+            result = this->D_H * this->Z(z)/(1+z);
+        else
+            result = this->D_H * this->S_k(root * this-> Z(z)) / ((1+z) * root);
     } else if (this->O_V + this->O_M <= 1.0) {
         const double dm = this->D_M(z);
         const double dm2 = this->D_M(z2);
@@ -175,11 +177,10 @@ double CosmoCalc::angular_diam_dist(double z, double z2 = -1)
         cout << "Error: D_A12 formula invalid for O_tot > 1.0" << endl;
         result = 1.0;
     }
-
     return result;
 }
 
-double CosmoCalc::D_A(double z, double z2 = -1)
+double CosmoCalc::D_A(double z, double z2)
 {
     return this->angular_diam_dist(z,z2);
 }
@@ -327,10 +328,6 @@ void CosmoCalc::update_q()
     }
 }
 
-void CosmoCalc::Pk_update_interpolator(map<string, double> params)
-{
-   // Now unecessary. Update_class does this as well! 
-}
 
 double CosmoCalc::Pk_interp(double k, double z)
 {
@@ -461,7 +458,8 @@ double CosmoCalc::M(int l, double k1, double k2)
         double r,q;
         r = this->r_Ml[n];
         q = this->q_Ml[n];
-        
+       
+        //TODO: check whether we need to multiply py h.
         return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel(l,k1*r) *\
                 this->sph_bessel(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
                 pow(this->h,3)) / (this->H_f[n]*1000.0);
@@ -557,8 +555,3 @@ double CosmoCalc::T_K(double z)
     }
     return res;
 }
-
-
-
-
-
