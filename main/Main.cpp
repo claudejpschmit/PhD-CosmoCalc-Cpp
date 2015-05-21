@@ -10,6 +10,7 @@
 #include "ClassEngine.hpp"
 #include "CosmologyWriterClass.hpp"
 #include <time.h>
+#include "FisherClass.hpp"
 
 using namespace std;
 
@@ -64,6 +65,9 @@ int main(int argc, char* argv[])
     //CosmoCalc calc(params);
     //calc.show_cosmo_calcs();
     
+    Fisher fish(params);
+
+    /*
     clock_t t1, t2;
     CosmoWrite writer(params);
     t1 = clock();
@@ -126,6 +130,9 @@ int main(int argc, char* argv[])
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
+    */
+
 
     return 0;
 }

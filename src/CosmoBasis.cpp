@@ -66,6 +66,16 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("z_pk",7.0));
 }
 
+map<string, double> CosmoBasis::give_current_params()
+{
+    return this->current_params;
+}
+
+map<string, double> CosmoBasis::give_fiducial_params()
+{
+    return this->fiducial_params;
+}
+
 void CosmoBasis::generate_params(map<string,double> params)
 {
     T_CMB = params["T_CMB"];

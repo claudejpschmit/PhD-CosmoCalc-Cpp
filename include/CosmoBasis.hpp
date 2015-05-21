@@ -43,6 +43,9 @@ class CosmoBasis {
         double sph_bessel(unsigned int l, double x);
     
         double sph_bessel_camb(unsigned int l, double x);
+        
+        map<string, double> give_current_params();
+        map<string, double> give_fiducial_params();
 
     protected:
         

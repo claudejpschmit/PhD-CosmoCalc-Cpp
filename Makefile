@@ -66,7 +66,7 @@ SOURCE = input.o background.o thermodynamics.o perturbations.o primordial.o nonl
 CLASS = class.o
 OUTPUT = output.o
 
-SRC = CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o Engine.o ClassEngine.o
+SRC = CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o
 MAIN = Main.o
 
 all: calc class_test
