@@ -68,10 +68,64 @@ int main(int argc, char* argv[])
     CosmoWrite writer(params);
     t1 = clock();
     //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
-    writer.calculate_distances(10);
+    //writer.calculate_distances(10);
     t2 = clock();
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
     
+    t1 = clock();
+    //writer.calculate_densities_rho(5000);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+    
+    t1 = clock();
+    //writer.calculate_densities_Omega(10000);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+    
+    t1 = clock();
+    //writer.calculate_H(1000);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+    
+    t1 = clock();
+    writer.calculate_P(0.001, 10, 10000, "default", "default");
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
+    t1 = clock();
+    writer.calculate_P_CLASS(0.001, 10, 0, 10000);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
+    t1 = clock();
+    writer.calculate_dTb(5, 20, 100);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
+    t1 = clock();
+    writer.calculate_xHI(0, 20, 100);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
+    t1 = clock();
+    writer.calculate_Ts(0, 20, 100);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
+    t1 = clock();
+    writer.calculate_Tk(0, 1000, 1000);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
     return 0;
 }

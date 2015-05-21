@@ -19,14 +19,15 @@ class CosmoWrite : public CosmoCalc {
         void calculate_Nl(int l, double k_fixed, double k2_low, double k2_high,\
                           int step, double stepsize = 0);
         void calculate_distances(double zmax);
-        void calculate_densities_rho();
-        void calculate_densities_Omega();
-        void calculate_H();
-        void calculate_P();
-        void calculate_P_CLASS();
-        void calculate_dTb();
-        void calculate_xHI();
-        void calculate_Ts();
-        void calculate_Tk();
+        void calculate_densities_rho(double zmax);
+        void calculate_densities_Omega(double zmax);
+        void calculate_H(double zmax);
+        void calculate_P(double k_min, double k_max, int step,\
+                         string unit_k, string unit_P);
+        void calculate_P_CLASS(double kmin, double kmax, double z, int step);
+        void calculate_dTb(double zmin, double zmax, int step);
+        void calculate_xHI(double zmin, double zmax, int step);
+        void calculate_Ts(double zmin, double zmax, int step);
+        void calculate_Tk(double zmin, double zmax, int step);
 
 };

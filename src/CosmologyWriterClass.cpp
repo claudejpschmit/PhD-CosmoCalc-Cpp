@@ -88,22 +88,213 @@ void CosmoWrite::calculate_distances(double zmax)
     }
     file.close();
 }
-void CosmoWrite::calculate_densities_rho(){}
+void CosmoWrite::calculate_densities_rho(double zmax)
+{
+    ofstream file;
+    string filename = "output/densities_rho.dat";
+    file.open(filename);
+    file << "# This file contains data for the densities rho vs redshift. " <<\
+        endl;
+    file << "# Column 1: Redshift z" << endl;
+    file << "# Column 2: rho_M" << endl;
+    file << "# Column 3: rho_R" << endl;
+    file << "# Column 4: rho_V" << endl;
 
-void CosmoWrite::calculate_densities_Omega(){}
+    double y1, y2, y3, x;
+    int steps = 100 * zmax;
+    for (int i = 0; i < steps; i++) {
+        x = (double)i/100.0;
+        y1 = this->rho_M(x);
+        y2 = this->rho_R(x);
+        y3 = this->rho_V(x);
 
-void CosmoWrite::calculate_H(){}
+        file << x << " " << y1 << " " << y2 << " " << y3 << endl;
+    }
+    file.close();
 
-void CosmoWrite::calculate_P(){}
+}
 
-void CosmoWrite::calculate_P_CLASS(){}
+void CosmoWrite::calculate_densities_Omega(double zmax)
+{
+    ofstream file;
+    string filename = "output/densities_Omega.dat";
+    file.open(filename);
+    file << "# This file contains data for the densities Omega vs redshift. " <<\
+        endl;
+    file << "# Column 1: Redshift z" << endl;
+    file << "# Column 2: Omega_M" << endl;
+    file << "# Column 3: Omega_R" << endl;
+    file << "# Column 4: Omega_V" << endl;
+    file << "# Column 5: Sum" << endl;
+    
+    double y1, y2, y3, y4, x;
+    int steps = 100 * zmax;
+    for (int i = 0; i < steps; i++) {
+        x = (double)i/100.0;
+        y1 = this->Omega_M(x);
+        y2 = this->Omega_R(x);
+        y3 = this->Omega_V(x);
+        y4 = y1 + y2 + y3;
 
-void CosmoWrite::calculate_dTb(){}
+        file << x << " " << y1 << " " << y2 << " " << y3 << " " << y4 << endl;
+    }
+    file.close();
 
-void CosmoWrite::calculate_xHI(){}
+}
 
-void CosmoWrite::calculate_Ts(){}
+void CosmoWrite::calculate_H(double zmax)
+{
+    ofstream file;
+    string filename = "output/hvsZ.dat";
+    file.open(filename);
+    file << "# This file contains data for the Hubble parameter h vs redshift. "\
+        << endl;
+    file << "# Column 1: Redshift z" << endl;
+    file << "# Column 2: h" << endl;
+    
+    double y1, x;
+    int steps = 100 * zmax;
+    for (int i = 0; i < steps; i++) {
+        x = (double)i/100.0;
+        y1 = this->H(x)/100.0;
 
-void CosmoWrite::calculate_Tk(){}
+        file << x << " " << y1 << endl;
+    }
+    file.close();
 
+}
 
+void CosmoWrite::calculate_P(double kmin, double kmax, int step,\
+                             string unit_k, string unit_P)
+{
+    double stepsize = (kmax - kmin) / (double)step;
+    
+    ofstream file;
+    string filename = "output/P_analytic.dat";
+    file.open(filename);
+    file << "# This file contains data for the analytic power spectrum\
+            vs k at redshift 0." << endl;
+    file << "# Column 1: scales k in units: " << unit_k << endl;
+    file << "# Column 2: power spectrum in units: " << unit_P << endl;
+
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = kmin + (double)i * stepsize ;
+        y1 = this->P_delta(x, unit_k, unit_P);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::calculate_P_CLASS(double kmin, double kmax, double z, int step)
+{
+    double stepsize = (kmax - kmin) / (double)step;
+    
+    ofstream file;
+    string filename = "output/P_CLASS.dat";
+    file.open(filename);
+    file << "# This file contains data for the CLASS power spectrum\
+            vs k at redshift z." << endl;
+    file << "# Column 1: scales k in units: h/Mpc " << endl;
+    file << "# Column 2: power spectrum in units: h/Mpc^3 " << endl;
+
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = kmin + (double)i * stepsize ;
+        y1 = this->Pk_interp(x, z);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::calculate_dTb(double zmin, double zmax, int step)
+{
+    double stepsize = (zmax - zmin) / (double)step;
+    
+    ofstream file;
+    string filename = "output/dTb.dat";
+    file.open(filename);
+    file << "# This file contains data for delta T_b vs redshift." << endl;
+    file << "# Column 1: redshift z " << endl;
+    file << "# Column 2: delta T_b" << endl;
+
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = zmin + (double)i * stepsize ;
+        y1 = this->delta_Tb_bar(x);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::calculate_xHI(double zmin, double zmax, int step)
+{
+    double stepsize = (zmax - zmin) / (double)step;
+    
+    ofstream file;
+    string filename = "output/xHI.dat";
+    file.open(filename);
+    file << "# This file contains data for x_HI vs redshift." << endl;
+    file << "# Column 1: redshift z " << endl;
+    file << "# Column 2: delta x_HI" << endl;
+
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = zmin + (double)i * stepsize ;
+        y1 = this->x_HI(x);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::calculate_Ts(double zmin, double zmax, int step)
+{
+    double stepsize = (zmax - zmin) / (double)step;
+    
+    ofstream file;
+    string filename = "output/Ts.dat";
+    file.open(filename);
+    file << "# This file contains data for T_S vs redshift." << endl;
+    file << "# Column 1: redshift z " << endl;
+    file << "# Column 2: T_S" << endl;
+
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = zmin + (double)i * stepsize ;
+        y1 = this->T_S(x);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::calculate_Tk(double zmin, double zmax, int step)
+{
+    double stepsize = (zmax - zmin) / (double)step;
+    
+    ofstream file;
+    string filename = "output/Tk.dat";
+    file.open(filename);
+    file << "# This file contains data T_K vs redshift." << endl;
+    file << "# Column 1: redshift z " << endl;
+    file << "# Column 2: T_K" << endl;
+
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = zmin + (double)i * stepsize ;
+        y1 = this->T_K(x);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+
+}
