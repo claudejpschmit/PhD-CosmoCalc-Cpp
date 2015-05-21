@@ -25,6 +25,9 @@ Fisher::Fisher(map<string, double> params)
         krange.push_back(kmin + n * kstepsize);
     cout << "Fisher initialized" << endl;
 
+    Cl = randu<mat>(krange.size(),krange.size());
+    Cl_inv = Cl;
+
 }
 
 Fisher::~Fisher()
@@ -41,17 +44,108 @@ void Fisher::update_Model(map<string, double> new_params)
 
 void Fisher::compute_Cl(int l)
 {
-
+    for (int i = 0; i < this->krange.size(); ++i) {
+        double k1 = this->krange[i];
+        for (int j = 0; j < this->krange.size(); ++j) {
+            double k2 = this->krange[j];
+            Cl(i,j) = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
+        }
+    }
 }
 
 void Fisher::compute_Cl_inv()
 {
-
+    //this->Cl_inv = this->Cl.i();
 }
 
 double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
 {
-    return 0;
+    double h = this->var_params[param_key];
+    double x = this->current_params[param_key];
+    
+    double f1,f2,f3,f4;
+    bool do_calc = true;
+    int index;
+
+    this->current_params[param_key] = x + 2*h;
+    for (int i = 0; i < this->abcisses_done_simple.size(); ++i) { 
+        if (this->abcisses_done_simple[i] == this->current_params[param_key]) {
+            do_calc = false;
+            index = i;
+            break;
+        }
+    }
+    
+    if (do_calc) {
+        this->update_Model(this->current_params);
+        f1 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
+        abcisses_done_simple.push_back(current_params[param_key]);
+        derivs_calculated.push_back(f1); 
+    } else 
+        f1 = derivs_calculated[index];
+    do_calc = true;
+
+    this->current_params[param_key] = x + h;
+    for (int i = 0; i < this->abcisses_done_simple.size(); ++i) { 
+        if (this->abcisses_done_simple[i] == this->current_params[param_key]) {
+            do_calc = false;
+            index = i;
+            break;
+        }
+    }
+    
+    if (do_calc) {
+        this->update_Model(this->current_params);
+        f2 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
+        abcisses_done_simple.push_back(current_params[param_key]);
+        derivs_calculated.push_back(f2); 
+    } else 
+        f2 = derivs_calculated[index];
+    do_calc = true;
+
+    
+    this->current_params[param_key] = x - h;
+    for (int i = 0; i < this->abcisses_done_simple.size(); ++i) { 
+        if (this->abcisses_done_simple[i] == this->current_params[param_key]) {
+            do_calc = false;
+            index = i;
+            break;
+        }
+    }
+    
+    if (do_calc) {
+        this->update_Model(this->current_params);
+        f3 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
+        abcisses_done_simple.push_back(current_params[param_key]);
+        derivs_calculated.push_back(f3); 
+    } else 
+        f3 = derivs_calculated[index];
+    do_calc = true;
+
+    this->current_params[param_key] = x - 2*h;
+    for (int i = 0; i < this->abcisses_done_simple.size(); ++i) { 
+        if (this->abcisses_done_simple[i] == this->current_params[param_key]) {
+            do_calc = false;
+            index = i;
+            break;
+        }
+    }
+    
+    if (do_calc) {
+        this->update_Model(this->current_params);
+        f4 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
+        abcisses_done_simple.push_back(current_params[param_key]);
+        derivs_calculated.push_back(f4); 
+    } else 
+        f4 = derivs_calculated[index];
+    do_calc = true;
+
+    this->current_params[param_key] = x;
+
+    double num = -f1 + 8*f2 - 8*f3 + f4;
+    double res = num /(12*h);
+    
+    return x*res;
 }
 
 double Fisher::Cl_loglog_derivative(int l, string param_key,\
@@ -83,9 +177,6 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
 
     this->current_params[param_key] = x + h;
     for (int i = 0; i < this->abcisses_done.size(); ++i) { 
-        cout << this->abcisses_done[i] << " =? " <<\
-                this->current_params[param_key] << endl;
-
         if (this->abcisses_done[i] == this->current_params[param_key]) {
             do_calc = false;
             index = i;
@@ -149,12 +240,105 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
 
 vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key)
 {
-    vector<vector<double>> res;
+    double h = this->var_params[param_key];
+    double x = this->current_params[param_key];
+
+    vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
+    vector<double> row;
+
+    this->current_params[param_key] = x + 2 * h;
+    this->update_Model(this->current_params);
+    for (int i = 0; i < this->krange.size(); ++i) {
+        double k1 = this->krange[i];
+        row.clear();
+        for (int j = 0; j < this->krange.size(); ++j) {
+            double k2 = this->krange[j];
+            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
+        }
+        f1matrix.push_back(row);
+    }
+
+    this->current_params[param_key] = x + h;
+    this->update_Model(this->current_params);
+    for (int i = 0; i < this->krange.size(); ++i) {
+        double k1 = this->krange[i];
+        row.clear();
+        for (int j = 0; j < this->krange.size(); ++j) {
+            double k2 = this->krange[j];
+            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
+        }
+        f2matrix.push_back(row);
+    }
+
+    this->current_params[param_key] = x - h;
+    this->update_Model(this->current_params);
+    for (int i = 0; i < this->krange.size(); ++i) {
+        double k1 = this->krange[i];
+        row.clear();
+        for (int j = 0; j < this->krange.size(); ++j) {
+            double k2 = this->krange[j];
+            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
+        }
+        f3matrix.push_back(row);
+    }
+
+    this->current_params[param_key] = x - 2 * h;
+    this->update_Model(this->current_params);
+    for (int i = 0; i < this->krange.size(); ++i) {
+        double k1 = this->krange[i];
+        row.clear();
+        for (int j = 0; j < this->krange.size(); ++j) {
+            double k2 = this->krange[j];
+            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
+        }
+        f4matrix.push_back(row);
+    }
+
+    this->current_params[param_key] = x;
+    this->update_Model(this->current_params);
+
+    double num;
+    for (int i = 0; i < this->krange.size(); ++i) {
+        row.clear();
+        for (int j = 0; j < this->krange.size(); ++j) {
+            num = -f1matrix[i][j] + 8*f2matrix[i][j] - 8*f3matrix[i][j] +\
+                  f4matrix[i][j];
+            num = num / (12.0 * h);    
+            row.push_back(num);
+        }
+        res.push_back(row);
+    }
+
     return res;
 }
 
 double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 {
+    vector<vector<double>> Cl_alpha, Cl_beta;
+    Cl_alpha = this->Cl_derivative_matrix(l, param_key1);
+    if (param_key1 == param_key2)
+        Cl_beta = Cl_alpha;
+    else
+        Cl_beta = this->Cl_derivative_matrix(l, param_key2);
+    
+    this->compute_Cl(l);
+    this->compute_Cl_inv();
+
+    mat Cl_a, Cl_b;
+    Cl_a = randu<mat> (this->krange.size(), this->krange.size());
+    Cl_b = Cl_a;
+    for (int i = 0; i < this->krange.size(); ++i) {
+        for (int j = 0; j < this->krange.size(); ++j) {
+            Cl_a(i,j) = Cl_alpha[i][j];
+            Cl_b(i,j) = Cl_beta[i][j];
+
+        }
+    } 
+
+    mat product = Cl_a;// * this->Cl_inv;
+    //product = product * Cl_b;
+    //product = product * this->Cl_inv;
+
     return 0;
 }
 

@@ -17,7 +17,7 @@ vpath .base build
 
 # Compiler required for c++ code.
 # including -ffast-math may not be as bad as anticipated.
-CXX = g++ -Wall -std=c++11 -ffast-math
+CXX = g++ -Wall -std=c++11 -ffast-math -llapack -lblas -larmadillo
 # Compiler required for c code.
 CC = gcc -Wall
 

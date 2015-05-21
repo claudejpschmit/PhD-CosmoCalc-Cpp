@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CosmologyCalculatorClass.hpp"
+#include <armadillo>
+
+using namespace arma;
 
 class Fisher {
     public:
@@ -25,8 +28,9 @@ class Fisher {
     private:
         CosmoCalc *CALC;
         map<string, double> current_params, fiducial_params, var_params;
-        vector<vector<double>> Cl, Cl_inv;
+        mat Cl, Cl_inv;
         vector<double> krange;
         double kmin, kmax;
-        vector<double> abcisses_done, logderivs_calculated;
+        vector<double> abcisses_done, logderivs_calculated,\
+                       abcisses_done_simple, derivs_calculated;
 };

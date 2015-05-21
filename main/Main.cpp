@@ -11,9 +11,10 @@
 #include "CosmologyWriterClass.hpp"
 #include <time.h>
 #include "FisherClass.hpp"
+#include <armadillo>
 
 using namespace std;
-
+using namespace arma;
 
 double f (double x)
 {
@@ -25,6 +26,14 @@ int main(int argc, char* argv[])
     (void) argc;
     (void) argv;
     struct stat sb;
+
+    mat A = randu<mat>(2,2);
+    mat B = randu<mat>(2,2);
+    
+    //matrix multiplication not working.
+    //cout << A * B << endl;
+
+
 
     const char output_path[] = "output";
     if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
@@ -46,7 +55,7 @@ int main(int argc, char* argv[])
     params["ombh2"] = 0.02;
     cout << params["O"] << endl;
     CosmoBasis base(params);
-    base.show_params(); 
+    //base.show_params(); 
     //cout << 1.34 * pow(10,2) << endl;
 
     ofstream output;
@@ -69,7 +78,7 @@ int main(int argc, char* argv[])
     cout << v.size()<< endl;
 
     Fisher fish(params);
-    fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 143, 0.1, 0.1,\
+    //fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 143, 0.1, 0.1,\
                       "_l143_0-1_0-1");
 
     /*
