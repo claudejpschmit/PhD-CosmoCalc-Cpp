@@ -46,16 +46,6 @@ class CosmoBasis {
         
         map<string, double> give_current_params();
         map<string, double> give_fiducial_params();
-
-    protected:
-        
-        // ------------ Functions -------------- //
-        
-        /**
-         * This function verifies whether the fiducial parameters contain
-         * all the necessary keys, if not, standard values are added.
-         */
-        void check_params();
         
         /**
          * This function takes the list of cosmological parameters and translates it
@@ -76,6 +66,16 @@ class CosmoBasis {
          *
          */
         void generate_params(map<string,double> params);
+    
+    protected:
+        
+        // ------------ Functions -------------- //
+        
+        /**
+         * This function verifies whether the fiducial parameters contain
+         * all the necessary keys, if not, standard values are added.
+         */
+        void check_params();
 
         /**
          * Helper function to determine the denominator for various integrals, 

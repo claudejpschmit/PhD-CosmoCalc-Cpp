@@ -399,8 +399,14 @@ double CosmoCalc::transfer(double x)
     return res * pow(bracket, -0.25);
 }
 
+double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high)
+{
+    return this->corr_Tb_rsd(l, k1, k2, k_low, k_high);
+}
 
-double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low, double k_high)
+
+double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
+                          double k_high)
 {
     if (k1 == k2)
     {

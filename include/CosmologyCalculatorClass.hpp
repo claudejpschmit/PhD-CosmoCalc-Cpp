@@ -65,6 +65,7 @@ class CosmoCalc : public CosmoBasis {
                        string units_P = "default");
         double transfer(double x);
 
+        double Cl(int l, double k1, double k2, double k_low, double k_high);
         double corr_Tb(int l, double k1, double k2, double k_low, double k_high);
         double corr_Tb_rsd(int l, double k1, double k2,\
                            double k_low, double k_high);

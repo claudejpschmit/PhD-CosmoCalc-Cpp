@@ -64,8 +64,13 @@ int main(int argc, char* argv[])
 
     //CosmoCalc calc(params);
     //calc.show_cosmo_calcs();
-    
+    vector<double> v;
+    v.clear();
+    cout << v.size()<< endl;
+
     Fisher fish(params);
+    fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 143, 0.1, 0.1,\
+                      "_l143_0-1_0-1");
 
     /*
     clock_t t1, t2;
