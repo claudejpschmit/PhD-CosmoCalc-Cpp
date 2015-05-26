@@ -298,3 +298,37 @@ void CosmoWrite::calculate_Tk(double zmin, double zmax, int step)
     file.close();
 
 }
+
+void CosmoWrite::calculate_P_compare(double k_low, double k_high, int kstep, double z_low, double z_high, int zstep)
+{
+    double stepsize_k = (k_high - k_low) / (double)kstep;
+    double stepsize_z = (z_high - z_low) / (double)zstep;
+    double k, z, res;
+    ofstream file;
+    string filename = "output/Pk_Cpp.dat";
+    file.open(filename);
+    file << "# The parameters in this calculation are as follows:" << endl;
+    for (auto& x: this->current_params)
+        file << "# " << x.first << " = " << x.second << endl;
+    file << "# ";
+    for (int j = 0; j < zstep; j++) {
+        z = z_low + (double)j * stepsize_z;
+        file << z << " ";
+    }
+    file << endl;
+
+    for (int i = 0; i < kstep; i++) {
+        k = k_low + (double)i * stepsize_k;
+        file << k << " ";
+        for (int j = 0; j < zstep; j++) {
+            z = z_low + (double)j * stepsize_z;
+            res = this->Pk_interp(k,z);
+
+            file << res << " ";
+        }
+        file << endl;
+    }
+    file.close();
+
+}
+

@@ -31,6 +31,31 @@ template<typename Method, typename Function, typename Double>
     return h*s;
 }
 
+
+/**
+ * This is a very simple simpson integration function.
+ */
+template<typename Function>
+    double integrate_simps(Function f, double a, double b, int steps)
+{
+    if (steps % 2 == 1){
+        cout << "ERROR in integrator" << endl;
+        return 0;
+    }
+    double stepsize = (b-a)/(double)steps;
+    double res = f(a) + f(b);
+
+    for (int n = 1; n < steps; ++n){
+        res += 4* f(a+n*stepsize);
+        ++n;
+    }
+    for (int n = 2; n < steps - 1; ++n){
+        res += 2 * f(a+n*stepsize);
+        ++n;
+    }
+    return res * stepsize / 3.0;
+}
+    
 /**
  * This class contains the simpson integration method, any other methods
  * are to be added in the same manner.

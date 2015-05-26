@@ -23,6 +23,15 @@ double f (double x)
 
 int main(int argc, char* argv[])
 {
+    
+    map<string,double> params;
+    CosmoWrite writer(params);
+    writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
+    //Fisher fish(params);
+    
+    //double res = fish.Cl_loglog_derivative(143, "ombh2", 0.1, 0.1);
+    //cout << res << endl;
+    /*
     (void) argc;
     (void) argv;
     struct stat sb;
@@ -48,7 +57,7 @@ int main(int argc, char* argv[])
         return 2*f(x);
     };
     cout << "integration yields "<< integrate(g, 0.0, 1.0, 100, simpson()) << endl;
-
+    cout << "New integration yields " << integrate_simps(g, 0.0, 1.0, 100) << endl;
     map<string,double> params;
 
     params["O"] = 0.02;
@@ -77,20 +86,24 @@ int main(int argc, char* argv[])
     v.clear();
     cout << v.size()<< endl;
 
-    Fisher fish(params);
-    //fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 143, 0.1, 0.1,\
-                      "_l143_0-1_0-1");
-
-    /*
     clock_t t1, t2;
-    CosmoWrite writer(params);
+    //CosmoWrite writer(params);
+
+    Fisher fish(params);
     t1 = clock();
-    //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
-    //writer.calculate_distances(10);
+    fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 143, 0.1, 0.1,\
+                      "_l143_0-1_0-1");
     t2 = clock();
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-    
+*/
+    //t1 = clock();
+    //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
+    //writer.calculate_distances(10);
+    //t2 = clock();
+    //float diff ((float)t2 - (float)t1);
+    //cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+    /* 
     t1 = clock();
     //writer.calculate_densities_rho(5000);
     t2 = clock();
