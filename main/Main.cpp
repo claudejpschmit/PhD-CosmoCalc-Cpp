@@ -12,9 +12,12 @@
 #include <time.h>
 #include "FisherClass.hpp"
 #include <armadillo>
+#include "stdafx.h"
+#include "interpolation.h"
 
 using namespace std;
 using namespace arma;
+using namespace alglib;
 
 double f (double x)
 {
@@ -23,13 +26,16 @@ double f (double x)
 
 int main(int argc, char* argv[])
 {
-    
+     
     map<string,double> params;
-    CosmoWrite writer(params);
-    writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
+    //CosmoWrite writer(params);
+    //writer.update_Pk_interpolator(writer.give_current_params());
+    //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
+    
+    
     //Fisher fish(params);
     
-    //double res = fish.Cl_loglog_derivative(143, "ombh2", 0.1, 0.1);
+    //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
     //cout << res << endl;
     /*
     (void) argc;
@@ -86,17 +92,18 @@ int main(int argc, char* argv[])
     v.clear();
     cout << v.size()<< endl;
 
+        //CosmoWrite writer(params);
+*/
     clock_t t1, t2;
-    //CosmoWrite writer(params);
 
     Fisher fish(params);
     t1 = clock();
-    fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 143, 0.1, 0.1,\
-                      "_l143_0-1_0-1");
+    //fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 142, 0.1, 0.1,\
+                      "_l142_0-1_0-1");
     t2 = clock();
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-*/
+
     //t1 = clock();
     //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
     //writer.calculate_distances(10);

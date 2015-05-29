@@ -7,6 +7,7 @@ using namespace std;
 
 CosmoBasis::CosmoBasis(map<string,double> params)
 {
+    cout << "Beginning to build CosmoBasis" << endl;
     // Initializing parameters
     fiducial_params = params;
     this->check_params();
@@ -17,6 +18,7 @@ CosmoBasis::CosmoBasis(map<string,double> params)
     b_bias = pow(O_M,0.6) / beta;
     k_eq = 0.073 * O_M * pow(h,2);
 
+    cout << "CosmoBasis build" << endl;
 }
 
 CosmoBasis::~CosmoBasis()
@@ -55,7 +57,7 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("zmax",9.0));
     this->fiducial_params.insert(pair<string,double>("zsteps",100));
     this->fiducial_params.insert(pair<string,double>("Pk_steps",3));
-    this->fiducial_params.insert(pair<string,double>("k_steps",1000));
+    this->fiducial_params.insert(pair<string,double>("k_steps",40000));
     
     this->fiducial_params.insert(pair<string,double>("100*theta_s",1.04));
     this->fiducial_params.insert(pair<string,double>("A_s",2.42e-9));

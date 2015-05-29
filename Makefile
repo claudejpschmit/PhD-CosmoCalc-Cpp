@@ -10,7 +10,7 @@ LIBRARIES = lib/
 	if ! [ -e $(WRKDIR) ]; then mkdir $(WRKDIR) ; mkdir $(WRKDIR)/lib; fi;
 	touch build/.base
 
-vpath %.cpp src:main
+vpath %.cpp src:main:$(LIBRARIES)ALGLIB_source
 vpath %.c $(LIBRARIES)CLASS_source:$(LIBRARIES)CLASS_tools:$(LIBRARIES)CLASS_main
 vpath %.o build
 vpath .base build
@@ -40,7 +40,7 @@ EXTERNAL =
 CCFLAG += -D__CLASSDIR__='"$(MDIR)"'
 INCLUDES = -I../include
 INCLUDES += -I../$(LIBRARIES)CLASS_include
-
+INCLUDES += -I../$(LIBRARIES)ALGLIB_include
 # These lines seem to be unnecessary, but I leave them in anyways.
 INCLUDES += -I/usr/include/boost
 LINKER = -L/usr/include/boost #-lboost_filesystem
@@ -65,13 +65,14 @@ TOOLS = growTable.o dei_rkck.o sparse.o evolver_rkck.o  evolver_ndf15.o arrays.o
 SOURCE = input.o background.o thermodynamics.o perturbations.o primordial.o nonlinear.o transfer.o spectra.o lensing.o
 CLASS = class.o
 OUTPUT = output.o
+ALGLIB = alglibinternal.o alglibmisc.o ap.o dataanalysis.o diffequations.o fasttransforms.o integration.o interpolation.o linalg.o optimization.o solvers.o specialfunctions.o statistics.o
 
 SRC = CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o
 MAIN = Main.o
 
 all: calc class_test
 
-calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(MAIN) 
+calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(MAIN) 
 	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm
 
 class_test: $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(CLASS) 

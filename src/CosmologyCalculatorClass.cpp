@@ -3,11 +3,13 @@
 #include <iostream>
 #include "Integrator.hpp"
 #include <fstream>
+#include <boost/math/special_functions/bessel.hpp>
 
 CosmoCalc::CosmoCalc(map<string, double> params)
     :
         CosmoBasis(params)
 {
+    cout << "Beginning to build CosmoCalc" << endl;
     this->prefactor_Ml = 2*this->b_bias*this->c/pi;
     this->zmin_Ml = this->fiducial_params["zmin"];
     this->zmax_Ml = this->fiducial_params["zmax"];
@@ -47,6 +49,12 @@ CosmoCalc::CosmoCalc(map<string, double> params)
         this->H_f.push_back(this->H(z));
     }
     this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
+    this->update_Pk_interpolator(this->fiducial_params);
+    cout << "Creating Bessels" << endl;
+    this->create_bessel_interpolant(141, 143);
+    
+    
+    cout << "CosmoCalc build" << endl;
 
 }
 
@@ -328,10 +336,124 @@ void CosmoCalc::update_q()
     }
 }
 
+void CosmoCalc::create_bessel_interpolant(int lmin, int lmax)
+{
+    double xmin, xmax;
+    this->lmin = lmin;
+    // TODO: these values are kind of arbitrary...
+    // a little under (0.5)
+    xmin = 0.5 * 0.001 * this->r_Ml[0];
+    // a little over (2)
+    xmax = 2 * 5 * this->r_Ml[this->zsteps_Ml];
+    
+    for (int l = lmin; l <= lmax; ++l) {
+        double lambda = l * 10;
+        double stepsize = lambda / 50.0;
+        int nsteps = (int)((xmax - xmin)/stepsize);
+    
+        real_1d_array ys, xs;
+        xs.setlength(nsteps);
+        ys.setlength(nsteps);
+        for (int j = 0; j < nsteps; ++j) {
+            double x = xmin + j * stepsize;
+            xs[j] = x;
+            ys[j] = boost::math::sph_bessel(l,x);
+        }
+        spline1dinterpolant interpolator;
+        spline1dbuildcubic(xs, ys, interpolator);
+      
+        bessel_interp_list.push_back(interpolator);
+    }
+}
 
+double CosmoCalc::bessel_j_interp(int l, double x)
+{
+    return spline1dcalc(bessel_interp_list[l - this->lmin], x);
+}
+
+void CosmoCalc::update_Pk_interpolator(map<string, double> params)
+{
+    
+    double z_stepsize = (params["zmax"] - params["zmin"])/params["Pk_steps"];
+    vector<double> vk, vz, vP;
+
+    for (int i = 0; i < (int)params["Pk_steps"]; ++i) {
+        vz.push_back(params["z_pk"] + i * z_stepsize);
+        stringstream command;
+        command << "python Pk.py";
+        command << " --H_0 " << params["hubble"];
+        command << " --ombh2 " << params["ombh2"];
+        command << " --omnuh2 " << params["omnuh2"];
+        command << " --omch2 " << params["omch2"];
+        command << " --omk " << params["omk"];
+        command << " --z " << vz[i];
+        system(command.str().c_str());
+        ifstream file("Pks.dat");
+        
+        double k, P;
+        vk.clear();
+
+        while (file >> k >> P) {
+            vk.push_back(k);
+            vP.push_back(P);
+        }
+        file.close();
+    }
+
+    matterpowerspectrum_k.setlength(vk.size());
+    matterpowerspectrum_z.setlength(vz.size());
+    matterpowerspectrum_P.setlength(vP.size());
+    for (int i = 0; i < vk.size(); i++){
+        matterpowerspectrum_k[i] = vk[i];
+    }
+    for (int i = 0; i < vP.size(); i++){
+        matterpowerspectrum_P[i] = vP[i];
+    }
+    for (int i = 0; i < vz.size(); i++){
+        matterpowerspectrum_z[i] = vz[i];
+    }
+
+
+    spline2dbuildbilinearv(matterpowerspectrum_k, vk.size(),matterpowerspectrum_z, vz.size(),\
+                        matterpowerspectrum_P, 1, Pk_interpolator); 
+
+    
+    
+    // that should create a file containing the Pks.
+/*        
+        readin(pks.dat)
+        interpolate(pks)
+
+        update interpolation function.
+
+     */
+}
 double CosmoCalc::Pk_interp(double k, double z)
 {
-    return this->CLASS->return_Pkz(k,z);
+    /*
+    // not including z dependence, currently just doing it for specific z.
+    int index = 0;
+    while(k > matterpowerspectrum_k[index]){
+        ++index;
+        if (index >= matterpowerspectrum_k.size())
+            break;
+    }
+    if (index == 0){
+        return matterpowerspectrum_P[index];
+    } else if (index >= matterpowerspectrum_k.size()){
+        return matterpowerspectrum_P[matterpowerspectrum_k.size()-1];
+    } else {
+        double x0, x1, f0, f1;
+        x0 = matterpowerspectrum_k[index-1];
+        x1 = matterpowerspectrum_k[index];
+        f0 = matterpowerspectrum_P[index-1];
+        f1 = matterpowerspectrum_P[index];
+
+        return f0 + (f1-f0)*(k-x0)/(x1-x0);
+    }
+*/
+    return spline2dcalc(Pk_interpolator, k, z);
+    //return this->CLASS->return_Pkz(k,z);
 }
 
 double CosmoCalc::Pkz_calc(double k, double z)
@@ -401,7 +523,7 @@ double CosmoCalc::transfer(double x)
 
 double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high)
 {
-    return this->corr_Tb(l, k1, k2, k_low, k_high);
+    return this->corr_Tb_rsd(l, k1, k2, k_low, k_high);
 }
 
 

@@ -66,7 +66,8 @@ template string str(const unsigned long long &x);
 // Constructors --
 //----------------
 ClassEngine::ClassEngine(const ClassParams& pars): cl(0),dofree(true){
-
+    
+    cout << "Building ClassEngine" << endl;
     //prepare fp structure
     size_t n=pars.size();
     //
@@ -103,14 +104,15 @@ ClassEngine::ClassEngine(const ClassParams& pars): cl(0),dofree(true){
     }
 
     // The compute cls function takes the most time!
-    cout << "before cls" << endl;
     //calcul class
     computeCls();
-    cout << "after cls" << endl;   
     //cout <<"creating " << sp.ct_size << " arrays" <<endl;
     cl=new double[sp.ct_size];
 
     //printFC();
+    //
+
+    cout << "ClassEngine build" << endl;
 
 }
 

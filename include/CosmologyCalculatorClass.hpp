@@ -6,9 +6,12 @@
 #include <cmath>
 #include <vector>
 #include "ClassEngine.hpp"
+#include "stdafx.h"
+#include "interpolation.h"
 
 using namespace std;
-  
+using namespace alglib;
+
 class CosmoCalc : public CosmoBasis {
     
     public:
@@ -57,6 +60,9 @@ class CosmoCalc : public CosmoBasis {
         double n_e(double z);
 
         void update_q();
+        void update_Pk_interpolator(map<string, double> params);
+        void create_bessel_interpolant(int lmin, int lmax);
+        double bessel_j_interp(int l, double x);
         double Pk_interp(double k, double z);
         double Pkz_calc(double k, double z);
         double P_growth(double z);
@@ -80,8 +86,15 @@ class CosmoCalc : public CosmoBasis {
 
         // ------------ Variables -------------- //
         int k_steps, zsteps_Ml, Pk_steps;
+        int lmin;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml;
         vector<double> q_Ml, r_Ml, H_f;
+        real_1d_array matterpowerspectrum_k, matterpowerspectrum_z, matterpowerspectrum_P;
+        spline2dinterpolant Pk_interpolator;
+
+        vector<spline1dinterpolant> bessel_interp_list;
+
+
         ClassParams pars;
         ClassEngine *CLASS;
        

@@ -39,7 +39,8 @@ void Fisher::update_Model(map<string, double> new_params)
 {
     this->CALC->generate_params(new_params);
     this->CALC->update_q();
-    this->CALC->updateClass(new_params);
+    this->CALC->update_Pk_interpolator(new_params);
+    //this->CALC->updateClass(new_params);
 }
 
 void Fisher::compute_Cl(int l)
