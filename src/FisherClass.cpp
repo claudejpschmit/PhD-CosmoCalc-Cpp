@@ -7,7 +7,7 @@ Fisher::Fisher(map<string, double> params)
         kmax(5)
 {
     CALC = new CosmoCalc(params);
-
+    cout << "CosmoCalc object created in FisherClass" << endl;
     this->current_params = CALC->give_current_params();
     this->fiducial_params = CALC->give_fiducial_params();
 

@@ -86,7 +86,7 @@ class CosmoCalc : public CosmoBasis {
 
         // ------------ Variables -------------- //
         int k_steps, zsteps_Ml, Pk_steps;
-        int lmin;
+        int lmin_bess;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml;
         vector<double> q_Ml, r_Ml, H_f;
         real_1d_array matterpowerspectrum_k, matterpowerspectrum_z, matterpowerspectrum_P;

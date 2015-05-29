@@ -18,6 +18,7 @@ CosmoBasis::CosmoBasis(map<string,double> params)
     b_bias = pow(O_M,0.6) / beta;
     k_eq = 0.073 * O_M * pow(h,2);
 
+    cout << fiducial_params["ombh2"] << endl;
     cout << "CosmoBasis build" << endl;
 }
 

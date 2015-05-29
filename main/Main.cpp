@@ -28,6 +28,9 @@ int main(int argc, char* argv[])
 {
      
     map<string,double> params;
+    CosmoCalc calc(params);
+
+    cout << "test" << endl;
     //CosmoWrite writer(params);
     //writer.update_Pk_interpolator(writer.give_current_params());
     //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
@@ -94,6 +97,7 @@ int main(int argc, char* argv[])
 
         //CosmoWrite writer(params);
 */
+    /*
     clock_t t1, t2;
 
     Fisher fish(params);
@@ -103,7 +107,7 @@ int main(int argc, char* argv[])
     t2 = clock();
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-
+*/
     //t1 = clock();
     //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
     //writer.calculate_distances(10);

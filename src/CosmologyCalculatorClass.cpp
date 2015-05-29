@@ -9,6 +9,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     :
         CosmoBasis(params)
 {
+    cout << fiducial_params["ombh2"] << endl;
     cout << "Beginning to build CosmoCalc" << endl;
     this->prefactor_Ml = 2*this->b_bias*this->c/pi;
     this->zmin_Ml = this->fiducial_params["zmin"];
@@ -18,6 +19,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_steps = this->fiducial_params["k_steps"];
 
+    cout << fiducial_params["ombh2"] << endl;
     pars.add("100*theta_s",0);
     pars.add("omega_b",0);
     pars.add("omega_cdm",0);
@@ -37,7 +39,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     //Unchanging
     pars.add("output","mPk"); //pol +clphi
     pars.add("P_k_max_h/Mpc", 100);
-        
+
     updateClass(this->fiducial_params);
 
     this->update_q();
@@ -51,7 +53,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     this->update_Pk_interpolator(this->fiducial_params);
     cout << "Creating Bessels" << endl;
-    this->create_bessel_interpolant(141, 143);
+    //this->create_bessel_interpolant(141, 143);
     
     
     cout << "CosmoCalc build" << endl;
@@ -339,7 +341,7 @@ void CosmoCalc::update_q()
 void CosmoCalc::create_bessel_interpolant(int lmin, int lmax)
 {
     double xmin, xmax;
-    this->lmin = lmin;
+    this->lmin_bess = lmin;
     // TODO: these values are kind of arbitrary...
     // a little under (0.5)
     xmin = 0.5 * 0.001 * this->r_Ml[0];
@@ -368,7 +370,7 @@ void CosmoCalc::create_bessel_interpolant(int lmin, int lmax)
 
 double CosmoCalc::bessel_j_interp(int l, double x)
 {
-    return spline1dcalc(bessel_interp_list[l - this->lmin], x);
+    return spline1dcalc(bessel_interp_list[l - this->lmin_bess], x);
 }
 
 void CosmoCalc::update_Pk_interpolator(map<string, double> params)
@@ -387,6 +389,7 @@ void CosmoCalc::update_Pk_interpolator(map<string, double> params)
         command << " --omch2 " << params["omch2"];
         command << " --omk " << params["omk"];
         command << " --z " << vz[i];
+        cout << command.str() << endl;
         system(command.str().c_str());
         ifstream file("Pks.dat");
         
