@@ -19,11 +19,12 @@ class Fisher {
         vector<vector<double>> Cl_derivative_matrix(int l, string param_key);
         double compute_Fl(int l, string param_key1, string param_key2);
         double F(string param_key1, string param_key2);
-        void write_logder(string param_key, double param_val,\ 
+        void write_logder(string param_key, double param_val,\
                 double stepsize_low, double stepsize_high,\
                 int steps, int l, double k1, double k2,\
                 string suffix = "");
-
+        void show_Cl_mat();
+        void show_Cl_inv_mat();
 
     private:
         CosmoCalc *CALC;

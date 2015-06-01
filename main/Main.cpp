@@ -37,25 +37,36 @@ int main(int argc, char* argv[])
     //writer.update_Pk_interpolator(writer.give_current_params());
     //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
     
-    
-    //Fisher fish(params);
-    
+    clock_t t1, t2;
+
+    t1 = clock();
+    Fisher fish(params);
+    cout << "Result is " << fish.F("ombh2", "ombh2")<< endl;
+    t2 = clock();
+    float diff ((float)t2 - (float)t1);
+    cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+
+    //fish.compute_Cl(10);
+    //fish.show_Cl_mat();
+    //fish.compute_Cl_inv();
+    //fish.show_Cl_inv_mat();
     //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
     //cout << res << endl;
     
     (void) argc;
     (void) argv;
-
+/*
     mat A = randu<mat>(2,2);
     mat B = randu<mat>(2,2);
 
     A(0,0) = 1;
-    A(0,1) = 0;
+    A(0,1) = 0.1;
     A(1,0) = 0;
-    A(1,1) = 1;
+    A(1,1) = 1.1;
     cout << A << endl;
     cout << B << endl;
     cout << A*B  << endl;
+  */
     /*
        const char output_path[] = "output";
        if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
