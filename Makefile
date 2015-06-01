@@ -33,7 +33,6 @@ LDFLAG = -g -fPIC
 
 # leave blank to compile without HyRec, or put path to HyRec directory
 # (with no slash at the end: e.g. CLASS_hyrec or ../CLASS_hyrec)
-# TODO: This is not working yet!!!
 HYREC = $(LIBRARIES)CLASS_hyrec 
 # automatically add external programs if needed. First, initialize to blank.
 EXTERNAL =
