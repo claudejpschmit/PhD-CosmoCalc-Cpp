@@ -1,5 +1,6 @@
 #include "FisherClass.hpp"
 #include <fstream>
+#include <time.h>
 
 Fisher::Fisher(map<string, double> params)
     :
@@ -366,20 +367,28 @@ void Fisher::write_logder(string param_key, double param_val,\
          param_key << " vs derivative stepsize." << endl;
     file << "# Column 1: derivative stepsize h" << endl;
     file << "# Column 2: Logderivative dlnCl/dx." << endl;
+    file << "# Column 3: Real runtime per point in second." << endl;
   
     abcisses_done.clear();
     logderivs_calculated.clear();
     double y1;
     double stepsize = (stepsize_high - stepsize_low)/(double)steps;
+    clock_t t1, t2;
+    
     for (int i = 0; i <= steps; i++) {
+        t1 = clock();
         
         this->var_params[param_key] = stepsize_low + i * stepsize;
         y1 = this->Cl_loglog_derivative(l, param_key, k1, k2);
-       
-        file << this->var_params[param_key] << " " << y1 << endl;
+        
+        t2 = clock();
+        float diff ((float)t2 - (float)t1);
+
+        file << this->var_params[param_key] << " " << y1 << " " << diff/CLOCKS_PER_SEC << endl;
         cout << i << "th point written" << endl;
+        cout << "Runtime for the " << i << "th point was: " << diff/CLOCKS_PER_SEC  << " seconds." << endl;
     }
-    file.close();
- 
+
+    file.close(); 
 }
 

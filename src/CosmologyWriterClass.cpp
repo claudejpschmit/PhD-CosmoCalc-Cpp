@@ -4,9 +4,7 @@
 CosmoWrite::CosmoWrite(map<string, double> params)
     :
         CosmoCalc(params)
-{
-
-}
+{}
 
 CosmoWrite::~CosmoWrite()
 {}
@@ -59,7 +57,6 @@ void CosmoWrite::calculate_Nl(int l, double k_fixed, double k2_low, double k2_hi
     }
 
     file.close();
-
 }
 
 void CosmoWrite::calculate_distances(double zmax)
@@ -111,7 +108,6 @@ void CosmoWrite::calculate_densities_rho(double zmax)
         file << x << " " << y1 << " " << y2 << " " << y3 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_densities_Omega(double zmax)
@@ -161,7 +157,6 @@ void CosmoWrite::calculate_H(double zmax)
         file << x << " " << y1 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_P(double kmin, double kmax, int step,\
@@ -185,7 +180,6 @@ void CosmoWrite::calculate_P(double kmin, double kmax, int step,\
         file << x << " " << y1 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_P_CLASS(double kmin, double kmax, double z, int step)
@@ -208,7 +202,6 @@ void CosmoWrite::calculate_P_CLASS(double kmin, double kmax, double z, int step)
         file << x << " " << y1 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_dTb(double zmin, double zmax, int step)
@@ -230,7 +223,6 @@ void CosmoWrite::calculate_dTb(double zmin, double zmax, int step)
         file << x << " " << y1 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_xHI(double zmin, double zmax, int step)
@@ -252,7 +244,6 @@ void CosmoWrite::calculate_xHI(double zmin, double zmax, int step)
         file << x << " " << y1 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_Ts(double zmin, double zmax, int step)
@@ -274,7 +265,6 @@ void CosmoWrite::calculate_Ts(double zmin, double zmax, int step)
         file << x << " " << y1 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_Tk(double zmin, double zmax, int step)
@@ -296,7 +286,6 @@ void CosmoWrite::calculate_Tk(double zmin, double zmax, int step)
         file << x << " " << y1 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_P_compare(double k_low, double k_high, int kstep, double z_low, double z_high, int zstep)
@@ -329,8 +318,8 @@ void CosmoWrite::calculate_P_compare(double k_low, double k_high, int kstep, dou
         file << endl;
     }
     file.close();
-
 }
+
 void CosmoWrite::calculate_bessels(int l) 
 {
     ofstream file;
@@ -353,7 +342,7 @@ void CosmoWrite::calculate_bessels(int l)
 void CosmoWrite::calculate_bessels_exact(int l) 
 {
     ofstream file;
-    string filename = "output/bessel_boost.dat";
+    string filename = "output/bessel_exact.dat";
     file.open(filename);
     file << "# This file contains the bessel function j_" << l <<\
         " from 1 to 100000 from boost and camb." << endl;

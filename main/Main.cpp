@@ -42,39 +42,41 @@ int main(int argc, char* argv[])
     
     //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
     //cout << res << endl;
-    /*
+    
     (void) argc;
     (void) argv;
-    struct stat sb;
 
     mat A = randu<mat>(2,2);
     mat B = randu<mat>(2,2);
-    
-    //matrix multiplication not working.
-    //cout << A * B << endl;
 
+    A(0,0) = 1;
+    A(0,1) = 0;
+    A(1,0) = 0;
+    A(1,1) = 1;
+    cout << A << endl;
+    cout << B << endl;
+    cout << A*B  << endl;
+    /*
+       const char output_path[] = "output";
+       if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
+       cout << "output directory already exists." << endl;
+       } else {
+       mkdir(output_path, 0700);
+       cout << "output directory generated!" << endl; 
+       }
 
+       auto g = [](double x) 
+       {
+       return 2*f(x);
+       };
+       cout << "integration yields "<< integrate(g, 0.0, 1.0, 100, simpson()) << endl;
+       cout << "New integration yields " << integrate_simps(g, 0.0, 1.0, 100) << endl;
+       map<string,double> params;
 
-    const char output_path[] = "output";
-    if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
-        cout << "output directory already exists." << endl;
-    } else {
-        mkdir(output_path, 0700);
-        cout << "output directory generated!" << endl; 
-    }
-
-    auto g = [](double x) 
-    {
-        return 2*f(x);
-    };
-    cout << "integration yields "<< integrate(g, 0.0, 1.0, 100, simpson()) << endl;
-    cout << "New integration yields " << integrate_simps(g, 0.0, 1.0, 100) << endl;
-    map<string,double> params;
-
-    params["O"] = 0.02;
-    params["ombh2"] = 0.02;
-    cout << params["O"] << endl;
-    CosmoBasis base(params);
+       params["O"] = 0.02;
+       params["ombh2"] = 0.02;
+       cout << params["O"] << endl;
+       CosmoBasis base(params);
     //base.show_params(); 
     //cout << 1.34 * pow(10,2) << endl;
 
@@ -87,7 +89,7 @@ int main(int argc, char* argv[])
     cout << path << endl;
     output.open(path);
     for (int n = 0; n < 100000; ++n) {
-        output << n << " " << base.sph_bessel(10,double(n)/100.0) << endl;
+    output << n << " " << base.sph_bessel(10,double(n)/100.0) << endl;
     }
     output.close();
 
@@ -97,22 +99,22 @@ int main(int argc, char* argv[])
     v.clear();
     cout << v.size()<< endl;
 
-        //CosmoWrite writer(params);
-*/
-   
-    clock_t t1, t2;
+    //CosmoWrite writer(params);
+    */
+    /* 
+       clock_t t1, t2;
 
-    Fisher fish(params);
-    t1 = clock();
-    //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
-    //cout << res << endl;
+       Fisher fish(params);
+       t1 = clock();
+       double res = fish.Cl_loglog_derivative(142, "ombh2", 0.01, 0.01);
+       cout << res << endl;
 
-    //fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 142, 0.1, 0.1,\
-                      "_l142_0-1_0-1");
+    //fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 142, 0.01, 0.01,\
+    "_l142_0-01_0-01");
     t2 = clock();
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-
+    */
     //t1 = clock();
     //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
     //writer.calculate_distances(10);
@@ -120,24 +122,24 @@ int main(int argc, char* argv[])
     //float diff ((float)t2 - (float)t1);
     //cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
     /* 
-    t1 = clock();
+       t1 = clock();
     //writer.calculate_densities_rho(5000);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-    
+
     t1 = clock();
     //writer.calculate_densities_Omega(10000);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-    
+
     t1 = clock();
     //writer.calculate_H(1000);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-    
+
     t1 = clock();
     writer.calculate_P(0.001, 10, 10000, "default", "default");
     t2 = clock();
@@ -174,7 +176,7 @@ int main(int argc, char* argv[])
     diff = (float)t2 - (float)t1;
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
 
-    */
+*/
 
 
     return 0;

@@ -27,7 +27,27 @@ class CosmoBasis {
          * Standard destructor
          */
         ~CosmoBasis();
-             
+        
+        /**
+         * This function takes the list of cosmological parameters and translates it
+         * to the parameters which will actually be used in cosmological 
+         * computations.
+         *
+         * Note on Neutrinos:
+         * Here we add the neutino density to the matter density 
+         * as well as to the radiation density. For high redshifts, radiation is 
+         * dominating so having the neutrinos in has a great effect, since O_nu 
+         * is of the same order as O_gamma.
+         * At late times O_R becomes very unimportant so adding O_nu 
+         * in has a very minor effect.
+         * As for adding O_nu to O_M, O_b/O_nu = 100 and O_CDM/O_nu = 1000,
+         * so adding it in or not should not have a great effect at any epoch.
+         * 
+         * @param params is a dictionary containing the parameters to be translated.
+         *
+         */
+        void generate_params(map<string,double> params);
+        
         /**
          * Tester function to output some parameters for inspection.
          */
@@ -49,25 +69,7 @@ class CosmoBasis {
         
         // ------------ Functions -------------- //
         
-        /**
-         * This function takes the list of cosmological parameters and translates it
-         * to the parameters which will actually be used in cosmological 
-         * computations.
-         *
-         * Note on Neutrinos:
-         * Here we add the neutino density to the matter density 
-         * as well as to the radiation density. For high redshifts, radiation is 
-         * dominating so having the neutrinos in has a great effect, since O_nu 
-         * is of the same order as O_gamma.
-         * At late times O_R becomes very unimportant so adding O_nu 
-         * in has a very minor effect.
-         * As for adding O_nu to O_M, O_b/O_nu = 100 and O_CDM/O_nu = 1000,
-         * so adding it in or not should not have a great effect at any epoch.
-         * 
-         * @param params is a dictionary containing the parameters to be translated.
-         *
-         */
-        void generate_params(map<string,double> params);
+        
 
         /**
          * This function verifies whether the fiducial parameters contain

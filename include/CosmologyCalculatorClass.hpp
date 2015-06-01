@@ -34,10 +34,14 @@ class CosmoCalc : public CosmoBasis {
          */
         ~CosmoCalc();
 
+        void update_Pk_interpolator(map<string, double> params);
+
         /**
          * Function outputs some standard cosmological calculations to the user.
          */
         void show_cosmo_calcs();
+        void updateClass(map<string, double> params);
+        void update_q();
 
         /**
          * Writing the Pk's at a redshift to a file.
@@ -165,12 +169,7 @@ class CosmoCalc : public CosmoBasis {
 
         // ------------ Functions -------------- //
         
-        void updateClass(map<string, double> params);
-        void update_q();
-        void update_Pk_interpolator(map<string, double> params);
         void create_bessel_interpolant(int lmin, int lmax);
-
-
 
         // ------------ Variables -------------- //
         int k_steps, zsteps_Ml, Pk_steps;

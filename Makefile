@@ -17,11 +17,12 @@ vpath .base build
 
 # Compiler required for c++ code.
 # including -ffast-math may not be as bad as anticipated.
-CXX = g++ -Wall -std=c++11 -ffast-math -llapack -lblas -larmadillo
+CXX = g++ -Wall -std=c++11 -ffast-math 
 # Compiler required for c code.
 CC = gcc -Wall
 
 OPTFLAG = -O4
+ARMAFLAGS = -larmadillo
 
 # This decreases the precision of the bessel functions significantly if 
 # added to the compilation of the files containing boost->sph_bess(l,x).
@@ -55,7 +56,7 @@ EXTERNAL += hyrectools.o helium.o hydrogen.o history.o
 endif
 
 %.o: %.cpp .base
-	cd $(WRKDIR);$(CXX) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(INCLUDES) -c ../$< -o $*.o
+	cd $(WRKDIR);$(CXX) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(INCLUDES) -c ../$< -o $*.o $(ARMAFLAGS)
 
 # This line creates the CLASS objects.
 %.o: %.c .base
@@ -73,7 +74,7 @@ MAIN = Main.o
 all: calc class_test
 
 calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(MAIN) 
-	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm
+	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm $(ARMAFLAGS)
 
 class_test: $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(CLASS) 
 	cd $(MDIR);$(CC) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o class_test $(addprefix build/, $(notdir $^)) -lm
