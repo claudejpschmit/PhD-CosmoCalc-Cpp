@@ -27,25 +27,27 @@ class CosmoBasis {
          * Standard destructor
          */
         ~CosmoBasis();
-
+             
         /**
          * Tester function to output some parameters for inspection.
          */
         void show_params();
         
         /**
-         * This functions return the spherical bessel j as calculated by boost.
-         *
-         * @param l is the integer index of the spherical bessel function.
-         *
-         * @param x is the argument of the spherical bessel function.
+         * Helper function to return the current parameters used in the 
+         * current class instance.
          */
-        double sph_bessel(unsigned int l, double x);
-    
-        double sph_bessel_camb(unsigned int l, double x);
-        
         map<string, double> give_current_params();
+
+        /**
+         * Helper function to return the fiducial parameters used in the 
+         * current class instance.
+         */
         map<string, double> give_fiducial_params();
+
+    protected:
+        
+        // ------------ Functions -------------- //
         
         /**
          * This function takes the list of cosmological parameters and translates it
@@ -66,11 +68,7 @@ class CosmoBasis {
          *
          */
         void generate_params(map<string,double> params);
-    
-    protected:
-        
-        // ------------ Functions -------------- //
-        
+
         /**
          * This function verifies whether the fiducial parameters contain
          * all the necessary keys, if not, standard values are added.
@@ -121,7 +119,26 @@ class CosmoBasis {
          * @param params
          */
         void params_to_planck15(map<string, double> params);
- 
+        
+        /**
+         * This functions return the spherical bessel j as calculated by boost.
+         *
+         * @param l is the integer index of the spherical bessel function.
+         *
+         * @param x is the argument of the spherical bessel function.
+         */
+        double sph_bessel(unsigned int l, double x);
+    
+         /**
+         * This functions return the spherical bessel j as calculated by CAMB.
+         *
+         * @param l is the integer index of the spherical bessel function.
+         *
+         * @param x is the argument of the spherical bessel function.
+         */
+
+        double sph_bessel_camb(unsigned int l, double x);
+
         // ------------ Variables -------------- //
 
         /// \brief params contains the working parameters.

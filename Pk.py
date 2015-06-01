@@ -19,7 +19,6 @@ parser.add_argument('--z', metavar = 'z', type = float, default = 7.0)
 
 args = parser.parse_args()
 
-print "Running CAMB"
 camb_result_dict = camb(**{'ombh2':args.ombh2, 'omch2':args.omch2, 'omnuh2':args.omnuh2, 'omk':args.omk, 'hubble':args.H_0, 'transfer_redshift(1)':args.z})
 
 table = camb_result_dict["transfer_matterpower"]

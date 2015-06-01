@@ -6,8 +6,8 @@ Fisher::Fisher(map<string, double> params)
         kmin(0.001),
         kmax(5)
 {
+    cout << "... Beginning to build FisherClass ..." << endl;
     CALC = new CosmoCalc(params);
-    cout << "CosmoCalc object created in FisherClass" << endl;
     this->current_params = CALC->give_current_params();
     this->fiducial_params = CALC->give_fiducial_params();
 
@@ -23,11 +23,11 @@ Fisher::Fisher(map<string, double> params)
     double kstepsize = (kmax - kmin)/(double)ksteps;
     for (int n = 0; n <= ksteps; ++n) 
         krange.push_back(kmin + n * kstepsize);
-    cout << "Fisher initialized" << endl;
 
     Cl = randu<mat>(krange.size(),krange.size());
     Cl_inv = Cl;
 
+    cout << "... Fisher built ..." << endl;
 }
 
 Fisher::~Fisher()

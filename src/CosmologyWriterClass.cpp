@@ -331,4 +331,42 @@ void CosmoWrite::calculate_P_compare(double k_low, double k_high, int kstep, dou
     file.close();
 
 }
+void CosmoWrite::calculate_bessels(int l) 
+{
+    ofstream file;
+    string filename = "output/bessel.dat";
+    file.open(filename);
+    file << "# This file contains the interpolated bessel function j_" << l << " from 1 to 100000." << endl;
+    file << "# Column 1: x " << endl;
+    file << "# Column 2: j_"<< l << "(x)" << endl;
 
+    double y1, x;
+    for (int i = 1; i < 1000000; i++) {
+        x = i/10.0;
+        y1 = this->bessel_j_interp(l, x);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+
+void CosmoWrite::calculate_bessels_exact(int l) 
+{
+    ofstream file;
+    string filename = "output/bessel_boost.dat";
+    file.open(filename);
+    file << "# This file contains the bessel function j_" << l <<\
+        " from 1 to 100000 from boost and camb." << endl;
+    file << "# Column 1: x " << endl;
+    file << "# Column 2: j_"<< l << "(x) from boost." << endl;
+    file << "# Column 3: j_"<< l << "(x) from camb." << endl;
+
+    double y1, x, y2;
+    for (int i = 1; i < 1000000; i++) {
+        x = i/10.0;
+        y1 = this->sph_bessel(l, x);
+        y2 = this->sph_bessel_camb(l,x);
+        file << x << " " << y1 << " " << y2 << endl;
+    }
+    file.close();
+}

@@ -3,14 +3,12 @@
 #include <iostream>
 #include "Integrator.hpp"
 #include <fstream>
-#include <boost/math/special_functions/bessel.hpp>
 
 CosmoCalc::CosmoCalc(map<string, double> params)
     :
         CosmoBasis(params)
 {
-    cout << fiducial_params["ombh2"] << endl;
-    cout << "Beginning to build CosmoCalc" << endl;
+    cout << "... Beginning to build CosmoCalc ..." << endl;
     this->prefactor_Ml = 2*this->b_bias*this->c/pi;
     this->zmin_Ml = this->fiducial_params["zmin"];
     this->zmax_Ml = this->fiducial_params["zmax"];
@@ -19,7 +17,6 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_steps = this->fiducial_params["k_steps"];
 
-    cout << fiducial_params["ombh2"] << endl;
     pars.add("100*theta_s",0);
     pars.add("omega_b",0);
     pars.add("omega_cdm",0);
@@ -39,9 +36,11 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     //Unchanging
     pars.add("output","mPk"); //pol +clphi
     pars.add("P_k_max_h/Mpc", 100);
-
+    cout << "... Initializing Class ..." << endl;
     updateClass(this->fiducial_params);
-
+    cout << "... Class initialized ..." << endl;
+    
+    cout << "... precalculating Ml dependencies ..." << endl;
     this->update_q();
     this->r_Ml = this->q_Ml;
     
@@ -51,12 +50,17 @@ CosmoCalc::CosmoCalc(map<string, double> params)
         this->H_f.push_back(this->H(z));
     }
     this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
+    cout << "... Dependencies calculated ..." << endl;
+
+    cout << "... Initializing Pk interpolator ..." << endl;
     this->update_Pk_interpolator(this->fiducial_params);
-    cout << "Creating Bessels" << endl;
-    //this->create_bessel_interpolant(141, 143);
+    cout << "... Pks calculated ..." << endl;
+
+    cout << "... Creating Bessels ..." << endl;
+    this->create_bessel_interpolant(0, this->fiducial_params["l_max"]);
+    cout << "... Bessels built ..." << endl; 
     
-    
-    cout << "CosmoCalc build" << endl;
+    cout << "... CosmoCalc built ..." << endl;
 
 }
 
@@ -347,19 +351,21 @@ void CosmoCalc::create_bessel_interpolant(int lmin, int lmax)
     xmin = 0.5 * 0.001 * this->r_Ml[0];
     // a little over (2)
     xmax = 2 * 5 * this->r_Ml[this->zsteps_Ml];
+    //cout << "xmin for bessels is: " << xmin << ". xmax is: " << xmax << endl;
     
     for (int l = lmin; l <= lmax; ++l) {
-        double lambda = l * 10;
-        double stepsize = lambda / 50.0;
+        
+        double stepsize = 1.0;
+        
         int nsteps = (int)((xmax - xmin)/stepsize);
-    
+        //cout << "nsteps is: " << nsteps << endl; 
         real_1d_array ys, xs;
         xs.setlength(nsteps);
         ys.setlength(nsteps);
         for (int j = 0; j < nsteps; ++j) {
             double x = xmin + j * stepsize;
             xs[j] = x;
-            ys[j] = boost::math::sph_bessel(l,x);
+            ys[j] = this->sph_bessel_camb(l,x);
         }
         spline1dinterpolant interpolator;
         spline1dbuildcubic(xs, ys, interpolator);
@@ -389,7 +395,6 @@ void CosmoCalc::update_Pk_interpolator(map<string, double> params)
         command << " --omch2 " << params["omch2"];
         command << " --omk " << params["omk"];
         command << " --z " << vz[i];
-        cout << command.str() << endl;
         system(command.str().c_str());
         ifstream file("Pks.dat");
         
@@ -431,32 +436,10 @@ void CosmoCalc::update_Pk_interpolator(map<string, double> params)
 
      */
 }
+
 double CosmoCalc::Pk_interp(double k, double z)
 {
-    /*
-    // not including z dependence, currently just doing it for specific z.
-    int index = 0;
-    while(k > matterpowerspectrum_k[index]){
-        ++index;
-        if (index >= matterpowerspectrum_k.size())
-            break;
-    }
-    if (index == 0){
-        return matterpowerspectrum_P[index];
-    } else if (index >= matterpowerspectrum_k.size()){
-        return matterpowerspectrum_P[matterpowerspectrum_k.size()-1];
-    } else {
-        double x0, x1, f0, f1;
-        x0 = matterpowerspectrum_k[index-1];
-        x1 = matterpowerspectrum_k[index];
-        f0 = matterpowerspectrum_P[index-1];
-        f1 = matterpowerspectrum_P[index];
-
-        return f0 + (f1-f0)*(k-x0)/(x1-x0);
-    }
-*/
     return spline2dcalc(Pk_interpolator, k, z);
-    //return this->CLASS->return_Pkz(k,z);
 }
 
 double CosmoCalc::Pkz_calc(double k, double z)
@@ -594,8 +577,12 @@ double CosmoCalc::M(int l, double k1, double k2)
         q = this->q_Ml[n];
        
         //TODO: check whether we need to multiply py h.
-        return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel(l,k1*r) *\
-                this->sph_bessel(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
+        return pow(r,2) * this->delta_Tb_bar(z) * this->bessel_j_interp(l,k1*r) *\
+                this->bessel_j_interp(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
+                pow(this->h,3)) / (this->H_f[n]*1000.0);
+
+        //return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel_camb(l,k1*r) *\
+                this->sph_bessel_camb(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
                 pow(this->h,3)) / (this->H_f[n]*1000.0);
     };
     
@@ -626,11 +613,17 @@ double CosmoCalc::N_bar(int l, double k1, double k2)
         double pk = sqrt(this->Pk_interp(k2*this->h, z)/pow(this->h, 3));
         double dtb = this->delta_Tb_bar(z);
         double pkdtb = pk * dtb;
-        double jl1r = this->sph_bessel(l - 1, k1 * r);
-        double jl2r = this->sph_bessel(l, k1 * r);
-        double jl1q = this->sph_bessel(l - 1, k2 * q);
-        double jl2q = this->sph_bessel(l, k2 * q);
-
+        
+        double jl1r = this->bessel_j_interp(l - 1, k1 * r);
+        double jl2r = this->bessel_j_interp(l, k1 * r);
+        double jl1q = this->bessel_j_interp(l - 1, k2 * q);
+        double jl2q = this->bessel_j_interp(l, k2 * q);
+/*
+        double jl1r = this->sph_bessel_camb(l - 1, k1 * r);
+        double jl2r = this->sph_bessel_camb(l, k1 * r);
+        double jl1q = this->sph_bessel_camb(l - 1, k2 * q);
+        double jl2q = this->sph_bessel_camb(l, k2 * q);
+*/
         double sums = k1 * r * jl1r * jl1q -\
                       k1 * r * (l+1) / (k2 * q) * jl1r * jl2q -\
                       (l+1) * jl2r * jl1q +\

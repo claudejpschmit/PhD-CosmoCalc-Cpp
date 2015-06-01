@@ -28,10 +28,12 @@ int main(int argc, char* argv[])
 {
      
     map<string,double> params;
-    CosmoCalc calc(params);
+    //CosmoCalc calc(params);
 
-    cout << "test" << endl;
+    //cout << "test" << endl;
     //CosmoWrite writer(params);
+    //writer.calculate_bessels(1000);
+    ///writer.calculate_bessels_exact(1000);
     //writer.update_Pk_interpolator(writer.give_current_params());
     //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
     
@@ -97,17 +99,20 @@ int main(int argc, char* argv[])
 
         //CosmoWrite writer(params);
 */
-    /*
+   
     clock_t t1, t2;
 
     Fisher fish(params);
     t1 = clock();
+    //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
+    //cout << res << endl;
+
     //fish.write_logder("ombh2", 0.0226, 0.0001, 0.01, 99, 142, 0.1, 0.1,\
                       "_l142_0-1_0-1");
     t2 = clock();
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-*/
+
     //t1 = clock();
     //writer.calculate_Ml(5, 0.1, 0.01, 0.5, 10000); 
     //writer.calculate_distances(10);

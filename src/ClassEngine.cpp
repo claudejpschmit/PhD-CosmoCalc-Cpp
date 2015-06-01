@@ -67,7 +67,7 @@ template string str(const unsigned long long &x);
 //----------------
 ClassEngine::ClassEngine(const ClassParams& pars): cl(0),dofree(true){
     
-    cout << "Building ClassEngine" << endl;
+    cout << "... Building ClassEngine ..." << endl;
     //prepare fp structure
     size_t n=pars.size();
     //
@@ -112,7 +112,7 @@ ClassEngine::ClassEngine(const ClassParams& pars): cl(0),dofree(true){
     //printFC();
     //
 
-    cout << "ClassEngine build" << endl;
+    cout << "... ClassEngine built ..." << endl;
 
 }
 
