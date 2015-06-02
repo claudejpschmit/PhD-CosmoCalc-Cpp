@@ -54,7 +54,6 @@ void Fisher::compute_Cl(int l)
             double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
             Cl(i,j) = res;
             Cl(j,i) = res;
-            cout << res << endl;
         }
     }
 }
@@ -256,18 +255,11 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
 
 vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key)
 {
-    cout << "inside derivative matrix function " << endl;
     double h = this->var_params[param_key];
-    cout << h << endl;
     double x = this->current_params[param_key];
-    cout << x << endl;
 
     vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
-    cout << x << endl;
     vector<double> row;
-    cout << x << endl;
-    cout << "building f1matrix ... " << endl;
-
     this->current_params[param_key] = x + 2 * h;
     this->update_Model(this->current_params);
     for (unsigned int i = 0; i < this->krange.size(); ++i) {
@@ -275,11 +267,11 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key)
         row.clear();
         for (unsigned int j = 0; j < this->krange.size(); ++j) {
             double k2 = this->krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
+            double cl = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
+            row.push_back(cl);
         }
         f1matrix.push_back(row);
     }
-    cout << "done!" << endl;
     this->current_params[param_key] = x + h;
     this->update_Model(this->current_params);
     for (unsigned int i = 0; i < this->krange.size(); ++i) {
@@ -337,20 +329,18 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key)
 double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 {
     vector<vector<double>> Cl_alpha, Cl_beta;
-    cout << "derivative matrix calulation started" << endl;
+    cout << "... derivative matrix calulation started" << endl;
     Cl_alpha = this->Cl_derivative_matrix(l, param_key1);
     if (param_key1 == param_key2)
         Cl_beta = Cl_alpha;
     else
         Cl_beta = this->Cl_derivative_matrix(l, param_key2);
     
-    cout << "The derivative matrices are done for l = " << l << endl;
-    cout << "The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
-
+    cout << "-> The derivative matrices are done for l = " << l << endl;
+    cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
     this->compute_Cl(l);
     this->compute_Cl_inv();
-
-    cout << "Cl & Cl_inv are done for l = " << l << endl;
+    cout << "-> Cl & Cl_inv are done for l = " << l << endl;
     mat Cl_a, Cl_b;
     Cl_a = randu<mat> (this->krange.size(), this->krange.size());
     Cl_b = Cl_a;
@@ -371,10 +361,11 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
 double Fisher::F(string param_key1, string param_key2)
 {
-    int lmax = 1;
+    int lmax = 2;
     double sum = 0;
-    for (int l = 0; l <= lmax; ++l) {
-        cout << "Computation starts for l = " << l << endl;
+    // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
+    for (int l = 1; l <= lmax; ++l) {
+        cout << "Computation of Fl starts for l = " << l << endl;
         sum += (2*l + 1) * this->compute_Fl(l, param_key1, param_key2);
     }
     return sum;

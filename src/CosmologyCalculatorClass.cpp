@@ -613,7 +613,6 @@ double CosmoCalc::N_bar(int l, double k1, double k2)
         double pk = sqrt(this->Pk_interp(k2*this->h, z)/pow(this->h, 3));
         double dtb = this->delta_Tb_bar(z);
         double pkdtb = pk * dtb;
-        
         double jl1r = this->bessel_j_interp(l - 1, k1 * r);
         double jl2r = this->bessel_j_interp(l, k1 * r);
         double jl1q = this->bessel_j_interp(l - 1, k2 * q);
