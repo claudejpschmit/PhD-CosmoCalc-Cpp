@@ -21,7 +21,7 @@ Fisher::Fisher(map<string, double> params)
             var_params.insert(pair<string,double>(key,current_params[key]/100));
     }
     //This determines the size of the Cl matrices.
-    int ksteps = 2;
+    int ksteps = 1;
     double kstepsize = (kmax - kmin)/(double)ksteps;
     for (int n = 0; n <= ksteps; ++n) 
         krange.push_back(kmin + n * kstepsize);
@@ -261,6 +261,7 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key)
     vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
     vector<double> row;
     this->current_params[param_key] = x + 2 * h;
+    cout << x+2*h << endl;
     this->update_Model(this->current_params);
     for (unsigned int i = 0; i < this->krange.size(); ++i) {
         double k1 = this->krange[i];
@@ -351,7 +352,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
         }
     } 
-
+    cout << Cl_a << endl;
     mat product = Cl_a * this->Cl_inv;
     product = product * Cl_b;
     product = product * this->Cl_inv;
@@ -361,7 +362,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
 double Fisher::F(string param_key1, string param_key2)
 {
-    int lmax = 2;
+    int lmax = 3;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
     for (int l = 1; l <= lmax; ++l) {

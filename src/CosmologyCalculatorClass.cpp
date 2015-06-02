@@ -509,6 +509,9 @@ double CosmoCalc::transfer(double x)
 
 double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high)
 {
+    //double lambda = this->current_params["ombh2"];
+    //cout << lambda << endl;
+    //return pow(lambda, l) * (k1+k2);
     return this->corr_Tb_rsd(l, k1, k2, k_low, k_high);
 }
 

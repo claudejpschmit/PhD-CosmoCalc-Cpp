@@ -98,6 +98,8 @@ void CosmoBasis::generate_params(map<string,double> params)
     O_V = O_tot - O_M - O_R;
     D_H = c / (1000.0 * H_0);
     t_H = 1.0 / H_0;
+
+    this->current_params = params;
          
 }
 
