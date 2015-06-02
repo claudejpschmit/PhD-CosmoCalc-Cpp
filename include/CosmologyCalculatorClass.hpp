@@ -311,7 +311,8 @@ class CosmoCalc : public CosmoBasis {
          * @param x is the value at which the bessel function is evaluated.
          */
         double bessel_j_interp(int l, double x);
-        
+        double bessel_j_interp_basic(int l, double x);
+
         /** 
          * Determines the matter power spectrum P(k,z) from the CAMB 
          * interpolation.
@@ -430,7 +431,8 @@ class CosmoCalc : public CosmoBasis {
         spline2dinterpolant Pk_interpolator;
 
         vector<spline1dinterpolant> bessel_interp_list;
-
+        
+        vector<vector<double>> bessel_values;
 
         ClassParams pars;
         ClassEngine *CLASS;

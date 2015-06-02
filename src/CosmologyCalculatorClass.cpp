@@ -372,11 +372,37 @@ void CosmoCalc::create_bessel_interpolant(int lmin, int lmax)
       
         bessel_interp_list.push_back(interpolator);
     }
+
+    //Trying to interpolate myself.
+    for (int l = 0; l <= lmax; ++l) {
+        vector<double> row;
+        for (int j = 0; j < (int)xmax; ++j) {
+            row.push_back(this->sph_bessel_camb(l,(double)j));
+        }
+        bessel_values.push_back(row);  
+    }
+
 }
 
 double CosmoCalc::bessel_j_interp(int l, double x)
 {
     return spline1dcalc(bessel_interp_list[l - this->lmin_bess], x);
+}
+
+double CosmoCalc::bessel_j_interp_basic(int l, double x)
+{
+
+    if ((int)x + 1 >= bessel_values[l].size()) {
+        return bessel_values[l][bessel_values[l].size()-1];
+    } else {
+        if (x-(int)x != 0) {       
+            return bessel_values[l][(int)x] +\
+                   (bessel_values[l][(int)x + 1] -\
+                   bessel_values[l][(int)x]) * (x - (int)x);
+        } else {
+            return bessel_values[l][(int)x];
+        }
+    }
 }
 
 void CosmoCalc::update_Pk_interpolator(map<string, double> params)

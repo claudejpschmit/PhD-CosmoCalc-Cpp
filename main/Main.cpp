@@ -31,12 +31,26 @@ int main(int argc, char* argv[])
     //CosmoCalc calc(params);
 
     //cout << "test" << endl;
-    //CosmoWrite writer(params);
-    //writer.calculate_bessels(1000);
-    ///writer.calculate_bessels_exact(1000);
+    CosmoWrite writer(params);
+    
+    clock_t t1, t2;
+    t1 = clock();
+    writer.calculate_bessels(100);    
+    t2 = clock();
+    float diff = (float)t2 - (float)t1;
+    cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
+    
+    t1 = clock();
+    writer.calculate_bessels_basic(100);
+    t2 = clock();
+    diff = (float)t2 - (float)t1;
+    cout << "runtime for basic interp was " << diff/CLOCKS_PER_SEC << endl;
+
+    writer.calculate_bessels_exact(100);
     //writer.update_Pk_interpolator(writer.give_current_params());
     //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
     
+    /*
     clock_t t1, t2;
 
     t1 = clock();
@@ -45,7 +59,7 @@ int main(int argc, char* argv[])
     t2 = clock();
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-
+    */
     //fish.compute_Cl(10);
     //fish.show_Cl_mat();
     //fish.compute_Cl_inv();
