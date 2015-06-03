@@ -32,6 +32,7 @@ class CosmoWrite : public CosmoCalc {
         void calculate_P_compare(double k_low, double k_high, int kstep, double z_low, double z_high, int zstep);
         void calculate_bessels(int l);
         void calculate_bessels_basic(int l);
-        void calculate_bessels_exact(int l);
+        void calculate_bessels_exact(int l); 
+        void calculate_bessels_cubic(int l);
 
 };

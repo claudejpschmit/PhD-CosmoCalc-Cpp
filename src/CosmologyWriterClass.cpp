@@ -4,7 +4,13 @@
 CosmoWrite::CosmoWrite(map<string, double> params)
     :
         CosmoCalc(params)
-{}
+{
+    cout << "... Beginning to build CosmoWriter ..." << endl;
+
+    this->create_bessel_interpolant_ALGLIB(0, this->fiducial_params["l_max"]);
+
+    cout << "... CosmoWriter built ..." << endl;
+}
 
 CosmoWrite::~CosmoWrite()
 {}
@@ -330,8 +336,8 @@ void CosmoWrite::calculate_bessels(int l)
     file << "# Column 2: j_"<< l << "(x)" << endl;
 
     double y1, x;
-    for (int i = 1; i < 100000000; i++) {
-        x = i/1000.0;
+    for (int i = 1; i < 1000000; i++) {
+        x = i/10.0;
         y1 = this->bessel_j_interp(l, x);
 
         file << x << " " << y1 << endl;
@@ -349,9 +355,28 @@ void CosmoWrite::calculate_bessels_basic(int l)
     file << "# Column 2: j_"<< l << "(x)" << endl;
 
     double y1, x;
-    for (int i = 1; i < 100000000; i++) {
-        x = i/1000.0;
+    for (int i = 1; i < 1000000; i++) {
+        x = i/10.0;
         y1 = this->bessel_j_interp_basic(l, x);
+
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+
+void CosmoWrite::calculate_bessels_cubic(int l) 
+{
+    ofstream file;
+    string filename = "output/bessel_cubic.dat";
+    file.open(filename);
+    file << "# This file contains the interpolated bessel function j_" << l << " from 1 to 100000." << endl;
+    file << "# Column 1: x " << endl;
+    file << "# Column 2: j_"<< l << "(x)" << endl;
+
+    double y1, x;
+    for (int i = 1; i < 1000000; i++) {
+        x = i/10.0;
+        y1 = this->bessel_j_interp_cubic(l, x);
 
         file << x << " " << y1 << endl;
     }
@@ -365,17 +390,15 @@ void CosmoWrite::calculate_bessels_exact(int l)
     string filename = "output/bessel_exact.dat";
     file.open(filename);
     file << "# This file contains the bessel function j_" << l <<\
-        " from 1 to 100000 from boost and camb." << endl;
+        " from 1 to 100000 from camb." << endl;
     file << "# Column 1: x " << endl;
-    //file << "# Column 2: j_"<< l << "(x) from boost." << endl;
-    file << "# Column 3: j_"<< l << "(x) from camb." << endl;
+    file << "# Column 2: j_"<< l << "(x) from camb." << endl;
 
     double y1, x, y2;
     for (int i = 1; i < 1000000; i++) {
         x = i/10.0;
-        //y1 = this->sph_bessel(l, x);
         y2 = this->sph_bessel_camb(l,x);
-        file << x << " " << y1 << " " << y2 << endl;
+        file << x << " " << y2 << endl;
     }
     file.close();
 }

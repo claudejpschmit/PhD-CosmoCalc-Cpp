@@ -35,6 +35,7 @@ class CosmoCalc : public CosmoBasis {
         ~CosmoCalc();
 
         void update_Pk_interpolator(map<string, double> params);
+        void update_Pk_interpolator_direct(map<string, double> params);
 
         /**
          * Function outputs some standard cosmological calculations to the user.
@@ -312,6 +313,8 @@ class CosmoCalc : public CosmoBasis {
          */
         double bessel_j_interp(int l, double x);
         double bessel_j_interp_basic(int l, double x);
+        double bessel_j_interp_cubic(int l, double x);
+
 
         /** 
          * Determines the matter power spectrum P(k,z) from the CAMB 
@@ -420,8 +423,8 @@ class CosmoCalc : public CosmoBasis {
 
         // ------------ Functions -------------- //
         
-        void create_bessel_interpolant(int lmin, int lmax);
-
+        void create_bessel_interpolant_ALGLIB(int lmin, int lmax);
+        void create_bessel_interpolant_OWN(int lmax);
         // ------------ Variables -------------- //
         int k_steps, zsteps_Ml, Pk_steps;
         int lmin_bess;

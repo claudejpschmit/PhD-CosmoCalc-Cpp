@@ -57,7 +57,8 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... Pks calculated ..." << endl;
 
     cout << "... Creating Bessels ..." << endl;
-    this->create_bessel_interpolant(0, this->fiducial_params["l_max"]);
+    //this->create_bessel_interpolant_ALGLIB(0, this->fiducial_params["l_max"]);
+    this->create_bessel_interpolant_OWN(this->fiducial_params["l_max"]);
     cout << "... Bessels built ..." << endl; 
     
     cout << "... CosmoCalc built ..." << endl;
@@ -342,7 +343,7 @@ void CosmoCalc::update_q()
     }
 }
 
-void CosmoCalc::create_bessel_interpolant(int lmin, int lmax)
+void CosmoCalc::create_bessel_interpolant_ALGLIB(int lmin, int lmax)
 {
     double xmin, xmax;
     this->lmin_bess = lmin;
@@ -372,16 +373,20 @@ void CosmoCalc::create_bessel_interpolant(int lmin, int lmax)
       
         bessel_interp_list.push_back(interpolator);
     }
+}
 
-    //Trying to interpolate myself.
+void CosmoCalc::create_bessel_interpolant_OWN(int lmax)
+{
+    double xmax = 2 * 5 * this->r_Ml[this->zsteps_Ml];
+
     for (int l = 0; l <= lmax; ++l) {
         vector<double> row;
-        for (int j = 0; j < (int)xmax; ++j) {
-            row.push_back(this->sph_bessel_camb(l,(double)j));
+        //finer grid now. (stepsize = 0.5)
+        for (int j = 0; j < 2*(int)xmax; ++j) {
+            row.push_back(this->sph_bessel_camb(l,(double)j / 2.0));
         }
         bessel_values.push_back(row);  
     }
-
 }
 
 double CosmoCalc::bessel_j_interp(int l, double x)
@@ -389,23 +394,115 @@ double CosmoCalc::bessel_j_interp(int l, double x)
     return spline1dcalc(bessel_interp_list[l - this->lmin_bess], x);
 }
 
+double CosmoCalc::bessel_j_interp_cubic(int l, double x)
+{
+
+    if ((int)(2*x) + 2 >= bessel_values[l].size()) {
+        return bessel_values[l][bessel_values[l].size()-1];
+    } else if (int(2*x) - 1 < 0) {
+        return bessel_values[l][0];
+    } else {
+        if (x-(int)x == 0 || x-(int)x == 0.5) {       
+            return bessel_values[l][(int)(2 * x)];
+        } else {
+            double y0, y1, y2, y3, a0, a1, a2, a3, mu, mu2, x0;
+            
+            x0 = (int)(2*x);
+            x0 = x0/2;
+            mu = (x - x0)/0.5;
+            mu2 = mu*mu;
+            
+            y0 = bessel_values[l][(int)(2 * x) - 1];
+            y1 = bessel_values[l][(int)(2 * x)];
+            y2 = bessel_values[l][(int)(2 * x) + 1];
+            y3 = bessel_values[l][(int)(2 * x) + 2];
+
+            a0 = 0.5*y3 - 1.5 * y2 - 0.5 * y0 + 1.5 * y1;
+            a1 = y0 - 2.5*y1 +2*y2 - 0.5*y3;
+            a2 = 0.5*y2 - 0.5*y0;
+            a3 = y1;
+
+            return a0*mu*mu2 + a1*mu2 + a2*mu + a3;
+        }
+    }
+}
+
 double CosmoCalc::bessel_j_interp_basic(int l, double x)
 {
 
-    if ((int)x + 1 >= bessel_values[l].size()) {
+    if ((int)(2*x) + 1 >= bessel_values[l].size()) {
         return bessel_values[l][bessel_values[l].size()-1];
     } else {
-        if (x-(int)x != 0) {       
-            return bessel_values[l][(int)x] +\
-                   (bessel_values[l][(int)x + 1] -\
-                   bessel_values[l][(int)x]) * (x - (int)x);
+        if (x-(int)x == 0 || x-(int)x == 0.5) {       
+            return bessel_values[l][(int)(2 * x)];
         } else {
-            return bessel_values[l][(int)x];
+            double two_x0 = (int)(2*x);
+            return bessel_values[l][(int)(2 * x)] +\
+                   (bessel_values[l][(int)(2 * x) + 1] -\
+                   bessel_values[l][(int)(2 * x)]) * (x - (two_x0)/2) / 0.5;
         }
     }
 }
 
 void CosmoCalc::update_Pk_interpolator(map<string, double> params)
+{
+    
+    double z_stepsize = (params["zmax"] - params["zmin"])/params["Pk_steps"];
+    vector<double> vk, vz, vP;
+
+    for (int i = 0; i < (int)params["Pk_steps"]; ++i) {
+        vz.push_back(params["z_pk"] + i * z_stepsize);
+        stringstream command;
+        command << "python Pk.py";
+        command << " --H_0 " << params["hubble"];
+        command << " --ombh2 " << params["ombh2"];
+        command << " --omnuh2 " << params["omnuh2"];
+        command << " --omch2 " << params["omch2"];
+        command << " --omk " << params["omk"];
+        command << " --z " << vz[i];
+        system(command.str().c_str());
+        ifstream file("Pks.dat");
+        
+        double k, P;
+        vk.clear();
+
+        while (file >> k >> P) {
+            vk.push_back(k);
+            vP.push_back(P);
+        }
+        file.close();
+    }
+
+    matterpowerspectrum_k.setlength(vk.size());
+    matterpowerspectrum_z.setlength(vz.size());
+    matterpowerspectrum_P.setlength(vP.size());
+    for (int i = 0; i < vk.size(); i++){
+        matterpowerspectrum_k[i] = vk[i];
+    }
+    for (int i = 0; i < vP.size(); i++){
+        matterpowerspectrum_P[i] = vP[i];
+    }
+    for (int i = 0; i < vz.size(); i++){
+        matterpowerspectrum_z[i] = vz[i];
+    }
+
+
+    spline2dbuildbilinearv(matterpowerspectrum_k, vk.size(),matterpowerspectrum_z, vz.size(),\
+                        matterpowerspectrum_P, 1, Pk_interpolator); 
+
+    
+    
+    // that should create a file containing the Pks.
+/*        
+        readin(pks.dat)
+        interpolate(pks)
+
+        update interpolation function.
+
+     */
+}
+
+void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params)
 {
     
     double z_stepsize = (params["zmax"] - params["zmin"])/params["Pk_steps"];
@@ -606,8 +703,8 @@ double CosmoCalc::M(int l, double k1, double k2)
         q = this->q_Ml[n];
        
         //TODO: check whether we need to multiply py h.
-        return pow(r,2) * this->delta_Tb_bar(z) * this->bessel_j_interp(l,k1*r) *\
-                this->bessel_j_interp(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
+        return pow(r,2) * this->delta_Tb_bar(z) * this->bessel_j_interp_cubic(l,k1*r) *\
+                this->bessel_j_interp_cubic(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
                 pow(this->h,3)) / (this->H_f[n]*1000.0);
 
         //return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel_camb(l,k1*r) *\
@@ -642,10 +739,10 @@ double CosmoCalc::N_bar(int l, double k1, double k2)
         double pk = sqrt(this->Pk_interp(k2*this->h, z)/pow(this->h, 3));
         double dtb = this->delta_Tb_bar(z);
         double pkdtb = pk * dtb;
-        double jl1r = this->bessel_j_interp(l - 1, k1 * r);
-        double jl2r = this->bessel_j_interp(l, k1 * r);
-        double jl1q = this->bessel_j_interp(l - 1, k2 * q);
-        double jl2q = this->bessel_j_interp(l, k2 * q);
+        double jl1r = this->bessel_j_interp_cubic(l - 1, k1 * r);
+        double jl2r = this->bessel_j_interp_cubic(l, k1 * r);
+        double jl1q = this->bessel_j_interp_cubic(l - 1, k2 * q);
+        double jl2q = this->bessel_j_interp_cubic(l, k2 * q);
 /*
         double jl1r = this->sph_bessel_camb(l - 1, k1 * r);
         double jl2r = this->sph_bessel_camb(l, k1 * r);
