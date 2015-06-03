@@ -162,16 +162,12 @@ CMB_outputscale = 7.42835025e12
 transfer_high_precision = T
 transfer_kmax           = 100
 transfer_k_per_logint   = 0
-transfer_num_redshifts  = 2
+transfer_num_redshifts  = 1
 transfer_interp_matterpower = T
-transfer_redshift(1)    = 9
-transfer_filename(1)    = transfer_out.dat
+transfer_redshift(1)    = 7
+#transfer_filename(1)    = transfer_out.dat
 #Matter power spectrum output against k/h in units of h^{-3} Mpc^3
 transfer_matterpower(1) = matterpower.dat
-transfer_redshift(2)    = 8
-transfer_filename(2)    = transfer_out2.dat
-#Matter power spectrum output against k/h in units of h^{-3} Mpc^3
-transfer_matterpower(2) = matterpower2.dat
 
 #which variable to use for defining the matter power spectrum and sigma8
 #main choices are 2: CDM, 7: CDM+baryon+neutrino, 8: CDM+baryon, 9: CDM+baryon+neutrino+de perts

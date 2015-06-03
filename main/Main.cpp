@@ -14,6 +14,7 @@
 #include <armadillo>
 #include "stdafx.h"
 #include "interpolation.h"
+#include "CAMB_interface.hpp"
 
 using namespace std;
 using namespace arma;
@@ -28,6 +29,19 @@ int main(int argc, char* argv[])
 {
      
     map<string,double> params;
+    
+    params.insert(pair<string,double>("ombh2",0.0226));
+    params.insert(pair<string,double>("omch2",0.112));
+    params.insert(pair<string,double>("omnuh2",0.00064));
+    params.insert(pair<string,double>("omk",0.0));
+    params.insert(pair<string,double>("hubble",70.0));
+
+    params.insert(pair<string,double>("zmin",7.0));
+    params.insert(pair<string,double>("zmax",9.0));
+    params.insert(pair<string,double>("Pk_steps",3));
+    CAMB_CALLER camb;
+    camb.call(params);
+    
     //CosmoCalc calc(params);
 
     //cout << "test" << endl;
@@ -64,7 +78,7 @@ int main(int argc, char* argv[])
     //writer.update_Pk_interpolator(writer.give_current_params());
     //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
     
-    
+    /* 
     clock_t t1, t2;
 
     t1 = clock();
@@ -80,7 +94,7 @@ int main(int argc, char* argv[])
     //fish.show_Cl_inv_mat();
     //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
     //cout << res << endl;
-    
+    */
     (void) argc;
     (void) argv;
 /*

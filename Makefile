@@ -67,7 +67,7 @@ CLASS = class.o
 OUTPUT = output.o
 ALGLIB = alglibinternal.o alglibmisc.o ap.o dataanalysis.o diffequations.o fasttransforms.o integration.o interpolation.o linalg.o optimization.o solvers.o specialfunctions.o statistics.o
 
-SRC = CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o
+SRC = CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o
 MAIN = Main.o
 
 all: calc class_test
