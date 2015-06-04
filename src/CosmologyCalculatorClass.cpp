@@ -636,31 +636,6 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
         return integrate_simps(integrand, k_low, k_high, steps);
     }
 }
-double CosmoCalc::corr_Tb_wsz(int l, double k1, double k2, double k_low,\
-                          double k_high, double k_stepsize)
-{
-    int steps = (int)((k_high - k_low)/k_stepsize);
-    if (steps % 2 == 1)
-        ++steps;
-    if (k1 == k2)
-    {
-        auto integrand = [&](double k)
-        {
-            return pow(k,2) * pow(this->M(l,k1,k),2);
-        };
-        
-        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
-        return integrate_simps(integrand, k_low, k_high, steps);
-    } else {
-        auto integrand = [&](double k)
-        {
-            return pow(k,2) * this->M(l,k1,k) * this->M(l,k2,k);
-        };
-
-        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
-        return integrate_simps(integrand, k_low, k_high, steps);
-    }
-}
 
 double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
                               double k_high)

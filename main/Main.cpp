@@ -36,22 +36,22 @@ int main(int argc, char* argv[])
 
     clock_t t1, t2;
     t1 = clock();
-    res1 = writer.corr_Tb_wsz(142, 0.2, 0.05, 0.001, 5, 0.0001);
+    res1 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 5);
     t2 = clock();
     float diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
     t1 = clock();
-    res2 = writer.corr_Tb_wsz(142, 0.2, 0.05, 0.001, 2, 0.0001);
+    res2 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 2);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
     t1 = clock();
-    res3 = writer.corr_Tb_wsz(142, 0.2, 0.05, 0.001, 10, 0.0001);
+    res3 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 10);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
     t1 = clock();
-    res4 = writer.corr_Tb_wsz(142, 0.2, 0.05, 0.001, 1, 0.0001);
+    res4 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 1);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
