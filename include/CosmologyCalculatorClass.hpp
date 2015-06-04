@@ -8,6 +8,7 @@
 #include "ClassEngine.hpp"
 #include "stdafx.h"
 #include "interpolation.h"
+#include "CAMB_interface.hpp"
 
 using namespace std;
 using namespace alglib;
@@ -325,7 +326,7 @@ class CosmoCalc : public CosmoBasis {
          * @param z is the redshift at which the power spectrum is evaluated.
          */
         double Pk_interp(double k, double z);
-        
+
         /** 
          * TODO: determine units...
          * Determines the matter power spectrum P(k,z) from a basic analytic
@@ -430,7 +431,6 @@ class CosmoCalc : public CosmoBasis {
         int lmin_bess;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml;
         vector<double> q_Ml, r_Ml, H_f;
-        real_1d_array matterpowerspectrum_k, matterpowerspectrum_z, matterpowerspectrum_P;
         spline2dinterpolant Pk_interpolator;
 
         vector<spline1dinterpolant> bessel_interp_list;
@@ -439,6 +439,7 @@ class CosmoCalc : public CosmoBasis {
 
         ClassParams pars;
         ClassEngine *CLASS;
+        CAMB_CALLER *CAMB;
        
 
 };

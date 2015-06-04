@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <time.h>
 
 CAMB_CALLER::CAMB_CALLER()
 {
@@ -23,16 +24,23 @@ CAMB_CALLER::CAMB_CALLER()
     parameter_names[5] = "transfer_num_redshifts";
     parameter_names[6] = "transfer_redshift(1)";
     parameter_names[7] = "transfer_matterpower(1)";
+
+
 }
 
 CAMB_CALLER::~CAMB_CALLER()
-{}
+{
+}
 
 void CAMB_CALLER::call(map<string, double> params)
 {
     update_params_ini(params);
-    system("./CAMB/camb CAMB/new_params.ini");
+
     //call camb with new_params.ini
+    system("./CAMB/camb CAMB/new_params.ini");
+
+    //recovering Power spectrum.
+    read_matterpower_files(params["Pk_steps"]);    
 }
 
 void CAMB_CALLER::update_params_ini(map<string, double> params)
@@ -44,6 +52,9 @@ void CAMB_CALLER::update_params_ini(map<string, double> params)
 
     int found_n_params = 0;
     for (int i = 0; i < file_content.size(); ++i) {
+        if (file_content[i].find("output_root =") != string::npos) {
+               file_content[i] = "output_root = CAMB/test";
+        }
         for (int j = 0; j < 8; j++) {
             //pos[j] = file_content[i].find(parameter_names[j]);
             if (file_content[i].find(parameter_names[j]) != string::npos) {
@@ -73,7 +84,6 @@ void CAMB_CALLER::update_params_ini(map<string, double> params)
         stringstream line1, line2;
         line1 << "transfer_redshift(" << i+1 << ") = " << (zmax - i * stepsize_z);
         line2 << "transfer_matterpower(" << i+1 << ") = matterpower_" << i+1 << ".dat";
-        
         file_content.push_back(line1.str());
         file_content.push_back(line2.str());
     }
@@ -87,4 +97,40 @@ void CAMB_CALLER::create_output_file()
     for (int i = 0; i < file_content.size(); i++) {
         output << file_content[i] << endl;
     }
+}
+
+void CAMB_CALLER::read_matterpower_files(int nfiles)
+{
+    ifstream file;
+    int file_index = nfiles;
+    while (file_index >= 1){
+        string filename;
+        filename = "CAMB/test_matterpower_" + to_string(file_index) + ".dat";
+        file.open(filename);
+        double k, P;
+        vector<double> P_values;
+        if (file_index == 1) {
+            while(file >> k >> P) {
+                k_values.push_back(k);
+                P_values.push_back(P);
+            }
+        } else {
+            while(file >> k >> P) {
+                P_values.push_back(P);
+            }
+        }
+
+        Pz_values.push_back(P_values);
+        file.close();
+        --file_index;
+    }
+}
+
+vector<vector<double>> CAMB_CALLER::get_Pz_values()
+{
+    return Pz_values;
+}
+vector<double> CAMB_CALLER::get_k_values()
+{
+    return k_values;
 }

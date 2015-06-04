@@ -17,6 +17,9 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_steps = this->fiducial_params["k_steps"];
 
+    //generate object that is the CAMB interface.
+    CAMB = new CAMB_CALLER;
+
     pars.add("100*theta_s",0);
     pars.add("omega_b",0);
     pars.add("omega_cdm",0);
@@ -53,9 +56,10 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... Dependencies calculated ..." << endl;
 
     cout << "... Initializing Pk interpolator ..." << endl;
-    this->update_Pk_interpolator(this->fiducial_params);
+    //this->update_Pk_interpolator(this->fiducial_params);
+    this->update_Pk_interpolator_direct(this->fiducial_params);
     cout << "... Pks calculated ..." << endl;
-
+    
     cout << "... Creating Bessels ..." << endl;
     //this->create_bessel_interpolant_ALGLIB(0, this->fiducial_params["l_max"]);
     this->create_bessel_interpolant_OWN(this->fiducial_params["l_max"]);
@@ -68,6 +72,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
 CosmoCalc::~CosmoCalc()
 {
     delete CLASS;
+    delete CAMB;
 }
 
 void CosmoCalc::write_pks(string filename, double z)
@@ -473,6 +478,7 @@ void CosmoCalc::update_Pk_interpolator(map<string, double> params)
         file.close();
     }
 
+    real_1d_array matterpowerspectrum_k, matterpowerspectrum_z, matterpowerspectrum_P;
     matterpowerspectrum_k.setlength(vk.size());
     matterpowerspectrum_z.setlength(vz.size());
     matterpowerspectrum_P.setlength(vP.size());
@@ -489,48 +495,25 @@ void CosmoCalc::update_Pk_interpolator(map<string, double> params)
 
     spline2dbuildbilinearv(matterpowerspectrum_k, vk.size(),matterpowerspectrum_z, vz.size(),\
                         matterpowerspectrum_P, 1, Pk_interpolator); 
-
-    
-    
-    // that should create a file containing the Pks.
-/*        
-        readin(pks.dat)
-        interpolate(pks)
-
-        update interpolation function.
-
-     */
+  
 }
 
 void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params)
 {
     
-    double z_stepsize = (params["zmax"] - params["zmin"])/params["Pk_steps"];
-    vector<double> vk, vz, vP;
-
-    for (int i = 0; i < (int)params["Pk_steps"]; ++i) {
-        vz.push_back(params["z_pk"] + i * z_stepsize);
-        stringstream command;
-        command << "python Pk.py";
-        command << " --H_0 " << params["hubble"];
-        command << " --ombh2 " << params["ombh2"];
-        command << " --omnuh2 " << params["omnuh2"];
-        command << " --omch2 " << params["omch2"];
-        command << " --omk " << params["omk"];
-        command << " --z " << vz[i];
-        system(command.str().c_str());
-        ifstream file("Pks.dat");
-        
-        double k, P;
-        vk.clear();
-
-        while (file >> k >> P) {
-            vk.push_back(k);
-            vP.push_back(P);
-        }
-        file.close();
+    CAMB->call(params);    
+    vector<double> vk = CAMB->get_k_values();
+    vector<vector<double>> Pz = CAMB->get_Pz_values();
+    
+    double z_stepsize = (params["zmax"] - params["zmin"])/(params["Pk_steps"] - 1);
+    vector<double> vz, vP;
+    int index = params["Pk_steps"] - 1;
+    for (int i = 0; i < Pz.size(); ++i) {
+        vz.push_back(params["zmin"] + i * z_stepsize);
+        vP.insert(vP.end(), Pz[i].begin(), Pz[i].end());
     }
 
+    real_1d_array matterpowerspectrum_k, matterpowerspectrum_z, matterpowerspectrum_P;
     matterpowerspectrum_k.setlength(vk.size());
     matterpowerspectrum_z.setlength(vz.size());
     matterpowerspectrum_P.setlength(vP.size());
@@ -544,20 +527,8 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params)
         matterpowerspectrum_z[i] = vz[i];
     }
 
-
     spline2dbuildbilinearv(matterpowerspectrum_k, vk.size(),matterpowerspectrum_z, vz.size(),\
-                        matterpowerspectrum_P, 1, Pk_interpolator); 
-
-    
-    
-    // that should create a file containing the Pks.
-/*        
-        readin(pks.dat)
-        interpolate(pks)
-
-        update interpolation function.
-
-     */
+                        matterpowerspectrum_P, 1, Pk_interpolator);
 }
 
 double CosmoCalc::Pk_interp(double k, double z)

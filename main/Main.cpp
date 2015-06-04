@@ -29,7 +29,10 @@ int main(int argc, char* argv[])
 {
      
     map<string,double> params;
-    
+    //CosmoWrite writer(params);
+    //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
+
+   /* 
     params.insert(pair<string,double>("ombh2",0.0226));
     params.insert(pair<string,double>("omch2",0.112));
     params.insert(pair<string,double>("omnuh2",0.00064));
@@ -39,9 +42,21 @@ int main(int argc, char* argv[])
     params.insert(pair<string,double>("zmin",7.0));
     params.insert(pair<string,double>("zmax",9.0));
     params.insert(pair<string,double>("Pk_steps",3));
-    CAMB_CALLER camb;
-    camb.call(params);
-    
+    CAMB_CALLER *camb;
+    camb = new CAMB_CALLER;
+    camb->call(params);
+    vector<double> k, vP;
+    vector<vector<double>> Pz;
+    Pz = camb->get_Pz_values();
+    k = camb->get_k_values();
+    for (int i = 0; i < Pz.size(); ++i) {
+        vP.insert(vP.end(), Pz[i].begin(), Pz[i].end());
+    }
+    cout <<vP.size()<<endl;
+    cout << Pz.size() << endl;
+    cout << k[1] << endl;
+    delete camb;
+    */
     //CosmoCalc calc(params);
 
     //cout << "test" << endl;
