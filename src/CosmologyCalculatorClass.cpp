@@ -15,7 +15,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->zsteps_Ml = this->fiducial_params["zsteps"];
     this->stepsize_Ml = (this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
     this->Pk_steps = this->fiducial_params["Pk_steps"];
-    this->k_steps = this->fiducial_params["k_steps"];
+    this->k_stepsize = this->fiducial_params["k_stepsize"];
 
     //generate object that is the CAMB interface.
     CAMB = new CAMB_CALLER;
@@ -382,7 +382,7 @@ void CosmoCalc::create_bessel_interpolant_ALGLIB(int lmin, int lmax)
 
 void CosmoCalc::create_bessel_interpolant_OWN(int lmax)
 {
-    double xmax = 1.3 * 100 * this->r_Ml[this->zsteps_Ml];
+    double xmax = 2 * 5 * this->r_Ml[this->zsteps_Ml];
 
     for (int l = 0; l <= lmax; ++l) {
         vector<double> row;
@@ -613,6 +613,10 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high)
 double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
                           double k_high)
 {
+    int steps = (int)((k_high - k_low)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+
     if (k1 == k2)
     {
         auto integrand = [&](double k)
@@ -621,7 +625,7 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
         };
 
         //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
-        return integrate_simps(integrand, k_low, k_high, this->k_steps);
+        return integrate_simps(integrand, k_low, k_high, steps);
     } else {
         auto integrand = [&](double k)
         {
@@ -629,7 +633,7 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
         };
 
         //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
-        return integrate_simps(integrand, k_low, k_high, this->k_steps);
+        return integrate_simps(integrand, k_low, k_high, steps);
     }
 }
 double CosmoCalc::corr_Tb_wsz(int l, double k1, double k2, double k_low,\
@@ -660,7 +664,11 @@ double CosmoCalc::corr_Tb_wsz(int l, double k1, double k2, double k_low,\
 
 double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
                               double k_high)
-{
+{   
+    int steps = (int)((k_high - k_low)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+
     auto integrand = [&](double k)
     {
         double m1,n1,m2,n2;
@@ -680,7 +688,7 @@ double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
     };
     //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
 
-    return integrate_simps(integrand, k_low, k_high, this->k_steps);
+    return integrate_simps(integrand, k_low, k_high, steps);
 }
 
 double CosmoCalc::M(int l, double k1, double k2)

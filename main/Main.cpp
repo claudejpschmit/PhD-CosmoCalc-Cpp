@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
     t1 = clock();
-    res3 = writer.corr_Tb_wsz(142, 0.2, 0.05, 0.001, 100, 0.0001);
+    res3 = writer.corr_Tb_wsz(142, 0.2, 0.05, 0.001, 10, 0.0001);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
