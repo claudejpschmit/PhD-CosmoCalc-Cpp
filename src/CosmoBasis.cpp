@@ -55,7 +55,7 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("T_CMB",2.7255));
     this->fiducial_params.insert(pair<string,double>("zmin",7.0));
     this->fiducial_params.insert(pair<string,double>("zmax",9.0));
-    this->fiducial_params.insert(pair<string,double>("zsteps",100));
+    this->fiducial_params.insert(pair<string,double>("zsteps",50));
     this->fiducial_params.insert(pair<string,double>("Pk_steps",3));
     this->fiducial_params.insert(pair<string,double>("k_steps",40000));
     // Do not go above 1000 for lmax!!!

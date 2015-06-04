@@ -382,7 +382,10 @@ class CosmoCalc : public CosmoBasis {
          */
 
         double corr_Tb_rsd(int l, double k1, double k2,\
-                           double k_low, double k_high);/** 
+                           double k_low, double k_high);
+        double corr_Tb_wsz(int l, double k1, double k2,\
+                           double k_low, double k_high, double k_stepsize);
+        /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
@@ -419,6 +422,10 @@ class CosmoCalc : public CosmoBasis {
          */
 
         double N_bar(int l, double k1, double k2);
+
+        double integrandMM(int l, double k1, double k2, double k);
+        double integrandMN(int l, double k1, double k2, double k);
+        double integrandNN(int l, double k1, double k2, double k);
 
     protected:
 

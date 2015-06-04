@@ -382,7 +382,7 @@ void CosmoCalc::create_bessel_interpolant_ALGLIB(int lmin, int lmax)
 
 void CosmoCalc::create_bessel_interpolant_OWN(int lmax)
 {
-    double xmax = 2 * 5 * this->r_Ml[this->zsteps_Ml];
+    double xmax = 1.3 * 100 * this->r_Ml[this->zsteps_Ml];
 
     for (int l = 0; l <= lmax; ++l) {
         vector<double> row;
@@ -632,6 +632,31 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
         return integrate_simps(integrand, k_low, k_high, this->k_steps);
     }
 }
+double CosmoCalc::corr_Tb_wsz(int l, double k1, double k2, double k_low,\
+                          double k_high, double k_stepsize)
+{
+    int steps = (int)((k_high - k_low)/k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+    if (k1 == k2)
+    {
+        auto integrand = [&](double k)
+        {
+            return pow(k,2) * pow(this->M(l,k1,k),2);
+        };
+        
+        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+        return integrate_simps(integrand, k_low, k_high, steps);
+    } else {
+        auto integrand = [&](double k)
+        {
+            return pow(k,2) * this->M(l,k1,k) * this->M(l,k2,k);
+        };
+
+        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+        return integrate_simps(integrand, k_low, k_high, steps);
+    }
+}
 
 double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
                               double k_high)
@@ -783,4 +808,24 @@ double CosmoCalc::T_K(double z)
         res = Td * pow(1+z,2) / pow(1+zd,2) + tanh_term;
     }
     return res;
+}
+
+double CosmoCalc::integrandMM(int l, double k1, double k2, double k)
+{
+    if (k1 == k2)
+        return pow(k,2) * pow(this->M(l,k1,k),2);
+    else 
+        return pow(k,2) * this->M(l,k1,k) * this->M(l,k2,k);
+}
+double CosmoCalc::integrandMN(int l, double k1, double k2, double k)
+{
+    return k * this->M(l,k1,k) * this->N_bar(l,k2,k);
+}
+
+double CosmoCalc::integrandNN(int l, double k1, double k2, double k)
+{
+    if (k1 == k2)
+        return pow(this->N_bar(l,k1,k),2);
+    else 
+        return this->N_bar(l,k1,k) * this->N_bar(l,k2,k);
 }

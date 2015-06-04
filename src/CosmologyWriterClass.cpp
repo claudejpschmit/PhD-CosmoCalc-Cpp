@@ -394,11 +394,66 @@ void CosmoWrite::calculate_bessels_exact(int l)
     file << "# Column 1: x " << endl;
     file << "# Column 2: j_"<< l << "(x) from camb." << endl;
 
-    double y1, x, y2;
+    double x, y2;
     for (int i = 1; i < 1000000; i++) {
         x = i/10.0;
         y2 = this->sph_bessel_camb(l,x);
         file << x << " " << y2 << endl;
+    }
+    file.close();
+}
+
+void CosmoWrite::calculate_integrandMM(int l, double k1, double k2, int step) 
+{
+    ofstream file;
+    string filename = "output/integrandMM_"+to_string(k1)+"_"+to_string(k2)+".dat";
+    file.open(filename);
+    file << "# This file contains the integrand k^2 MM  from 0.001 to 5 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# Column 1: k (the one that is integrated over)" << endl;
+    file << "# Column 2: k^2 MM" << endl;
+
+    double stepsize = (5-0.001)/(double)step;
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = 0.001 + i*stepsize;
+        y1 = this->integrandMM(l,k1,k2,x);
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+void CosmoWrite::calculate_integrandMN(int l, double k1, double k2, int step)
+{
+    ofstream file;
+    string filename = "output/integrandMN_"+to_string(k1)+"_"+to_string(k2)+".dat";
+    file.open(filename);
+    file << "# This file contains the integrand k^2 MN  from 0.001 to 5 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# Column 1: k (the one that is integrated over)" << endl;
+    file << "# Column 2: k MN" << endl;
+
+    double stepsize = (5-0.001)/(double)step;
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = 0.001 + i*stepsize;
+        y1 = this->integrandMN(l,k1,k2,x);
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+void CosmoWrite::calculate_integrandNN(int l, double k1, double k2, int step)
+{
+    ofstream file;
+    string filename = "output/integrandNN_"+to_string(k1)+"_"+to_string(k2)+".dat";
+    file.open(filename);
+    file << "# This file contains the integrand NN  from 0.001 to 5 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# Column 1: k (the one that is integrated over)" << endl;
+    file << "# Column 2: NN" << endl;
+
+    double stepsize = (5-0.001)/(double)step;
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = 0.001 + i*stepsize;
+        y1 = this->integrandNN(l,k1,k2,x);
+        file << x << " " << y1 << endl;
     }
     file.close();
 }

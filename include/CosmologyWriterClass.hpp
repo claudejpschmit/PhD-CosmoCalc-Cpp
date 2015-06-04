@@ -35,4 +35,8 @@ class CosmoWrite : public CosmoCalc {
         void calculate_bessels_exact(int l); 
         void calculate_bessels_cubic(int l);
 
+        void calculate_integrandMM(int l, double k1, double k2, int step);
+        void calculate_integrandMN(int l, double k1, double k2, int step);
+        void calculate_integrandNN(int l, double k1, double k2, int step);
+
 };
