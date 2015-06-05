@@ -26,12 +26,11 @@ double f (double x)
 }
 
 int main(int argc, char* argv[])
-{
-     
+{ 
     map<string,double> params;
 
     CosmoWrite writer(params);
-    writer.calculate_integrandMM(142, 0.3, 4, 100000);
+    //writer.calculate_integrandMM(142, 0.3, 4, 100000);
     double res1, res2, res3, res4;
 
     clock_t t1, t2;

@@ -614,9 +614,10 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
                           double k_high)
 {
     int steps = (int)((k_high - k_low)/this->k_stepsize);
+    cout << k_high << " - " << k_low << " / " << this->k_stepsize << " = " << steps << endl;
     if (steps % 2 == 1)
         ++steps;
-
+    cout << steps << endl;
     if (k1 == k2)
     {
         auto integrand = [&](double k)

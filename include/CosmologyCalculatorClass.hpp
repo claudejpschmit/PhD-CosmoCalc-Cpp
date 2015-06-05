@@ -433,9 +433,9 @@ class CosmoCalc : public CosmoBasis {
         void create_bessel_interpolant_ALGLIB(int lmin, int lmax);
         void create_bessel_interpolant_OWN(int lmax);
         // ------------ Variables -------------- //
-        int k_stepsize, zsteps_Ml, Pk_steps;
+        int zsteps_Ml, Pk_steps;
         int lmin_bess;
-        double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml;
+        double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml, k_stepsize;
         vector<double> q_Ml, r_Ml, H_f;
         spline2dinterpolant Pk_interpolator;
 
@@ -447,5 +447,4 @@ class CosmoCalc : public CosmoBasis {
         ClassEngine *CLASS;
         CAMB_CALLER *CAMB;
        
-
 };
