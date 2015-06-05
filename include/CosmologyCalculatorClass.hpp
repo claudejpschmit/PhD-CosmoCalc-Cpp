@@ -35,7 +35,6 @@ class CosmoCalc : public CosmoBasis {
          */
         ~CosmoCalc();
 
-        void update_Pk_interpolator(map<string, double> params);
         void update_Pk_interpolator_direct(map<string, double> params);
 
         /**

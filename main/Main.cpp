@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 { 
     map<string,double> params;
 
-    CosmoWrite writer(params);
+   // CosmoWrite writer(params);
 /*    writer.calculate_integrandMN(142, 0.03, 0.03, 1000000);
     writer.calculate_integrandMN(142, 1, 1, 1000000);
     writer.calculate_integrandMN(142, 0.3, 0.3, 1000000);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     writer.calculate_integrandMN(142, 0.012, 0.012, 1000000);
     writer.calculate_integrandMN(142, 0.003, 0.003, 1000000);
     writer.calculate_integrandMN(142, 0.015, 0.015, 1000000);
-*/
+
     writer.calculate_integrandMM(199, 0.5, 0.5, 1000000);
     double res1, res2, res3, res4;
 
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     cout << res2 << endl;
     cout << res3 << endl;
     cout << res4 << endl;
-
+*/
  
 
 
@@ -135,11 +135,11 @@ int main(int argc, char* argv[])
     //writer.update_Pk_interpolator(writer.give_current_params());
     //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
     
-    /* 
+    
     clock_t t1, t2;
 
-    t1 = clock();
     Fisher fish(params);
+    t1 = clock();
     cout << "Result is " << fish.F("ombh2", "ombh2")<< endl;
     t2 = clock();
     float diff ((float)t2 - (float)t1);
@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
     //fish.show_Cl_inv_mat();
     //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
     //cout << res << endl;
-    */
+    
     (void) argc;
     (void) argv;
 /*

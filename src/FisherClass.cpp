@@ -3,15 +3,13 @@
 #include <time.h>
 
 Fisher::Fisher(map<string, double> params)
-    :
-        kmin(0.001),
-        kmax(5)
 {
     cout << "... Beginning to build FisherClass ..." << endl;
     CALC = new CosmoCalc(params);
     this->current_params = CALC->give_current_params();
     this->fiducial_params = CALC->give_fiducial_params();
-
+    kmin = this->fiducial_params["kmin"];
+    kmax = this->fiducial_params["kmax"];
     string model_params_keys[] = {"ombh2", "omch2", "omnuh2", "omk", "hubble"};
     for (int i = 0; i < 5; ++i) {
         string key = model_params_keys[i];
@@ -21,10 +19,10 @@ Fisher::Fisher(map<string, double> params)
             var_params.insert(pair<string,double>(key,current_params[key]/100));
     }
     //This determines the size of the Cl matrices.
-    int ksteps = 3;
-    double kstepsize = (kmax - kmin)/(double)ksteps;
-    for (int n = 0; n <= ksteps; ++n) 
-        krange.push_back(kmin + n * kstepsize);
+    int ksteps_Cl = 2;
+    double kstepsize_Cl = (kmax - kmin)/(double)ksteps_Cl;
+    for (int n = 0; n <= ksteps_Cl; ++n) 
+        krange.push_back(kmin + n * kstepsize_Cl);
 
     Cl = randu<mat>(krange.size(),krange.size());
     Cl_inv = Cl;
@@ -41,7 +39,7 @@ void Fisher::update_Model(map<string, double> new_params)
 {
     this->CALC->generate_params(new_params);
     this->CALC->update_q();
-    this->CALC->update_Pk_interpolator(new_params);
+    this->CALC->update_Pk_interpolator_direct(new_params);
     //this->CALC->updateClass(new_params);
 }
 
@@ -261,7 +259,6 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key)
     vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
     vector<double> row;
     this->current_params[param_key] = x + 2 * h;
-    cout << x+2*h << endl;
     this->update_Model(this->current_params);
     for (unsigned int i = 0; i < this->krange.size(); ++i) {
         double k1 = this->krange[i];

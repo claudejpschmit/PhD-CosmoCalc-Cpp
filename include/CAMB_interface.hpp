@@ -23,5 +23,5 @@ class CAMB_CALLER {
         void update_params_ini(map<string, double> params);
         void create_output_file();
         void read_matterpower_files(int nfiles);
-
+        bool run_first_time;
 };

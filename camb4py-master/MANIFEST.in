@@ -1,3 +1,0 @@
-include README.rst setup.py setup.cfg
-include camb4py/*.py
-graft camb4py/src

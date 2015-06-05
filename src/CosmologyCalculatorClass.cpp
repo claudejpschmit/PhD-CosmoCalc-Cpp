@@ -40,7 +40,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     pars.add("output","mPk"); //pol +clphi
     pars.add("P_k_max_h/Mpc", 100);
     cout << "... Initializing Class ..." << endl;
-    updateClass(this->fiducial_params);
+    //updateClass(this->fiducial_params);
     cout << "... Class initialized ..." << endl;
     
     cout << "... precalculating Ml dependencies ..." << endl;
@@ -449,54 +449,7 @@ double CosmoCalc::bessel_j_interp_basic(int l, double x)
     }
 }
 
-void CosmoCalc::update_Pk_interpolator(map<string, double> params)
-{
-    
-    double z_stepsize = (params["zmax"] - params["zmin"])/params["Pk_steps"];
-    vector<double> vk, vz, vP;
 
-    for (int i = 0; i < (int)params["Pk_steps"]; ++i) {
-        vz.push_back(params["z_pk"] + i * z_stepsize);
-        stringstream command;
-        command << "python Pk.py";
-        command << " --H_0 " << params["hubble"];
-        command << " --ombh2 " << params["ombh2"];
-        command << " --omnuh2 " << params["omnuh2"];
-        command << " --omch2 " << params["omch2"];
-        command << " --omk " << params["omk"];
-        command << " --z " << vz[i];
-        system(command.str().c_str());
-        ifstream file("Pks.dat");
-        
-        double k, P;
-        vk.clear();
-
-        while (file >> k >> P) {
-            vk.push_back(k);
-            vP.push_back(P);
-        }
-        file.close();
-    }
-
-    real_1d_array matterpowerspectrum_k, matterpowerspectrum_z, matterpowerspectrum_P;
-    matterpowerspectrum_k.setlength(vk.size());
-    matterpowerspectrum_z.setlength(vz.size());
-    matterpowerspectrum_P.setlength(vP.size());
-    for (int i = 0; i < vk.size(); i++){
-        matterpowerspectrum_k[i] = vk[i];
-    }
-    for (int i = 0; i < vP.size(); i++){
-        matterpowerspectrum_P[i] = vP[i];
-    }
-    for (int i = 0; i < vz.size(); i++){
-        matterpowerspectrum_z[i] = vz[i];
-    }
-
-
-    spline2dbuildbilinearv(matterpowerspectrum_k, vk.size(),matterpowerspectrum_z, vz.size(),\
-                        matterpowerspectrum_P, 1, Pk_interpolator); 
-  
-}
 
 void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params)
 {
@@ -526,7 +479,7 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params)
     for (int i = 0; i < vz.size(); i++){
         matterpowerspectrum_z[i] = vz[i];
     }
-
+    
     spline2dbuildbilinearv(matterpowerspectrum_k, vk.size(),matterpowerspectrum_z, vz.size(),\
                         matterpowerspectrum_P, 1, Pk_interpolator);
 }
