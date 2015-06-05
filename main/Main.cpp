@@ -30,27 +30,37 @@ int main(int argc, char* argv[])
     map<string,double> params;
 
     CosmoWrite writer(params);
-    //writer.calculate_integrandMM(142, 0.3, 4, 100000);
+/*    writer.calculate_integrandMN(142, 0.03, 0.03, 1000000);
+    writer.calculate_integrandMN(142, 1, 1, 1000000);
+    writer.calculate_integrandMN(142, 0.3, 0.3, 1000000);
+    writer.calculate_integrandMN(142, 0.3, 1, 1000000);
+    writer.calculate_integrandMN(142, 0.03, 1, 1000000);
+    writer.calculate_integrandMN(142, 1.32, 2.5, 1000000);
+    writer.calculate_integrandMN(142, 0.012, 0.012, 1000000);
+    writer.calculate_integrandMN(142, 0.003, 0.003, 1000000);
+    writer.calculate_integrandMN(142, 0.015, 0.015, 1000000);
+*/
+    writer.calculate_integrandMM(199, 0.5, 0.5, 1000000);
     double res1, res2, res3, res4;
 
     clock_t t1, t2;
     t1 = clock();
-    res1 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 5);
+    res1 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 5);
     t2 = clock();
     float diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
     t1 = clock();
-    res2 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 2);
+    res2 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 2);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
     t1 = clock();
-    res3 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 10);
+    res3 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 10);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
     t1 = clock();
-    res4 = writer.corr_Tb(142, 0.2, 0.05, 0.001, 1);
+    res4 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 1);
     t2 = clock();
     diff = (float)t2 - (float)t1;
     cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
@@ -64,7 +74,6 @@ int main(int argc, char* argv[])
 
 
     //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
-
    /* 
     params.insert(pair<string,double>("ombh2",0.0226));
     params.insert(pair<string,double>("omch2",0.112));

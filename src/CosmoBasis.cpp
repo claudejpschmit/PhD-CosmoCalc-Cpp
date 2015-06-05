@@ -11,7 +11,6 @@ CosmoBasis::CosmoBasis(map<string,double> params)
     // Initializing parameters
     fiducial_params = params;
     this->check_params();
-    cout << fiducial_params["k_stepsize"] << endl;
     current_params = fiducial_params;
     this->generate_params(fiducial_params);
     
