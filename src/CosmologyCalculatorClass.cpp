@@ -506,9 +506,7 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params)
         interp.interpolator = interpolator;
         
         Pks.push_back(interp);
-        cout << Pks.size() << endl;
         this->Pk_index = Pks.size() - 1;
-        cout << this->Pk_index<<endl;
     }
 }
 double CosmoCalc::Pk_interp(double k, double z)
