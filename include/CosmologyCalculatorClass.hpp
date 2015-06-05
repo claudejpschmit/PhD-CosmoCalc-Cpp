@@ -9,7 +9,7 @@
 #include "stdafx.h"
 #include "interpolation.h"
 #include "CAMB_interface.hpp"
-
+#include "Helper.hpp"
 using namespace std;
 using namespace alglib;
 
@@ -436,7 +436,8 @@ class CosmoCalc : public CosmoBasis {
         int lmin_bess;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml, k_stepsize;
         vector<double> q_Ml, r_Ml, H_f;
-        spline2dinterpolant Pk_interpolator;
+        vector<Pk_interpolator> Pks;
+        int Pk_index;
 
         vector<spline1dinterpolant> bessel_interp_list;
         
