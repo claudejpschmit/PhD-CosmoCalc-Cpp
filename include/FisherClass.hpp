@@ -2,12 +2,14 @@
 
 #include "CosmologyCalculatorClass.hpp"
 #include <armadillo>
+#include <fstream>
+#include <string>
 
 using namespace arma;
 
 class Fisher {
     public:
-        Fisher(map<string, double> params);
+        Fisher(map<string, double> params, string Fl_filename);
         ~Fisher();
 
         void update_Model(map<string, double> new_params);
@@ -27,6 +29,7 @@ class Fisher {
         void show_Cl_inv_mat();
 
     private:
+        ofstream Fl_file;
         CosmoCalc *CALC;
         map<string, double> current_params, fiducial_params, var_params;
         mat Cl, Cl_inv;

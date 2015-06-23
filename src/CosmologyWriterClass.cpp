@@ -128,7 +128,7 @@ void CosmoWrite::calculate_densities_Omega(double zmax)
     file << "# Column 3: Omega_R" << endl;
     file << "# Column 4: Omega_V" << endl;
     file << "# Column 5: Sum" << endl;
-    
+
     double y1, y2, y3, y4, x;
     int steps = 100 * zmax;
     for (int i = 0; i < steps; i++) {
@@ -153,7 +153,7 @@ void CosmoWrite::calculate_H(double zmax)
         << endl;
     file << "# Column 1: Redshift z" << endl;
     file << "# Column 2: h" << endl;
-    
+
     double y1, x;
     int steps = 100 * zmax;
     for (int i = 0; i < steps; i++) {
@@ -166,15 +166,15 @@ void CosmoWrite::calculate_H(double zmax)
 }
 
 void CosmoWrite::calculate_P(double kmin, double kmax, int step,\
-                             string unit_k, string unit_P)
+        string unit_k, string unit_P)
 {
     double stepsize = (kmax - kmin) / (double)step;
-    
+
     ofstream file;
     string filename = "output/P_analytic.dat";
     file.open(filename);
     file << "# This file contains data for the analytic power spectrum\
-            vs k at redshift 0." << endl;
+        vs k at redshift 0." << endl;
     file << "# Column 1: scales k in units: " << unit_k << endl;
     file << "# Column 2: power spectrum in units: " << unit_P << endl;
 
@@ -191,12 +191,12 @@ void CosmoWrite::calculate_P(double kmin, double kmax, int step,\
 void CosmoWrite::calculate_P_CLASS(double kmin, double kmax, double z, int step)
 {
     double stepsize = (kmax - kmin) / (double)step;
-    
+
     ofstream file;
     string filename = "output/P_CLASS.dat";
     file.open(filename);
     file << "# This file contains data for the CLASS power spectrum\
-            vs k at redshift z." << endl;
+        vs k at redshift z." << endl;
     file << "# Column 1: scales k in units: h/Mpc " << endl;
     file << "# Column 2: power spectrum in units: h/Mpc^3 " << endl;
 
@@ -213,7 +213,7 @@ void CosmoWrite::calculate_P_CLASS(double kmin, double kmax, double z, int step)
 void CosmoWrite::calculate_dTb(double zmin, double zmax, int step)
 {
     double stepsize = (zmax - zmin) / (double)step;
-    
+
     ofstream file;
     string filename = "output/dTb.dat";
     file.open(filename);
@@ -223,6 +223,7 @@ void CosmoWrite::calculate_dTb(double zmin, double zmax, int step)
 
     double y1, x;
     for (int i = 0; i < step; i++) {
+        cout << "fine" << endl;
         x = zmin + (double)i * stepsize ;
         y1 = this->delta_Tb_bar(x);
 
@@ -234,7 +235,7 @@ void CosmoWrite::calculate_dTb(double zmin, double zmax, int step)
 void CosmoWrite::calculate_xHI(double zmin, double zmax, int step)
 {
     double stepsize = (zmax - zmin) / (double)step;
-    
+
     ofstream file;
     string filename = "output/xHI.dat";
     file.open(filename);
@@ -255,7 +256,7 @@ void CosmoWrite::calculate_xHI(double zmin, double zmax, int step)
 void CosmoWrite::calculate_Ts(double zmin, double zmax, int step)
 {
     double stepsize = (zmax - zmin) / (double)step;
-    
+
     ofstream file;
     string filename = "output/Ts.dat";
     file.open(filename);
@@ -276,7 +277,7 @@ void CosmoWrite::calculate_Ts(double zmin, double zmax, int step)
 void CosmoWrite::calculate_Tk(double zmin, double zmax, int step)
 {
     double stepsize = (zmax - zmin) / (double)step;
-    
+
     ofstream file;
     string filename = "output/Tk.dat";
     file.open(filename);
@@ -457,3 +458,157 @@ void CosmoWrite::calculate_integrandNN(int l, double k1, double k2, int step)
     }
     file.close();
 }
+
+void CosmoWrite::calculate_qdot()
+{
+    update_q_prime();
+    ofstream file;
+
+    string filename = "output/qdot.dat";
+    file.open(filename);
+    file << "# This file contains the derivative of q" << endl;
+    file << "# Column 1: n value (redshift measure)" << endl;
+    file << "# Column 2: q_dot" << endl;
+
+    double y1, x;
+    for (int i = 0; i < q_p_Ml.size(); i++) {
+        x = i;
+        y1 = q_p_Ml[i];
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+
+void CosmoWrite::calculate_q()
+{
+    update_q_prime();
+    ofstream file;
+
+    string filename = "output/q.dat";
+    file.open(filename);
+    file << "# This file contains the derivative of q" << endl;
+    file << "# Column 1: n value (redshift measure)" << endl;
+    file << "# Column 2: q" << endl;
+
+    double y1, x;
+    for (int i = 0; i < q_Ml.size(); i++) {
+        x = i;
+        y1 = q_Ml[i];
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+void CosmoWrite::calculate_integrandlong(int l, double k1, double k2, int step)
+{
+    ofstream file;
+    string filename = "output/integrandlong_"+to_string(k1)+"_"+to_string(k2)+".dat";
+    file.open(filename);
+    file << "# This file contains the long integrand from z = 7 to 9 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# Column 1: z" << endl;
+    file << "# Column 2: long integrand" << endl;
+
+    double stepsize = (9-7)/(double)step;
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = 7 + i*stepsize;
+        y1 = this->integrandlong(l,k1,k2,x);
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+void CosmoWrite::calculate_integrandsimple(int l, double k1, double k2, int step)
+{
+    ofstream file;
+    string filename = "output/integrandsimple_"+to_string(k1)+"_"+to_string(k2)+".dat";
+    file.open(filename);
+    file << "# This file contains the integrand simple  from z = 7 to 9 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# Column 1: z" << endl;
+    file << "# Column 2: simplified integrand" << endl;
+
+    double stepsize = (9-7)/(double)step;
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = 7 + i*stepsize;
+        y1 = this->integrandsimple(l,k1,k2,x);
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+
+void CosmoWrite::generate_movie(int l)
+{
+    double x, y1, y2;
+    double stepsize = 2.0/100.0;
+    int num = 0;
+    for (int k = 0; k < 10; k++) {
+        for (int i = 0; i < 10; i++) {
+            ofstream file;
+            file.open("movie/frame.dat");
+            double k1, k2;
+            k1 = 0.01 + k * 0.01;
+            k2 = 0.01 + i * 0.01;
+            for (int j = 0; j < 100; j++) {
+                x = 7 + j*stepsize;
+                y1 = this->integrandlong(l,k1,k2,x);
+                y2 = this->integrandsimple(l,k1,k2,x);
+
+                file << x << " " << y1 << " " << y2 << endl;
+            }
+            file.close();
+            stringstream command;
+            command << "python plot.py " << k1 << " " << k2 << " " << num;
+            system(command.str().c_str());
+            cout << "frame "<< num << " done " << endl;
+            num++;
+        }
+    }
+}
+
+void CosmoWrite::calculate_Cl_simple(int l, double k, double k_min, double k_max, double k_stepsize)
+{
+    double x, y;
+    ofstream file;
+    string filename = "output/Cl_simple_"+to_string(l)+"_"+to_string(k)+".dat";
+    file.open(filename);
+    file << "# This file contains the simplified Cl(k = "<< k <<", k') with k' from "<< k_min <<\
+        " to " << k_max << "." << endl;
+    file << "# Column 1: k'" << endl;
+    file << "# Column 2: Cl(k,k')" << endl;
+
+    int step = (k_max - k_min)/k_stepsize;
+    for (int i = 0; i < step; i++) {
+        x = k_min + i*k_stepsize;
+        y = this->Cl_simplified(l,k,x);
+        file << x << " " << y << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::generate_movie_Cl(int l_min, int l_max, double k, double k_min,\
+        double k_max, double k_stepsize)
+{
+    double x, y;
+    int num = 0;
+    int step = (k_max - k_min)/k_stepsize;
+    int l_steps = l_max - l_min;
+    for (int i = 0; i < l_steps; i++) {
+        ofstream file;
+        file.open("movie_Cl/frame.dat");
+        int l = l_min + i;
+        for (int j = 0; j < step; j++) {
+            x = k_min + j*k_stepsize;
+            y = this->Cl_simplified(l,k,x);
+
+            file << x << " " << y << endl;
+        }
+        file.close();
+        stringstream command;
+        command << "python plot_Cl.py " << l << " " << num;
+        system(command.str().c_str());
+        cout << "frame "<< num << " done " << endl;
+        num++;
+    }
+
+}
+

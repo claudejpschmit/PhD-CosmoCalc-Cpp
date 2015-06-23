@@ -38,11 +38,14 @@ template<typename Method, typename Function, typename Double>
 template<typename Function>
     double integrate_simps(Function f, double a, double b, int steps)
 {
+    int extrastep = 0;
     if (steps % 2 == 1){
-        cout << "ERROR in integrator" << endl;
-        return 0;
+        //cout << "ERROR in integrator" << endl;
+        //return 0;
+        extrastep = 1;
+
     }
-    double stepsize = (b-a)/(double)steps;
+    double stepsize = (b-a)/(double)(steps+extrastep);
     double res = f(a) + f(b);
 
     for (int n = 1; n < steps; ++n){

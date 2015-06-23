@@ -43,6 +43,7 @@ class CosmoCalc : public CosmoBasis {
         void show_cosmo_calcs();
         void updateClass(map<string, double> params);
         void update_q();
+        void update_q_prime();
 
         /**
          * Writing the Pk's at a redshift to a file.
@@ -315,7 +316,6 @@ class CosmoCalc : public CosmoBasis {
         double bessel_j_interp_basic(int l, double x);
         double bessel_j_interp_cubic(int l, double x);
 
-
         /** 
          * Determines the matter power spectrum P(k,z) from the CAMB 
          * interpolation.
@@ -337,23 +337,26 @@ class CosmoCalc : public CosmoBasis {
          */
         double Pkz_calc(double k, double z);
         
+        ///////////////////////////////////////////////////////////////////////
         /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
          */
-        double P_growth(double z);/** 
+        double P_growth(double z);
+        
+        /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
          */
-
-        double D1(double z);/** 
+        double D1(double z);
+        
+        /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
          */
-
         double P_delta(double k, string units_k = "default",\
                        string units_P = "default");/** 
          * Determines the critical density at a redshift [kg/m^3].
@@ -368,7 +371,10 @@ class CosmoCalc : public CosmoBasis {
          */
 
 
-        double Cl(int l, double k1, double k2, double k_low, double k_high);/** 
+        double Cl(int l, double k1, double k2, double k_low, double k_high);
+        double Cl_simplified(int l, double k1, double k2);
+
+        /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
@@ -424,18 +430,22 @@ class CosmoCalc : public CosmoBasis {
         double integrandMM(int l, double k1, double k2, double k);
         double integrandMN(int l, double k1, double k2, double k);
         double integrandNN(int l, double k1, double k2, double k);
+        
+        double integrandlong(int l, double k1, double k2, double k);
+        double integrandsimple(int l, double k1, double k2, double k);
+        double help_long(int l, double kp, double kappa);
 
     protected:
 
         // ------------ Functions -------------- //
         
         void create_bessel_interpolant_ALGLIB(int lmin, int lmax);
-        void create_bessel_interpolant_OWN(int lmax);
+        void create_bessel_interpolant_OWN(int lmin, int lmax);
         // ------------ Variables -------------- //
         int zsteps_Ml, Pk_steps;
         int lmin_bess;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml, k_stepsize;
-        vector<double> q_Ml, r_Ml, H_f;
+        vector<double> q_Ml, r_Ml, H_f, q_p_Ml;
         
         vector<Pk_interpolator> Pks;
         

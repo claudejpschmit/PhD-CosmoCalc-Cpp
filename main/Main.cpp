@@ -25,13 +25,31 @@ double f (double x)
     return x*x;
 }
 
+double fl (double x)
+{
+    return 0.551742 * x + 9778.15;
+}
+
 int main(int argc, char* argv[])
 { 
     map<string,double> params;
+    ofstream outfile;
+    //outfile.open("run_history.dat", ios::out | ios::app);
 
-   // CosmoWrite writer(params);
-/*    writer.calculate_integrandMN(142, 0.03, 0.03, 1000000);
+    CosmoWrite writer(params);
+    //writer.calculate_Cl_simple(50, 0.5, 0.001, 1, 0.00001);
+    writer.generate_movie_Cl(1, 100, 0.5, 0.001, 1, 0.0001);
+    //writer.generate_movie(30);
+    //writer.calculate_integrandsimple(30, 1, 1, 100);
+    //writer.calculate_integrandlong(30, 1, 1, 100);
+    
+    //writer.calculate_qdot();
+    //writer.calculate_q();
+    //writer.calculate_dTb(5, 20, 100);
+    /* writer.calculate_integrandMM(198, 0.03, 0.03, 1000000);
+   
     writer.calculate_integrandMN(142, 1, 1, 1000000);
+    
     writer.calculate_integrandMN(142, 0.3, 0.3, 1000000);
     writer.calculate_integrandMN(142, 0.3, 1, 1000000);
     writer.calculate_integrandMN(142, 0.03, 1, 1000000);
@@ -41,120 +59,54 @@ int main(int argc, char* argv[])
     writer.calculate_integrandMN(142, 0.015, 0.015, 1000000);
 
     writer.calculate_integrandMM(199, 0.5, 0.5, 1000000);
-    double res1, res2, res3, res4;
+    */ 
 
+
+      /*     
     clock_t t1, t2;
-    t1 = clock();
-    res1 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 5);
-    t2 = clock();
-    float diff = (float)t2 - (float)t1;
-    cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
-    t1 = clock();
-    res2 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 2);
-    t2 = clock();
-    diff = (float)t2 - (float)t1;
-    cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
-    t1 = clock();
-    res3 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 10);
-    t2 = clock();
-    diff = (float)t2 - (float)t1;
-    cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
-    t1 = clock();
-    res4 = writer.corr_Tb_rsd(142, 0.2, 0.05, 0.001, 1);
-    t2 = clock();
-    diff = (float)t2 - (float)t1;
-    cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
-
-    cout << res1 << endl;
-    cout << res2 << endl;
-    cout << res3 << endl;
-    cout << res4 << endl;
-*/
- 
-
-
-    //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
-   /* 
-    params.insert(pair<string,double>("ombh2",0.0226));
-    params.insert(pair<string,double>("omch2",0.112));
-    params.insert(pair<string,double>("omnuh2",0.00064));
-    params.insert(pair<string,double>("omk",0.0));
-    params.insert(pair<string,double>("hubble",70.0));
-
-    params.insert(pair<string,double>("zmin",7.0));
-    params.insert(pair<string,double>("zmax",9.0));
-    params.insert(pair<string,double>("Pk_steps",3));
-    CAMB_CALLER *camb;
-    camb = new CAMB_CALLER;
-    camb->call(params);
-    vector<double> k, vP;
-    vector<vector<double>> Pz;
-    Pz = camb->get_Pz_values();
-    k = camb->get_k_values();
-    for (int i = 0; i < Pz.size(); ++i) {
-        vP.insert(vP.end(), Pz[i].begin(), Pz[i].end());
-    }
-    cout <<vP.size()<<endl;
-    cout << Pz.size() << endl;
-    cout << k[1] << endl;
-    delete camb;
-    */
-    //CosmoCalc calc(params);
-
-    //cout << "test" << endl;
-    
-    /*** Bessel interpolation timer ***/
-    /*
-    CosmoWrite writer(params);
-    
-    clock_t t1, t2;
-    t1 = clock();
-    writer.calculate_bessels(5);    
-    t2 = clock();
-    float diff = (float)t2 - (float)t1;
-    cout << "runtime for fancy interp was " << diff/CLOCKS_PER_SEC << endl;
+    string Fl_filepath = "output/Fls.dat"; 
+    Fisher fish(params, Fl_filepath);
     
     t1 = clock();
-    writer.calculate_bessels_basic(5);
+    double res = fish.F("ombh2", "ombh2");
     t2 = clock();
-    diff = (float)t2 - (float)t1;
-    cout << "runtime for basic interp was " << diff/CLOCKS_PER_SEC << endl;
     
-    t1 = clock();
-    writer.calculate_bessels_cubic(5);
-    t2 = clock();
-    diff = (float)t2 - (float)t1;
-    cout << "runtime for cubic interp was " << diff/CLOCKS_PER_SEC << endl;
-
-    t1 = clock();
-    writer.calculate_bessels_exact(5);
-    t2 = clock();
-    diff = (float)t2 - (float)t1;
-    cout << "runtime for exact interp was " << diff/CLOCKS_PER_SEC << endl;
-    */
-    //writer.update_Pk_interpolator(writer.give_current_params());
-    //writer.calculate_P_compare(0.0001, 10, 10000, 7, 9, 3);
-    
-    
-    clock_t t1, t2;
-
-    Fisher fish(params);
-    t1 = clock();
-    cout << "Result is " << fish.F("ombh2", "ombh2")<< endl;
-    t2 = clock();
+    //outfile << " ##################### " << endl;
+    //outfile << "kstep_Cl = 3" << endl;
+    //outfile << "lmax = 15" << endl; 
+    cout << "Result is " << res << endl;
+    //outfile << "Result is " << res << endl;
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-    
-    //fish.compute_Cl(10);
-    //fish.show_Cl_mat();
-    //fish.compute_Cl_inv();
-    //fish.show_Cl_inv_mat();
-    //double res = fish.Cl_loglog_derivative(142, "ombh2", 0.1, 0.1);
-    //cout << res << endl;
-    
+    //outfile << "runtime was " << diff/CLOCKS_PER_SEC << endl;
+    */
+    /*     
+    ifstream filesimlpe, filelong;
+    filesimlpe.open("output/Fls_k4_simple.dat");
+    filelong.open("output/Fls_k4_long.dat");
+    vector<double> flsimple, flslong;
+    double a, b;
+    while (filesimlpe >> a >> b)
+    {
+        flsimple.push_back(b);
+    }
+    while (filelong >> a >> b)
+    {
+        flslong.push_back(b);
+    }
+    ofstream errorfile("output/error_fls_k4.dat");
+    double err;
+
+    for (int i = 0; i < flsimple.size(); ++i)
+    {
+        err = abs((flsimple[i] - flslong[i]) / flsimple[i]);
+        errorfile << i << " " << err << endl;
+    }
+
+    */
     (void) argc;
     (void) argv;
-/*
+    /*
     mat A = randu<mat>(2,2);
     mat B = randu<mat>(2,2);
 
@@ -165,7 +117,7 @@ int main(int argc, char* argv[])
     cout << A << endl;
     cout << B << endl;
     cout << A*B  << endl;
-  */
+    */
     /*
        const char output_path[] = "output";
        if (stat(output_path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
@@ -287,7 +239,6 @@ int main(int argc, char* argv[])
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
 
 */
-
 
     return 0;
 }

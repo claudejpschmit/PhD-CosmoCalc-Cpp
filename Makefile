@@ -17,9 +17,9 @@ vpath .base build
 
 # Compiler required for c++ code.
 # including -ffast-math may not be as bad as anticipated.
-CXX = g++ -Wall -std=c++11 -ffast-math 
+CXX = g++ -Wall -std=c++11 -ffast-math -s 
 # Compiler required for c code.
-CC = gcc -Wall
+CC = gcc -Wall -s
 
 OPTFLAG = -O4
 ARMAFLAGS = -larmadillo
@@ -81,4 +81,6 @@ class_test: $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(CLASS)
 
 clean: .base
 	rm -rf $(WRKDIR);
-	rm -f libclass.a
+	rm -f libclass.a;
+	rm calc;
+	rm class_test

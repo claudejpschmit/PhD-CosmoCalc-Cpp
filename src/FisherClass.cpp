@@ -2,7 +2,7 @@
 #include <fstream>
 #include <time.h>
 
-Fisher::Fisher(map<string, double> params)
+Fisher::Fisher(map<string, double> params, string Fl_filename)
 {
     cout << "... Beginning to build FisherClass ..." << endl;
     CALC = new CosmoCalc(params);
@@ -19,19 +19,22 @@ Fisher::Fisher(map<string, double> params)
             var_params.insert(pair<string,double>(key,current_params[key]/100));
     }
     //This determines the size of the Cl matrices.
-    int ksteps_Cl = 2;
+    int ksteps_Cl = 4;
     double kstepsize_Cl = (kmax - kmin)/(double)ksteps_Cl;
+    //double kstepsize_Cl = 0.00001;
     for (int n = 0; n <= ksteps_Cl; ++n) 
         krange.push_back(kmin + n * kstepsize_Cl);
 
     Cl = randu<mat>(krange.size(),krange.size());
     Cl_inv = Cl;
+    Fl_file.open(Fl_filename);
 
     cout << "... Fisher built ..." << endl;
 }
 
 Fisher::~Fisher()
 {
+    Fl_file.close();
     delete CALC;
 }
 
@@ -39,6 +42,7 @@ void Fisher::update_Model(map<string, double> new_params)
 {
     this->CALC->generate_params(new_params);
     this->CALC->update_q();
+    this->CALC->update_q_prime();
     this->CALC->update_Pk_interpolator_direct(new_params);
     //this->CALC->updateClass(new_params);
 }
@@ -75,7 +79,7 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
 {
     double h = this->var_params[param_key];
     double x = this->current_params[param_key];
-    
+
     double f1,f2,f3,f4;
     bool do_calc = true;
     int index;
@@ -88,7 +92,7 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f1 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
@@ -106,7 +110,7 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f2 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
@@ -116,7 +120,7 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
         f2 = derivs_calculated[index];
     do_calc = true;
 
-    
+
     this->current_params[param_key] = x - h;
     for (unsigned int i = 0; i < this->abcisses_done_simple.size(); ++i) { 
         if (this->abcisses_done_simple[i] == this->current_params[param_key]) {
@@ -125,7 +129,7 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f3 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
@@ -143,7 +147,7 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f4 = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax);
@@ -157,12 +161,12 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2)
 
     double num = -f1 + 8*f2 - 8*f3 + f4;
     double res = num /(12*h);
-    
+
     return x*res;
 }
 
 double Fisher::Cl_loglog_derivative(int l, string param_key,\
-                                    double k1, double k2)
+        double k1, double k2)
 {
     double h = this->var_params[param_key];
     double x = this->current_params[param_key];
@@ -178,7 +182,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f1 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
@@ -196,7 +200,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f2 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
@@ -206,7 +210,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
         f2 = logderivs_calculated[index];
     do_calc = true;
 
-    
+
     this->current_params[param_key] = x - h;
     for (unsigned int i = 0; i < this->abcisses_done.size(); ++i) { 
         if (this->abcisses_done[i] == this->current_params[param_key]) {
@@ -215,7 +219,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f3 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
@@ -233,7 +237,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
             break;
         }
     }
-    
+
     if (do_calc) {
         this->update_Model(this->current_params);
         f4 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax));
@@ -247,7 +251,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
 
     double num = -f1 + 8*f2 - 8*f3 + f4;
     double res = num /(12*h);
-    
+
     return x*res;
 }
 
@@ -333,10 +337,12 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
         Cl_beta = Cl_alpha;
     else
         Cl_beta = this->Cl_derivative_matrix(l, param_key2);
-    
+
     cout << "-> The derivative matrices are done for l = " << l << endl;
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
     this->compute_Cl(l);
+    cout << Cl << endl;
+
     this->compute_Cl_inv();
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
     mat Cl_a, Cl_b;
@@ -349,22 +355,32 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
         }
     } 
-    cout << Cl_a << endl;
+   
+        //cout << "with det = " << det(Cl) << endl;
+    //cout << Cl_a << endl;
+    cout << Cl_inv << endl;
+    //cout << Cl_b << endl;
     mat product = Cl_a * this->Cl_inv;
+    //cout << product << endl;
     product = product * Cl_b;
+    //cout << product << endl;
     product = product * this->Cl_inv;
+    //cout << product << endl;
 
     return 0.5 * trace(product);
 }
 
 double Fisher::F(string param_key1, string param_key2)
 {
-    int lmax = 2;
+    int lmax = 2000;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
-    for (int l = 1; l <= lmax; ++l) {
+    for (int l = 2000; l <= lmax; ++l) {
         cout << "Computation of Fl starts for l = " << l << endl;
-        sum += (2*l + 1) * this->compute_Fl(l, param_key1, param_key2);
+        double fl = this->compute_Fl(l, param_key1, param_key2);
+        cout << "fl with l = " << l << " is: " << fl << endl;
+        Fl_file << l << " " << fl << endl;
+        sum += (2*l + 1) * fl;
     }
     return sum;
 }
@@ -379,28 +395,29 @@ void Fisher::write_logder(string param_key, double param_val,\
         update_Model(this->current_params);
     }
 
+
     ofstream file;
     string filename = "output/fisherlogder_" + param_key + suffix + ".dat";
 
     file.open(filename);
     file << "# This file contains data log derivative of the Cl's wrt " <<\
-         param_key << " vs derivative stepsize." << endl;
+        param_key << " vs derivative stepsize." << endl;
     file << "# Column 1: derivative stepsize h" << endl;
     file << "# Column 2: Logderivative dlnCl/dx." << endl;
     file << "# Column 3: Real runtime per point in second." << endl;
-  
+
     abcisses_done.clear();
     logderivs_calculated.clear();
     double y1;
     double stepsize = (stepsize_high - stepsize_low)/(double)steps;
     clock_t t1, t2;
-    
+
     for (int i = 0; i <= steps; i++) {
         t1 = clock();
-        
+
         this->var_params[param_key] = stepsize_low + i * stepsize;
         y1 = this->Cl_loglog_derivative(l, param_key, k1, k2);
-        
+
         t2 = clock();
         float diff ((float)t2 - (float)t1);
 

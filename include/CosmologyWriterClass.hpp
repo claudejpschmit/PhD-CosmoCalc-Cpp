@@ -38,5 +38,17 @@ class CosmoWrite : public CosmoCalc {
         void calculate_integrandMM(int l, double k1, double k2, int step);
         void calculate_integrandMN(int l, double k1, double k2, int step);
         void calculate_integrandNN(int l, double k1, double k2, int step);
+        
+        void calculate_integrandlong(int l, double k1, double k2, int step);
+        void calculate_integrandsimple(int l, double k1, double k2, int step);
+
+        void calculate_qdot();
+        void calculate_q();
+
+        void generate_movie(int l);
+        void calculate_Cl_simple(int l, double k, double k_min, double k_max, double k_stepsize);
+        
+        void generate_movie_Cl(int l_min, int l_max, double k, double k_min,\
+                double k_max, double k_stepsize);
 
 };

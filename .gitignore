@@ -29,3 +29,6 @@
 
 # Datafiles
 *.dat
+
+# Pictures
+*.png
