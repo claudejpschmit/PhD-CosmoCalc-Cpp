@@ -18,15 +18,7 @@ Fisher::Fisher(map<string, double> params, string Fl_filename)
         else
             var_params.insert(pair<string,double>(key,current_params[key]/100));
     }
-    //This determines the size of the Cl matrices.
-    int ksteps_Cl = 4;
-    double kstepsize_Cl = (kmax - kmin)/(double)ksteps_Cl;
-    //double kstepsize_Cl = 0.00001;
-    for (int n = 0; n <= ksteps_Cl; ++n) 
-        krange.push_back(kmin + n * kstepsize_Cl);
-
-    Cl = randu<mat>(krange.size(),krange.size());
-    Cl_inv = Cl;
+    
     Fl_file.open(Fl_filename);
 
     cout << "... Fisher built ..." << endl;
@@ -41,8 +33,8 @@ Fisher::~Fisher()
 void Fisher::update_Model(map<string, double> new_params)
 {
     this->CALC->generate_params(new_params);
-    this->CALC->update_q();
-    this->CALC->update_q_prime();
+    //this->CALC->update_q();
+    //this->CALC->update_q_prime();
     this->CALC->update_Pk_interpolator_direct(new_params);
     //this->CALC->updateClass(new_params);
 }
@@ -331,6 +323,16 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key)
 double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 {
     vector<vector<double>> Cl_alpha, Cl_beta;
+    //This determines the size of the Cl matrices.
+    int ksteps_Cl = 4;
+    krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
+    //for (int i = 0; i < krange.size(); i++)
+    //    cout << krange[i] << " ";
+    //cout << endl;
+
+    Cl = randu<mat>(krange.size(),krange.size());
+    Cl_inv = Cl;
+
     cout << "... derivative matrix calulation started" << endl;
     Cl_alpha = this->Cl_derivative_matrix(l, param_key1);
     if (param_key1 == param_key2)
@@ -340,8 +342,9 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
     cout << "-> The derivative matrices are done for l = " << l << endl;
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
+
     this->compute_Cl(l);
-    cout << Cl << endl;
+    //cout << Cl << endl;
 
     this->compute_Cl_inv();
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
@@ -356,9 +359,9 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
         }
     } 
    
-        //cout << "with det = " << det(Cl) << endl;
+    //cout << "with det = " << det(Cl) << endl;
     //cout << Cl_a << endl;
-    cout << Cl_inv << endl;
+    //cout << Cl_inv << endl;
     //cout << Cl_b << endl;
     mat product = Cl_a * this->Cl_inv;
     //cout << product << endl;
@@ -372,10 +375,10 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
 double Fisher::F(string param_key1, string param_key2)
 {
-    int lmax = 2000;
+    int lmax = 5000;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
-    for (int l = 2000; l <= lmax; ++l) {
+    for (int l = 1; l <= lmax; ++l) {
         cout << "Computation of Fl starts for l = " << l << endl;
         double fl = this->compute_Fl(l, param_key1, param_key2);
         cout << "fl with l = " << l << " is: " << fl << endl;
@@ -429,3 +432,23 @@ void Fisher::write_logder(string param_key, double param_val,\
     file.close(); 
 }
 
+vector<double> Fisher::give_kmodes(int l, double k_max, int steps)
+{
+    double k_min; 
+    if (l < 100) {
+        k_min = (double)l/20000.0;
+        if (k_min < 0.0001)
+            k_min = 0.0001;
+    } else if (l < 500) {
+        k_min = (double)l/15000.0;
+    } else {
+        k_min = (double)l/10000.0;
+    }
+    double stepsize = (k_max - k_min)/(double)steps;
+    vector<double> range;
+    for (int i = 0; i <= steps; ++i)
+    {
+        range.push_back(k_min + i * stepsize); 
+    }
+    return range;
+}

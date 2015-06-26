@@ -7,7 +7,7 @@ CosmoWrite::CosmoWrite(map<string, double> params)
 {
     cout << "... Beginning to build CosmoWriter ..." << endl;
 
-    this->create_bessel_interpolant_ALGLIB(0, this->fiducial_params["l_max"]);
+    this->create_bessel_interpolant_ALGLIB(this->fiducial_params["l_min"], this->fiducial_params["l_max"]);
 
     cout << "... CosmoWriter built ..." << endl;
 }

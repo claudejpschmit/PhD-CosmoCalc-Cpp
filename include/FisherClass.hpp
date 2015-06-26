@@ -29,6 +29,8 @@ class Fisher {
         void show_Cl_inv_mat();
 
     private:
+        vector<double> give_kmodes(int l, double kmax, int steps);
+        
         ofstream Fl_file;
         CosmoCalc *CALC;
         map<string, double> current_params, fiducial_params, var_params;
@@ -37,4 +39,5 @@ class Fisher {
         double kmin, kmax;
         vector<double> abcisses_done, logderivs_calculated,\
             abcisses_done_simple, derivs_calculated;
+        
 };

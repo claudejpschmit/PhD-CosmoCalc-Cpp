@@ -36,9 +36,9 @@ int main(int argc, char* argv[])
     ofstream outfile;
     //outfile.open("run_history.dat", ios::out | ios::app);
 
-    CosmoWrite writer(params);
-    //writer.calculate_Cl_simple(50, 0.5, 0.001, 1, 0.00001);
-    writer.generate_movie_Cl(1, 100, 0.5, 0.001, 1, 0.0001);
+    //CosmoWrite writer(params);
+    //writer.calculate_Cl_simple(2, 0.1, 0.00001, 1, 0.00001);
+    //writer.generate_movie_Cl(1, 100, 0.5, 0.001, 1, 0.0001);
     //writer.generate_movie(30);
     //writer.calculate_integrandsimple(30, 1, 1, 100);
     //writer.calculate_integrandlong(30, 1, 1, 100);
@@ -62,9 +62,9 @@ int main(int argc, char* argv[])
     */ 
 
 
-      /*     
+         
     clock_t t1, t2;
-    string Fl_filepath = "output/Fls.dat"; 
+    string Fl_filepath = "output/Fls_rsd_simple_noq.dat"; 
     Fisher fish(params, Fl_filepath);
     
     t1 = clock();
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
     //outfile << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-    */
+    
     /*     
     ifstream filesimlpe, filelong;
     filesimlpe.open("output/Fls_k4_simple.dat");

@@ -62,8 +62,8 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("kmax",2));
     // Do not go above 1000 for lmax!!!
 
-    this->fiducial_params.insert(pair<string,double>("l_min",0));
-    this->fiducial_params.insert(pair<string,double>("l_max",200));
+    this->fiducial_params.insert(pair<string,double>("l_min",999));
+    this->fiducial_params.insert(pair<string,double>("l_max",1500));
 
     this->fiducial_params.insert(pair<string,double>("100*theta_s",1.04));
     this->fiducial_params.insert(pair<string,double>("A_s",2.42e-9));
