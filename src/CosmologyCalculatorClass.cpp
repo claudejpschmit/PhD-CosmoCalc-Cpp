@@ -516,6 +516,7 @@ void CosmoCalc::update_G21(map<string,double> params)
         interp.fx = params["fx"];
         interp.flya = params["flya"];
 
+        cout << "G21 is being updated" << endl;
         G21->updateGlobal21cm(params);
         vector<double> vz, vTb;
         G21->getTb(&vz, &vTb);
@@ -725,7 +726,7 @@ double CosmoCalc::Cl_simplified_rsd(int l, double k1, double k2)
         L4.push_back(-LL2 * k2r * (l+1));
         L4.push_back(-LL2 * k1r * (l+1));       
         L4.push_back(LL2 * k1r * k2r);
-        double A = rr * pow(this->delta_Tb_bar(z),2) * this->Pk_interp((double)l/q * this->h,z)/\
+        double A = rr * pow(this->Tb_interp(z),2) * this->Pk_interp((double)l/q * this->h,z)/\
                    (pow(this->h,3)*hh*qp);   
         double JL2 = 0;
         double JL3 = 0;
@@ -766,7 +767,7 @@ double CosmoCalc::Cl_simplified(int l, double k1, double k2)
         rr = r*r;
         double hh = pow(this->H_f[n]*1000.0, 2);
         double A = rr * this->Pk_interp(((double)l + 0.5)/q * this->h,z)/(pow(this->h,3)*hh*qp) *\
-                   pow(this->delta_Tb_bar(z),2);
+                   pow(this->Tb_interp(z),2);
 
         //TODO: check whether we need to multiply py h.
         // here: changed it back to non - interpolation, because it isn't necessary for the simplified case.
@@ -874,12 +875,12 @@ double CosmoCalc::corr_Tb_new(int l, double k1, double k2, double k_low,\
                     this->bessel_j_interp_cubic(l,kappa*qp);
             };
             double integral3 = integrate_simps(integrand3, k_low, k_high, steps);
-            return rp*rp / (this->H_f[n2]*1000.0) * this->delta_Tb_bar(zp) *\
+            return rp*rp / (this->H_f[n2]*1000.0) * this->Tb_interp(zp) *\
                 this->bessel_j_interp_cubic(l,k2*rp) * integral3;
         };
         int zstep = 1000;
         double integral2 = integrate_simps(integrand2, this->zmin_Ml, this->zmax_Ml, zstep);
-        return r*r / (this->H_f[n]*1000.0) * this->delta_Tb_bar(z) *\
+        return r*r / (this->H_f[n]*1000.0) * this->Tb_interp(z) *\
             this->bessel_j_interp_cubic(l,k1*r) * integral2;
     };
     int zstep = 1000;
@@ -928,12 +929,12 @@ void CosmoCalc::compare(int l, double k1, double k2)
                 this->bessel_j_interp_cubic(l,kappa*qp);
         };
         double integral3 = integrate_simps(integrand3, k_low, k_high, steps);
-        return rp*rp / (this->H_f[n2]*1000.0) * this->delta_Tb_bar(zp) *\
+        return rp*rp / (this->H_f[n2]*1000.0) * this->Tb_interp(zp) *\
             this->bessel_j_interp_cubic(l,k2*rp) * integral3;
     };
     int zstep = 10000;
     double integral2 = integrate_simps(integrand2, 7.5, 8.5, zstep);
-    double res1 = pow(this->prefactor_Ml,2) * r*r / (this->H_f[n]*1000.0) * this->delta_Tb_bar(z) *\
+    double res1 = pow(this->prefactor_Ml,2) * r*r / (this->H_f[n]*1000.0) * this->Tb_interp(z) *\
                   this->bessel_j_interp_cubic(l,k1*r) * integral2;
 
     double qp, rr; 
@@ -941,7 +942,7 @@ void CosmoCalc::compare(int l, double k1, double k2)
     rr = r*r;
     double hh = pow(this->H_f[n]*1000.0, 2);
     double A = rr * this->Pk_interp(((double)l + 0.5)/q * this->h,z)/(pow(this->h,3)*hh*qp) *\
-               pow(this->delta_Tb_bar(z),2);
+               pow(this->Tb_interp(z),2);
 
     double pre = 2*this->b_bias*this->b_bias*this->c*this->c/this->pi;
     double res2 = pre * A * rr / (q*q) * this->sph_bessel_camb(l,k1*r) * this->sph_bessel_camb(l, k2*r);
@@ -966,7 +967,7 @@ double CosmoCalc::M(int l, double k1, double k2)
         q = this->q_Ml[n];
 
         //TODO: check whether we need to multiply py h.
-        return pow(r,2) * this->delta_Tb_bar(z) * this->bessel_j_interp_cubic(l,k1*r) *\
+        return pow(r,2) * this->Tb_interp(z) * this->bessel_j_interp_cubic(l,k1*r) *\
             this->bessel_j_interp_cubic(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
                     pow(this->h,3)) / (this->H_f[n]*1000.0);
 
@@ -1000,7 +1001,7 @@ double CosmoCalc::N_bar(int l, double k1, double k2)
 
         double pref = r / (this->H_f[n]*1000.0*(1+z));
         double pk = sqrt(this->Pk_interp(k2*this->h, z)/pow(this->h, 3));
-        double dtb = this->delta_Tb_bar(z);
+        double dtb = this->Tb_interp(z);
         double pkdtb = pk * dtb;
         double jl1r = this->bessel_j_interp_cubic(l - 1, k1 * r);
         double jl2r = this->bessel_j_interp_cubic(l, k1 * r);
@@ -1116,7 +1117,7 @@ double CosmoCalc::integrandsimple(int l, double k1, double k2, double z)
     qp = this->q_p_Ml[n];
     double hh = pow(this->H_f[n]*1000.0, 2);
 
-    return pow(this->prefactor_Ml,2)* pow(r,4) / abs(qp) * pow(this->delta_Tb_bar(z),2) *\
+    return pow(this->prefactor_Ml,2)* pow(r,4) / abs(qp) * pow(this->Tb_interp(z),2) *\
         this->pi / (2*pow(q,2)) *\
         this->bessel_j_interp_cubic(l,k1*r) *\
         this->bessel_j_interp_cubic(l,k2*r) *\
@@ -1141,7 +1142,7 @@ double CosmoCalc::help_long(int l, double kp, double kappa)
         r = this->r_Ml[n];
         q = this->q_Ml[n];
         hh = this->H_f[n]*1000.0;
-        Tb = this->delta_Tb_bar(zz);
+        Tb = this->Tb_interp(zz);
 
         return pow(r,2)/hh * Tb * sqrt(this->Pk_interp(kappa*this->h,zz)/pow(this->h,3)) *\
             this->bessel_j_interp_cubic(l,kp*r) * this->bessel_j_interp_cubic(l,kappa*q);
@@ -1162,7 +1163,7 @@ double CosmoCalc::integrandlong(int l, double k1, double k2, double z)
     double r,hh, Tb;
     r = this->r_Ml[n];
     hh = this->H_f[n]*1000.0;
-    Tb = this->delta_Tb_bar(z);
+    Tb = this->Tb_interp(z);
 
     int steps = (int)((1 - 0.001)/0.0001);
     if (steps % 2 == 1)
