@@ -47,8 +47,13 @@ class CosmoWrite : public CosmoCalc {
 
         void generate_movie(int l);
         void calculate_Cl_simple(int l, double k, double k_min, double k_max, double k_stepsize);
-        
+        void calculate_Cl_full(int l, double k, double k_min, double k_max, double k_stepsize);
+        void calculate_Cl_simple_rsd(int l, double k, double k_min, double k_max, double k_stepsize);
+        void calculate_Cl_full_rsd(int l, double k, double k_min, double k_max, double k_stepsize);
+
         void generate_movie_Cl(int l_min, int l_max, double k, double k_min,\
                 double k_max, double k_stepsize);
+        void calculate_Ml(int lmin, int lmax, double k, double kappa);
+        void calculate_Nl(int lmin, int lmax, double k, double kappa);
 
 };

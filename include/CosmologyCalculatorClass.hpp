@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "interpolation.h"
 #include "CAMB_interface.hpp"
+#include "Global21cmInterface.hpp"
 #include "Helper.hpp"
 using namespace std;
 using namespace alglib;
@@ -17,7 +18,7 @@ class CosmoCalc : public CosmoBasis {
     
     public:
 
- 
+         
         // ------------ Functions -------------- //
 
         /**
@@ -34,7 +35,7 @@ class CosmoCalc : public CosmoBasis {
          * Standard destructor, destroying CLASS object used.
          */
         ~CosmoCalc();
-
+        void update_G21(map<string, double> params);
         void update_Pk_interpolator_direct(map<string, double> params);
 
         /**
@@ -44,7 +45,8 @@ class CosmoCalc : public CosmoBasis {
         void updateClass(map<string, double> params);
         void update_q();
         void update_q_prime();
-
+        double limber(int l, double r);
+        double limber2(int l, double r);
         /**
          * Writing the Pk's at a redshift to a file.
          * The Pk's range from k = 0.0001 to k = 10.
@@ -325,6 +327,7 @@ class CosmoCalc : public CosmoBasis {
          * @param z is the redshift at which the power spectrum is evaluated.
          */
         double Pk_interp(double k, double z);
+        double Tb_interp(double z);
 
         /** 
          * TODO: determine units...
@@ -379,6 +382,8 @@ class CosmoCalc : public CosmoBasis {
          *
          * @param z is the redshift at which the critical density is calculated.
          */
+        double corr_Tb_new(int l, double k1, double k2, double k_low, double k_high);
+        void compare(int l, double k1, double k2);
 
         double corr_Tb(int l, double k1, double k2, double k_low, double k_high);/** 
          * Determines the critical density at a redshift [kg/m^3].
@@ -401,7 +406,8 @@ class CosmoCalc : public CosmoBasis {
          * @param z is the redshift at which the critical density is calculated.
          */
 
-        double delta_Tb_bar(double z);/** 
+        double delta_Tb_bar(double z);
+        double delta_Tb_bar_G21(double z);/** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
@@ -448,8 +454,10 @@ class CosmoCalc : public CosmoBasis {
         vector<double> q_Ml, r_Ml, H_f, q_p_Ml;
         
         vector<Pk_interpolator> Pks;
-        
+        vector<Tb_interpolator> Tbs;
+
         int Pk_index;
+        int Tb_index;
 
         vector<spline1dinterpolant> bessel_interp_list;
         
@@ -458,5 +466,6 @@ class CosmoCalc : public CosmoBasis {
         ClassParams pars;
         ClassEngine *CLASS;
         CAMB_CALLER *CAMB;
+        Global21cmInterface *G21; 
        
 };

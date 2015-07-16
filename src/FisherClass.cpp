@@ -33,9 +33,10 @@ Fisher::~Fisher()
 void Fisher::update_Model(map<string, double> new_params)
 {
     this->CALC->generate_params(new_params);
-    //this->CALC->update_q();
-    //this->CALC->update_q_prime();
+    this->CALC->update_q();
+    this->CALC->update_q_prime();
     this->CALC->update_Pk_interpolator_direct(new_params);
+    this->CALC->update_G21(new_params);
     //this->CALC->updateClass(new_params);
 }
 
@@ -375,7 +376,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
 double Fisher::F(string param_key1, string param_key2)
 {
-    int lmax = 5000;
+    int lmax = 500;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
     for (int l = 1; l <= lmax; ++l) {

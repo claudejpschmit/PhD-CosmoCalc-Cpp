@@ -141,6 +141,8 @@ class CosmoBasis {
 
         double sph_bessel_camb(unsigned int l, double x);
 
+        int give_optimal_zstep(double k1, double k2);
+
         // ------------ Variables -------------- //
 
         /// \brief params contains the working parameters.

@@ -7,7 +7,7 @@ CosmoWrite::CosmoWrite(map<string, double> params)
 {
     cout << "... Beginning to build CosmoWriter ..." << endl;
 
-    this->create_bessel_interpolant_ALGLIB(this->fiducial_params["l_min"], this->fiducial_params["l_max"]);
+    //this->create_bessel_interpolant_ALGLIB(this->fiducial_params["l_min"], this->fiducial_params["l_max"]);
 
     cout << "... CosmoWriter built ..." << endl;
 }
@@ -375,7 +375,7 @@ void CosmoWrite::calculate_bessels_cubic(int l)
     file << "# Column 2: j_"<< l << "(x)" << endl;
 
     double y1, x;
-    for (int i = 1; i < 1000000; i++) {
+    for (int i = 1; i < 100000; i++) {
         x = i/10.0;
         y1 = this->bessel_j_interp_cubic(l, x);
 
@@ -396,7 +396,7 @@ void CosmoWrite::calculate_bessels_exact(int l)
     file << "# Column 2: j_"<< l << "(x) from camb." << endl;
 
     double x, y2;
-    for (int i = 1; i < 1000000; i++) {
+    for (int i = 1; i < 100000; i++) {
         x = i/10.0;
         y2 = this->sph_bessel_camb(l,x);
         file << x << " " << y2 << endl;
@@ -585,6 +585,69 @@ void CosmoWrite::calculate_Cl_simple(int l, double k, double k_min, double k_max
 
 }
 
+void CosmoWrite::calculate_Cl_full(int l, double k, double k_min, double k_max, double k_stepsize)
+{
+    double x, y;
+    ofstream file;
+    string filename = "output/Cl_full_"+to_string(l)+"_"+to_string(k)+"_new.dat";
+    file.open(filename);
+    file << "# This file contains the full Cl(k = "<< k <<", k') with k' from "<< k_min <<\
+        " to " << k_max << "." << endl;
+    file << "# Column 1: k'" << endl;
+    file << "# Column 2: Cl(k,k')" << endl;
+
+    int step = (k_max - k_min)/k_stepsize;
+    for (int i = 0; i < step; i++) {
+        x = k_min + i*k_stepsize;
+        y = this->corr_Tb_new(l,k,x,0.0001,1.0);
+        file << x << " " << y << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::calculate_Cl_simple_rsd(int l, double k, double k_min, double k_max, double k_stepsize)
+{
+    double x, y;
+    ofstream file;
+    string filename = "output/Cl_simple_rsd_"+to_string(l)+"_"+to_string(k)+".dat";
+    file.open(filename);
+    file << "# This file contains the simplified Cl(k = "<< k <<", k') with k' from "<< k_min <<\
+        " to " << k_max << "." << endl;
+    file << "# Column 1: k'" << endl;
+    file << "# Column 2: Cl(k,k')" << endl;
+
+    int step = (k_max - k_min)/k_stepsize;
+    for (int i = 0; i < step; i++) {
+        x = k_min + i*k_stepsize;
+        y = this->Cl_simplified_rsd(l,k,x);
+        file << x << " " << y << endl;
+    }
+    file.close();
+
+}
+
+void CosmoWrite::calculate_Cl_full_rsd(int l, double k, double k_min, double k_max, double k_stepsize)
+{
+    double x, y;
+    ofstream file;
+    string filename = "output/Cl_full_rsd"+to_string(l)+"_"+to_string(k)+".dat";
+    file.open(filename);
+    file << "# This file contains the full Cl(k = "<< k <<", k') with k' from "<< k_min <<\
+        " to " << k_max << "." << endl;
+    file << "# Column 1: k'" << endl;
+    file << "# Column 2: Cl(k,k')" << endl;
+
+    int step = (k_max - k_min)/k_stepsize;
+    for (int i = 0; i < step; i++) {
+        x = k_min + i*k_stepsize;
+        y = this->corr_Tb_rsd(l,k,x,0.0001,1.0);
+        file << x << " " << y << endl;
+    }
+    file.close();
+
+}
+
 void CosmoWrite::generate_movie_Cl(int l_min, int l_max, double k, double k_min,\
         double k_max, double k_stepsize)
 {
@@ -611,4 +674,43 @@ void CosmoWrite::generate_movie_Cl(int l_min, int l_max, double k, double k_min,
     }
 
 }
+void CosmoWrite::calculate_Ml(int lmin, int lmax, double k, double kappa)
+{
+    double x, y;
+    ofstream file;
+    string filename = "output/Ml_"+to_string(k)+"_"+to_string(kappa)+".dat";
+    file.open(filename);
+    file << "# This file contains Ml(k = "<< k <<", kappa = " << kappa << ") with l from "<< lmin <<\
+        " to " << lmax << "." << endl;
+    file << "# Column 1: l'" << endl;
+    file << "# Column 2: Ml(k,kappa)" << endl;
 
+    int step = (lmax - lmin);
+    for (int i = 0; i < step; i++) {
+        x = lmin + i;
+        y = this->M(x, k, kappa);
+        file << x << " " << y << endl;
+    }
+    file.close();
+
+}
+void CosmoWrite::calculate_Nl(int lmin, int lmax, double k, double kappa)
+{
+    double x, y;
+    ofstream file;
+    string filename = "output/Nl_"+to_string(k)+"_"+to_string(kappa)+".dat";
+    file.open(filename);
+    file << "# This file contains Nl(k = "<< k <<", kappa = " << kappa << ") with l from "<< lmin <<\
+        " to " << lmax << "." << endl;
+    file << "# Column 1: l'" << endl;
+    file << "# Column 2: Nl(k,kappa)" << endl;
+
+    int step = (lmax - lmin);
+    for (int i = 0; i < step; i++) {
+        x = lmin + i;
+        y = this->N_bar(x, k, kappa);
+        file << x << " " << y << endl;
+    }
+    file.close();
+
+}

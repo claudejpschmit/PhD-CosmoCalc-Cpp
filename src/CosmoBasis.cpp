@@ -55,23 +55,34 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("T_CMB",2.7255));
     this->fiducial_params.insert(pair<string,double>("zmin",7.0));
     this->fiducial_params.insert(pair<string,double>("zmax",9.0));
-    this->fiducial_params.insert(pair<string,double>("zsteps",100));
+    this->fiducial_params.insert(pair<string,double>("zsteps",1000));
     this->fiducial_params.insert(pair<string,double>("Pk_steps",3));
     this->fiducial_params.insert(pair<string,double>("k_stepsize",0.0001));
-    this->fiducial_params.insert(pair<string,double>("kmin",0.2));
+    this->fiducial_params.insert(pair<string,double>("kmin",0.1));
     this->fiducial_params.insert(pair<string,double>("kmax",2));
     // Do not go above 1000 for lmax!!!
 
-    this->fiducial_params.insert(pair<string,double>("l_min",999));
-    this->fiducial_params.insert(pair<string,double>("l_max",1500));
+    this->fiducial_params.insert(pair<string,double>("l_min",990));
+    this->fiducial_params.insert(pair<string,double>("l_max",1010));
 
     this->fiducial_params.insert(pair<string,double>("100*theta_s",1.04));
     this->fiducial_params.insert(pair<string,double>("A_s",2.42e-9));
     this->fiducial_params.insert(pair<string,double>("n_s",0.96));
+    this->fiducial_params.insert(pair<string,double>("sigma8",0.8));
     this->fiducial_params.insert(pair<string,double>("tau_reio",0.09));
     this->fiducial_params.insert(pair<string,double>("k_pivot",0.05));
     this->fiducial_params.insert(pair<string,double>("YHe",0.25));
     this->fiducial_params.insert(pair<string,double>("z_pk",7.0));
+
+    this->fiducial_params.insert(pair<string,double>("fstar",0.1));
+    this->fiducial_params.insert(pair<string,double>("fesc",0.05));
+    this->fiducial_params.insert(pair<string,double>("nion",4000.0));
+    this->fiducial_params.insert(pair<string,double>("fx",1.0));
+    this->fiducial_params.insert(pair<string,double>("flya",1.0));
+    this->fiducial_params.insert(pair<string,double>("popflag",0));
+    this->fiducial_params.insert(pair<string,double>("xrayflag",1));
+    this->fiducial_params.insert(pair<string,double>("lyaxrayflag",1));
+    
 }
 
 map<string, double> CosmoBasis::give_current_params()
@@ -265,3 +276,11 @@ double CosmoBasis::sph_bessel_camb(unsigned int l, double x)
     return jl;
 }
 
+int CosmoBasis::give_optimal_zstep(double k1, double k2)
+{
+    int zstep = 10;
+    int res = max(k1,k2)/0.0002;
+    if (zstep < res)
+        zstep = res;
+    return zstep;
+}
