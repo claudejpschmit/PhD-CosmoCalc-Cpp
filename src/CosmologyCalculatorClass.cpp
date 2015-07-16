@@ -80,10 +80,45 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high)
     //double lambda = this->current_params["ombh2"];
     //cout << lambda << endl;
     //return pow(lambda, l) * (k1+k2);
-    return this->corr_Tb(l, k1, k2, k_low, k_high);
+    //return this->corr_Tb(l, k1, k2, k_low, k_high);
     //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high);
     //return this->Cl_simplified(l, k1, k2);
-    //return this->Cl_simplified_rsd(l,k1,k2);
+    return this->Cl_simplified_rsd(l,k1,k2);
+    //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
+}
+
+double CosmoCalc::Cl_noise(int l, double k1, double k2)
+{
+    //TODO: integrand needs to be corrected.
+    auto integrand = [&](double z)
+    {
+        const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
+        int n;
+        int n_old_int = (int)n_old;
+        if (abs(n_old - (double)n_old_int) > 0.5)
+            n = n_old_int + 1;
+        else
+            n = n_old_int;
+        double r;
+        r = this->r_Ml[n];
+        double jl = sph_bessel_camb(l,k1*r);
+        double Tsys2 = 1;
+        double hub = this->H_f[n]*1000.0;
+        //frequency in MHz
+        double f0 = 1420;
+        double f = f0 / (1+z);
+        double tau = 1;
+        return r*r*r*r * jl*jl * Tsys2 / (tau*hub); 
+    };
+    
+    if (k1==k2) {
+        double Ae = pow(fiducial_params["Ae"],2);
+        double prefactor = 4.0 * k_b*k_b / (Ae * fiducial_params["df"]);
+        return prefactor * integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml,\
+            this->zsteps_Ml);
+    } else {
+        return 0.0;
+    }
 }
 
 CosmoCalc::~CosmoCalc()
@@ -130,7 +165,6 @@ void CosmoCalc::show_cosmo_calcs()
     cout << "O_m = " << O_M << ", O_V = " << O_V << "." << endl;
     cout << "Age in Gigayears "<< age_of_universe(0) * pow(10,10) *\
         3.08568 / (365.25 * 24 * 3600) << endl;
-
 }
 
 void CosmoCalc::updateClass(map<string, double> params)
@@ -715,13 +749,15 @@ double CosmoCalc::Cl_simplified_rsd(int l, double k1, double k2)
         Jl4.push_back(Jl2[1]);
         Jl4.push_back(Jl3[1]);
         Jl4.push_back(j3*j4);
-        double LL1 = ((double)l+1.0)/pow((double)l+0.5,2) - 1.0/(double)l;
+        double LL1 = -1.0/(double)(l*(2*l+1)*(2*l+1));
+        //LL1 =- 1.0/(double)(300*300*300);
         L2.push_back(LL1 * (l+1));
         L2.push_back(-LL1 * k2r);
         L3.push_back(L2[0]);
         L3.push_back(-LL1 * k1r);
-        double LL2 = pow((double)l+1.0,2)/pow((double)l+0.5,4) + 1.0/pow((double)l-0.5,2) -\
-                     2.0*((double)l+1.0)/pow((double)l,3);
+        double LL2 = 2.0*(-32.0*pow(l,6) - 24.0*pow(l,5) + 48.0*pow(l,4) + 46.0*pow(l,3) - 5.0*l - 1.0);
+        LL2 = LL2 / (double)(pow(l,3)*pow(2*l-1,2)*pow(2*l+1,4));
+        //LL2 = -1.0/(double)(300*300*300);
         L4.push_back(LL2 * pow(l+1,2));
         L4.push_back(-LL2 * k2r * (l+1));
         L4.push_back(-LL2 * k1r * (l+1));       

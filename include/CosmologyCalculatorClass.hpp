@@ -377,6 +377,7 @@ class CosmoCalc : public CosmoBasis {
         double Cl(int l, double k1, double k2, double k_low, double k_high);
         double Cl_simplified(int l, double k1, double k2);
         double Cl_simplified_rsd(int l, double k1, double k2);
+        double Cl_noise(int l, double k1, double k2);
         /** 
          * Determines the critical density at a redshift [kg/m^3].
          *

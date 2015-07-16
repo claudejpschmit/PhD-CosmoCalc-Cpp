@@ -376,7 +376,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2)
 
 double Fisher::F(string param_key1, string param_key2)
 {
-    int lmax = 500;
+    int lmax = 1000;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
     for (int l = 1; l <= lmax; ++l) {
