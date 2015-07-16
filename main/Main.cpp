@@ -225,7 +225,8 @@ int main(int argc, char* argv[])
     fout.open("output/interp.dat");
     double z = 6.5;
     while (z <=9.5){
-        fout << z << " " << cosmo.delta_Tb_bar_G21(z) << " " << cosmo.delta_Tb_bar(z)/1000.0 << endl;
+        fout << z << " " << cosmo.delta_Tb_bar_G21(z) << " " << cosmo.delta_Tb_bar(z)/1000.0 <<\
+            " " << cosmo.Tb_interp(z)/1000.0 << endl;
         z += 0.01;
     }
     fout.close();

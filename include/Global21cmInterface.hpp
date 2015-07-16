@@ -17,7 +17,7 @@ using namespace std;
 class Global21cmInterface 
 {
     public:
-        Global21cmInterface(map<string,double> params);
+        Global21cmInterface();
         ~Global21cmInterface();
         
         void updateGlobal21cm(map<string,double> params);
@@ -34,5 +34,4 @@ class Global21cmInterface
         double s8, omb, om0, lam0, omNu, h, n, fstar, fesc, nion, fx, flya;
         int popflag, xrayflag, lyaxrayflag;
         const double pi = boost::math::constants::pi<double>();
-
 };

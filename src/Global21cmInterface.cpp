@@ -2,16 +2,8 @@
 #include <iostream>
 #include <fstream>
 
-Global21cmInterface::Global21cmInterface(map<string,double> params) 
-{    
-    updateGlobal21cm(params);
-
-
-    Tb_z.push_back(1);
-    Tb.push_back(10);
-
-
-}
+Global21cmInterface::Global21cmInterface() 
+{}
 
 Global21cmInterface::~Global21cmInterface()
 {
@@ -93,7 +85,8 @@ double Global21cmInterface::getTb_interp_cubic(double z)
 }
 void Global21cmInterface::getTb(vector<double>* zp, vector<double>* Tbp)
 {
-
+    *zp = Tb_z;
+    *Tbp = Tb;
 }
 
 void Global21cmInterface::calc_Tb(double zmin, double zmax, int zsteps)
@@ -104,8 +97,7 @@ void Global21cmInterface::calc_Tb(double zmin, double zmax, int zsteps)
     Tb.clear();
     double *result;
     double tk,lyaflux,xi,xe;
-    double ts,tb;
-    double tcmb;
+    double tb;
 
     result=dvector(1,3);
 
@@ -122,9 +114,7 @@ void Global21cmInterface::calc_Tb(double zmin, double zmax, int zsteps)
         xi=result[2];
         xe=result[3];
         lyaflux=a->lyaFlux(z);
-        ts=0;
         tb=(1.0-xi)*tocm->tBrightGen(z,tk,xe,lyaflux);
-        tcmb=0;
         fout << z << " " << tb << endl;
         Tb_z.push_back(z);
         Tb.push_back(tb);

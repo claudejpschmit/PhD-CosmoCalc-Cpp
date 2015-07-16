@@ -471,7 +471,7 @@ void CosmoWrite::calculate_qdot()
     file << "# Column 2: q_dot" << endl;
 
     double y1, x;
-    for (int i = 0; i < q_p_Ml.size(); i++) {
+    for (unsigned int i = 0; i < q_p_Ml.size(); i++) {
         x = i;
         y1 = q_p_Ml[i];
         file << x << " " << y1 << endl;
@@ -491,7 +491,7 @@ void CosmoWrite::calculate_q()
     file << "# Column 2: q" << endl;
 
     double y1, x;
-    for (int i = 0; i < q_Ml.size(); i++) {
+    for (unsigned int i = 0; i < q_Ml.size(); i++) {
         x = i;
         y1 = q_Ml[i];
         file << x << " " << y1 << endl;
