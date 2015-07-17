@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
 
 
     clock_t t1, t2;
-    string Fl_filepath = "output/G21_included/Fls_testing.dat"; 
+    string Fl_filepath = "output/G21_included/Fls_Noise.dat"; 
     Fisher fish(params, Fl_filepath);
     t1 = clock();
     double res = fish.F("ombh2", "ombh2");

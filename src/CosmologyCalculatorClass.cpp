@@ -83,8 +83,8 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high)
     //return this->corr_Tb(l, k1, k2, k_low, k_high);
     //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high);
     //return this->Cl_simplified(l, k1, k2);
-    return this->Cl_simplified_rsd(l,k1,k2);
-    //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
+    //return this->Cl_simplified_rsd(l,k1,k2);
+    return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
 }
 
 double CosmoCalc::Cl_noise(int l, double k1, double k2)
@@ -102,20 +102,20 @@ double CosmoCalc::Cl_noise(int l, double k1, double k2)
         double r;
         r = this->r_Ml[n];
         double jl = sph_bessel_camb(l,k1*r);
-        double Tsys2 = 1;
         double hub = this->H_f[n]*1000.0;
-        //frequency in MHz
-        double f0 = 1420;
-        double f = f0 / (1+z);
-        double tau = 1;
-        return r*r*r*r * jl*jl * Tsys2 / (tau*hub); 
+        return r*r*jl/hub; 
     };
     
     if (k1==k2) {
-        double Ae = pow(fiducial_params["Ae"],2);
-        double prefactor = 4.0 * k_b*k_b / (Ae * fiducial_params["df"]);
-        return prefactor * integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml,\
+        // in mK
+        double Tsys = 700000;
+        double fcover = 1.0;
+        double lmax = 5000;
+        double tau = 365.25*24*60*60;
+        double prefactor = 2.0 *pi*c*c * Tsys*Tsys/(fcover*fcover * fiducial_params["df"] * lmax * lmax * tau);
+        double integral = integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml,\
             this->zsteps_Ml);
+        return prefactor * integral * integral;
     } else {
         return 0.0;
     }
@@ -414,7 +414,6 @@ void CosmoCalc::update_q_prime()
         this->q_p_Ml.push_back(res/(12*h));
     }
 }
-
 
 void CosmoCalc::create_bessel_interpolant_ALGLIB(int lmin, int lmax)
 {
