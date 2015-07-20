@@ -378,6 +378,7 @@ class CosmoCalc : public CosmoBasis {
         double Cl_simplified(int l, double k1, double k2);
         double Cl_simplified_rsd(int l, double k1, double k2);
         double Cl_noise(int l, double k1, double k2);
+        double Cl_simplified_levin(int l, double k1, double k2);
         /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
@@ -454,6 +455,8 @@ class CosmoCalc : public CosmoBasis {
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml, k_stepsize;
         vector<double> q_Ml, r_Ml, H_f, q_p_Ml;
         
+        spline1dinterpolant q_interp, r_interp, q_p_interp, H_f_interp;
+
         vector<Pk_interpolator> Pks;
         vector<Tb_interpolator> Tbs;
 

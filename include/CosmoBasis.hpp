@@ -64,7 +64,7 @@ class CosmoBasis {
          * current class instance.
          */
         map<string, double> give_fiducial_params();
-
+        double sph_bessel_camb(unsigned int l, double x);
     protected:
         
         // ------------ Functions -------------- //
@@ -139,7 +139,7 @@ class CosmoBasis {
          * @param x is the argument of the spherical bessel function.
          */
 
-        double sph_bessel_camb(unsigned int l, double x);
+        //double sph_bessel_camb(unsigned int l, double x);
 
         int give_optimal_zstep(double k1, double k2);
 

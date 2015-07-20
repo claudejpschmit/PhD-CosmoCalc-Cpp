@@ -70,10 +70,10 @@ CLASS = class.o
 OUTPUT = output.o
 ALGLIB = alglibinternal.o alglibmisc.o ap.o dataanalysis.o diffequations.o fasttransforms.o integration.o interpolation.o linalg.o optimization.o solvers.o specialfunctions.o statistics.o
 GLOBAL21CM = dnumrecipes.o dcomplex.o dcosmology.o astrophysics.o twentyonecm.o spline.o spline2D.o
-SRC = CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o Global21cmInterface.o
+SRC = Integrator.o CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o Global21cmInterface.o 
 MAIN = Main.o
 
-all: calc class_test
+all: calc class_test 
 
 calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(GLOBAL21CM) $(MAIN) 
 	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm $(ARMAFLAGS)
@@ -85,6 +85,12 @@ install:
 	$(FF) -o $(LIBRARIES)GLOBAL21CM_dependencies/RECFAST_CODE/recfast $(LIBRARIES)GLOBAL21CM_dependencies/RECFAST_CODE/recfast.for
 	cd $(MDIR)
 	make all
+
+clean_integration: .base
+	rm $(WRKDIR)/Integrator.o;
+	rm $(WRKDIR)/Main.o;
+	rm $(WRKDIR)/CosmologyCalculatorClass.o;
+	rm calc
 
 clean: .base
 	rm -rf $(WRKDIR);

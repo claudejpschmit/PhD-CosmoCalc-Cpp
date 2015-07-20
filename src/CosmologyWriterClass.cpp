@@ -141,7 +141,6 @@ void CosmoWrite::calculate_densities_Omega(double zmax)
         file << x << " " << y1 << " " << y2 << " " << y3 << " " << y4 << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_H(double zmax)
@@ -384,7 +383,6 @@ void CosmoWrite::calculate_bessels_cubic(int l)
     file.close();
 }
 
-
 void CosmoWrite::calculate_bessels_exact(int l) 
 {
     ofstream file;
@@ -587,7 +585,7 @@ void CosmoWrite::calculate_Cl_simple(int l, double k, double k_min, double k_max
 
 void CosmoWrite::calculate_Cl_full(int l, double k, double k_min, double k_max, double k_stepsize)
 {
-    double x, y;
+    double x, y, y2;
     ofstream file;
     string filename = "output/Cl_full_"+to_string(l)+"_"+to_string(k)+"_new.dat";
     file.open(filename);
@@ -600,10 +598,10 @@ void CosmoWrite::calculate_Cl_full(int l, double k, double k_min, double k_max, 
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
         y = this->corr_Tb_new(l,k,x,0.0001,1.0);
-        file << x << " " << y << endl;
+        y2 = this->corr_Tb(l,k,x,0.0001,1.0);
+        file << x << " " << y << " " << y2 << " " << abs(y2 - y)/abs(y) << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::calculate_Cl_simple_rsd(int l, double k, double k_min, double k_max, double k_stepsize)
@@ -645,7 +643,6 @@ void CosmoWrite::calculate_Cl_full_rsd(int l, double k, double k_min, double k_m
         file << x << " " << y << endl;
     }
     file.close();
-
 }
 
 void CosmoWrite::generate_movie_Cl(int l_min, int l_max, double k, double k_min,\

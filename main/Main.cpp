@@ -16,14 +16,7 @@
 #include "interpolation.h"
 #include "CAMB_interface.hpp"
 #include "Global21cmInterface.hpp"
-
-//driver
-#include "math.h"
-#include "astrophysics.h"
-#include "dnumrecipes.h"
-#include "dcosmology.h"
-#include "twentyonecm.h"
-#include "spline.h"
+#include <boost/math/special_functions/bessel.hpp>
 
 using namespace std;
 using namespace arma;
@@ -31,20 +24,67 @@ using namespace alglib;
 
 double f (double x)
 {
-    return x*x;
+    if (x == 0.0)
+        return 0.0;
+    else
+        return boost::math::sph_bessel(10,x) * boost::math::sph_bessel(10,x);
 }
 
 double fl (double x)
 {
     return 0.551742 * x + 9778.15;
 }
+/*
+template<typename T>
+double integrate_levin(T &f, const int nterm = 10)
+{
+    const double pi = boost::math::constants::pi<double>();
+    double beta = 1.0, a = 0.0, b = 0.0, sum = 0.0;
+    double ans;
+    if (nterm > 100)
+    {
+        cout << "nterm too large" << endl;
+        throw("nterm too large");
+    }
+    else {
+        Levin series(100,0.0);
+        cout << setw(5) << "N" << setw(19) << "Sum (direct)" << setw(21) << "Sum (Levin)" << endl;
+        cout << "what?" << endl;
+        for (int n = 0; n<=nterm;n++) {
+            b+=pi;
+            cout << " qromb " << endl;
+            double s = qromb(f, a, b, 1.0E-8);
+            cout << " qromb done " << endl;
+            a=b;
+            sum += s;
+            double omega = (beta+n)*s;
+            ans = series.next(sum, omega, beta);
+            cout << setw(5) << n << fixed << setprecision(14) << setw(21) << sum << setw(21) << ans << endl;
+        }
+    }
+    return ans;
+}
+*/
 
 int main(int argc, char* argv[])
 { 
-
-
     map<string,double> params;
-    //CosmoCalc cosmo(params);
+  
+    CosmoCalc cosmo(params);
+    cout << boost::math::sph_bessel(10,1000) << " " << cosmo.sph_bessel_camb(10,1000) << endl;
+    auto integrand1 = [&](double x)
+    {
+        if (x == 0.0)
+            return 0.0;
+        else
+            return cosmo.sph_bessel_camb(10, x) * cosmo.sph_bessel_camb(10, x);
+
+    };
+    cout << integrate_levin(f,800) << endl;
+    cout << integrate_levin(integrand1,800)<< endl;
+    cout << cosmo.limber(100,1) << endl;
+    //double res = cosmo.corr_Tb(100,0.4,0.5, 0.0001, 1);
+    //cout << res << " " << cosmo.Cl_simplified(100, 0.4, 0.5) << " " << cosmo.Cl_simplified_levin(100, 0.4, 0.5)<< endl;
     /*
     ofstream fout;
     fout.open("output/interp.dat");
@@ -58,11 +98,27 @@ int main(int argc, char* argv[])
     */
     //ofstream outfile;
     //outfile.open("run_history.dat", ios::out | ios::app);
-    
-    //CosmoWrite writer(params);
+/*
+    params.insert(pair<string,double>("zsteps",1000));
+    CosmoWrite writer(params);   
+    writer.compare(1000,0.4,0.5);
+*/
+    /*for (int i = 0; i < 100; i++) {
+        double k1 = 0+i * 0.01;
+        cout << " for k1 = " << k1 << endl;
+        writer.compare(1000, k1,0.5);
+    }
+    */
+    //writer.calculate_Cl_simple(1000, 0.5, 0.08, 1, 0.0001);
+
+    //cout << "simple done" << endl;
+    //params["zsteps"] = 10;
+    params.insert(pair<string,double>("k_stepsize",0.0001));
+    //CosmoWrite writer2(params);
+    //writer.calculate_Cl_full(1000, 0.5, 0.1, 1, 0.0001);
     //writer.calculate_bessels_exact(1000);
     //writer.calculate_bessels_cubic(1000);
-    //CosmoCalc cosmo(params);
+    
     //cosmo.compare(1000, 0.5, 0.5);
     //cout << cosmo.limber2(500,24) << endl;
     //cout << cosmo.corr_Tb_new(100, 0.5, 0.5, 0.4, 0.6) << endl;
@@ -102,7 +158,7 @@ int main(int argc, char* argv[])
     writer.calculate_integrandMM(199, 0.5, 0.5, 1000000);
     */ 
 
-
+/*
     clock_t t1, t2;
     string Fl_filepath = "output/G21_included/Fls_Noise.dat"; 
     Fisher fish(params, Fl_filepath);
@@ -118,7 +174,7 @@ int main(int argc, char* argv[])
     float diff ((float)t2 - (float)t1);
     cout << "runtime was " << diff/CLOCKS_PER_SEC << endl;
     //outfile << "runtime was " << diff/CLOCKS_PER_SEC << endl;
-
+*/
     /*     
     ifstream filesimlpe, filelong;
     filesimlpe.open("output/Fls_k4_simple.dat");
