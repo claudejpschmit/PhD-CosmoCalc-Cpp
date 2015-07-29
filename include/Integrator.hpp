@@ -237,12 +237,30 @@ double qromb(T &func, double a, double b, const double eps = 1.0e-10) {
     throw("Too many steps in routine qromb");
 }
 
+template <class T>
+double qgaus(T &func, const double a, const double b) {
+    static const double x[]={0.1488743389816312,0.4333953941292472, 0.6794095682990244,0.8650633666889845,0.9739065285171717};
+    static const double w[]={0.2955242247147529,0.2692667193099963, 0.2190863625159821,0.1494513491505806,0.0666713443086881};
+    double xm=0.5*(b+a);
+    double xr=0.5*(b-a); 
+    double s=0;
+    for (int j=0;j<5;j++) {
+        double dx=xr*x[j];
+
+        s += w[j]*(func(xm+dx)+func(xm-dx));
+    }
+    return s *= xr;
+}
+
 template<typename T>
-double integrate_levin(T &f, const int nterm = 10)
+double integrate_levin(T &f, const double a, const double b)
 {
     const double pi = boost::math::constants::pi<double>();
-    double beta = 1.0, a = 0.0, b = 0.0, sum = 0.0;
+    double beta = 1.0, sum = 0.0;
     double ans;
+    double anew = a;
+    double bnew = a;
+    int nterm = 2.0*(b-a)/pi;
     if (nterm > 50000)
     {
         cout << "nterm too large" << endl;
@@ -252,9 +270,10 @@ double integrate_levin(T &f, const int nterm = 10)
         Levin series(50000,0.0);
         //cout << setw(5) << "N" << setw(19) << "Sum (direct)" << setw(21) << "Sum (Levin)" << endl;
         for (int n = 0; n<=nterm;n++) {
-            b+=pi/2;
-            double s = qromb(f, a, b, 1.0E-3);
-            a=b;
+            bnew+=pi/2;
+            double s = qromb(f, anew, bnew, 1.0E-3);
+            //double s = qgaus(f, anew, bnew);
+            anew=bnew;
             sum += s;
             double omega = (beta+n)*s;
             ans = series.next(sum, omega, beta);

@@ -385,6 +385,8 @@ class CosmoCalc : public CosmoBasis {
          * @param z is the redshift at which the critical density is calculated.
          */
         double corr_Tb_new(int l, double k1, double k2, double k_low, double k_high);
+        double corr_Tb_new2(int l, double k1, double k2, double k_low, double k_high);
+
         void compare(int l, double k1, double k2);
 
         double corr_Tb(int l, double k1, double k2, double k_low, double k_high);/** 

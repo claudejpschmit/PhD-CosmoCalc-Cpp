@@ -10,7 +10,7 @@ LIBRARIES = lib/
 	if ! [ -e $(WRKDIR) ]; then mkdir $(WRKDIR) ; mkdir $(WRKDIR)/lib; fi;
 	touch build/.base
 
-vpath %.cpp src:main:$(LIBRARIES)ALGLIB_source:$(LIBRARIES)GLOBAL21CM_source
+vpath %.cpp src:main:$(LIBRARIES)ALGLIB_source:$(LIBRARIES)GLOBAL21CM_source:$(LIBRARIES)ODEsolver_source
 vpath %.c $(LIBRARIES)CLASS_source:$(LIBRARIES)CLASS_tools:$(LIBRARIES)CLASS_main
 vpath %.o build
 vpath .base build
@@ -44,6 +44,8 @@ INCLUDES = -I../include
 INCLUDES += -I../$(LIBRARIES)CLASS_include
 INCLUDES += -I../$(LIBRARIES)ALGLIB_include
 INCLUDES += -I../$(LIBRARIES)GLOBAL21CM_include
+INCLUDES += -I../$(LIBRARIES)ODEsolver_include
+
 # These lines seem to be unnecessary, but I leave them in anyways.
 INCLUDES += -I/usr/include/boost
 LINKER = -L/usr/include/boost #-lboost_filesystem
@@ -70,12 +72,13 @@ CLASS = class.o
 OUTPUT = output.o
 ALGLIB = alglibinternal.o alglibmisc.o ap.o dataanalysis.o diffequations.o fasttransforms.o integration.o interpolation.o linalg.o optimization.o solvers.o specialfunctions.o statistics.o
 GLOBAL21CM = dnumrecipes.o dcomplex.o dcosmology.o astrophysics.o twentyonecm.o spline.o spline2D.o
-SRC = Integrator.o CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o Global21cmInterface.o 
+ODE = ODE_Solver.o ODEs.o
+SRC = Integrator.o CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o Global21cmInterface.o SanityChecker.o
 MAIN = Main.o
 
 all: calc class_test 
 
-calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(GLOBAL21CM) $(MAIN) 
+calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(GLOBAL21CM) $(ODE) $(MAIN) 
 	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm $(ARMAFLAGS)
 
 class_test: $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(CLASS) 
