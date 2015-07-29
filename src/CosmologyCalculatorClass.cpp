@@ -20,7 +20,6 @@ CosmoCalc::CosmoCalc(map<string, double> params)
 
     //generate object that is the CAMB interface.
     CAMB = new CAMB_CALLER;
-
     pars.add("100*theta_s",0);
     pars.add("omega_b",0);
     pars.add("omega_cdm",0);
@@ -29,17 +28,17 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     pars.add("tau_reio",0);
     pars.add("k_pivot",0);
     pars.add("YHe",0);
-    pars.add("z_pk", 0);
+    pars.add("z_pk",0);
     //This doesn't work currently
     //pars.add("h", 0);
-    pars.add("Omega_k", 0);
+    pars.add("Omega_k",0);
     //pars.add("Omega_Lambda", 0);
-    pars.add("T_cmb", 0);
-    //pars.add("bias", 0);
+    pars.add("T_cmb",0);
+    //pars.add("bias",0);
 
     //Unchanging
     pars.add("output","mPk"); //pol +clphi
-    pars.add("P_k_max_h/Mpc", 100);
+    pars.add("P_k_max_h/Mpc",100);
     cout << "... Initializing Class ..." << endl;
     //updateClass(this->fiducial_params);
     cout << "... Class initialized ..." << endl;
@@ -47,10 +46,10 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... precalculating Ml dependencies ..." << endl;
     this->update_q_full();
     cout << "qdone" << endl;
-    this->update_q_prime_full();
-    cout << "qdot done" << endl;
+    //this->update_q_prime_full();
     this->update_Hf();
 
+    cout << "qdot done" << endl;
     this->update_q();
     this->update_q_prime();
     this->r_Ml = this->q_Ml;
@@ -77,7 +76,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... Initializing Pk interpolator ..." << endl;
     //this->update_Pk_interpolator(this->fiducial_params);
     this->update_Pk_interpolator_direct(this->fiducial_params);
-    this->update_Pk_interpolator_full(this->fiducial_params);
+    //this->update_Pk_interpolator_full(this->fiducial_params);
     cout << "... Pks calculated ..." << endl;
 
     cout << "... Creating Bessels ..." << endl;
@@ -88,7 +87,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... generating 21cm interface ..." << endl;
     G21 = new Global21cmInterface();
     this->update_G21(fiducial_params);
-    this->update_G21_full(fiducial_params);
+    //this->update_G21_full(fiducial_params);
     cout << "... 21cm interface built ..." << endl;
 
     cout << "... CosmoCalc built ..." << endl;
@@ -422,7 +421,7 @@ void CosmoCalc::update_Hf()
         xs[i] = z;
         ys[i] = this->H(z);
     }
-    spline1dbuildlinear(xs,ys,H_f_interp_full);
+    spline1dbuildlinear(xs,ys,this->H_f_interp_full);
 }
 void CosmoCalc::update_r_inverse()
 {
@@ -479,7 +478,7 @@ void CosmoCalc::update_q_prime_full()
         ys[n] = res/(12*h);
     }
     cout << "bla" << endl;
-    spline1dbuildlinear(xs,ys,q_p_interp_full);
+    spline1dbuildlinear(xs,ys,this->q_p_interp_full);
     cout << "baj" << endl;
 }
 

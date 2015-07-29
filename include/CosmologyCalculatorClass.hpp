@@ -464,7 +464,7 @@ class CosmoCalc : public CosmoBasis {
         int zsteps_Ml, Pk_steps;
         int lmin_bess;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml, k_stepsize;
-        double zmax_interp;
+        int zmax_interp;
         vector<double> q_Ml, r_Ml, H_f, q_p_Ml, r_inv;
         
         spline1dinterpolant q_interp, r_interp, q_p_interp, H_f_interp;

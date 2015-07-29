@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
     clock_t t1, t2;
 
     CosmoWrite writer(params);   
-    writer.calculate_inverse_comoving(15000);
+    //writer.calculate_inverse_comoving(15000);
     //SanityChecker check(params);
     //ofstream file;
     //file.open("zp_integrand3.dat");
