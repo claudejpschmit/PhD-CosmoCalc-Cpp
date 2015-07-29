@@ -18,6 +18,8 @@ class CosmoWrite : public CosmoCalc {
                           int step, double stepsize = 0);
         void calculate_Nl(int l, double k_fixed, double k2_low, double k2_high,\
                           int step, double stepsize = 0);
+        void calculate_comoving(double zmax);
+        void calculate_inverse_comoving(double rmax);
         void calculate_distances(double zmax);
         void calculate_densities_rho(double zmax);
         void calculate_densities_Omega(double zmax);
@@ -55,5 +57,4 @@ class CosmoWrite : public CosmoCalc {
                 double k_max, double k_stepsize);
         void calculate_Ml(int lmin, int lmax, double k, double kappa);
         void calculate_Nl(int lmin, int lmax, double k, double kappa);
-
 };

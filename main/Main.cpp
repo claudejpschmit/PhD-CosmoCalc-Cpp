@@ -346,12 +346,13 @@ int main(int argc, char* argv[])
     
     clock_t t1, t2;
 
-    //CosmoWrite writer(params);   
-    SanityChecker check(params);
-    ofstream file;
-    file.open("zp_integrand3.dat");
-    double res1, res2;
-    check.compare_interp(1000, 0.6, 0.5, 8.0,  &res1, &res2);
+    CosmoWrite writer(params);   
+    writer.calculate_inverse_comoving(15000);
+    //SanityChecker check(params);
+    //ofstream file;
+    //file.open("zp_integrand3.dat");
+    //double res1, res2;
+    //check.compare_interp(1000, 0.6, 0.5, 8.0,  &res1, &res2);
     //check.compare_interp(1000, 0.4, 0.5, 8.3,  &res1, &res2);
     //check.compare_interp(1000, 0.4, 0.5, 8.6341,  &res1, &res2);
     //check.compare_interp(1000, 0.4, 0.5, 7.0,  &res1, &res2);
@@ -381,7 +382,7 @@ int main(int argc, char* argv[])
     check.kappa_integral(1000, 0.6, 0.5, 7.5, 8.5, &res2, 0.1, 100);
     check.kappa_integral(1000, 0.6, 0.5, 7.5, 8.5, &res2, 0.1, 200);
     */
-    file.close();
+   // file.close();
     
     /*
     writer.compare(1000,0.4,0.5);

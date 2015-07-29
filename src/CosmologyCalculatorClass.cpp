@@ -16,6 +16,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     this->stepsize_Ml = (this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_stepsize = this->fiducial_params["k_stepsize"];
+    this->zmax_interp = this->fiducial_params["zmax_interp"];
 
     //generate object that is the CAMB interface.
     CAMB = new CAMB_CALLER;
@@ -44,6 +45,12 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... Class initialized ..." << endl;
 
     cout << "... precalculating Ml dependencies ..." << endl;
+    this->update_q_full();
+    cout << "qdone" << endl;
+    this->update_q_prime_full();
+    cout << "qdot done" << endl;
+    this->update_Hf();
+
     this->update_q();
     this->update_q_prime();
     this->r_Ml = this->q_Ml;
@@ -64,10 +71,13 @@ CosmoCalc::CosmoCalc(map<string, double> params)
 
     this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     cout << "... Dependencies calculated ..." << endl;
-
+    cout << "... precalculating inverse r ..." << endl;
+    this->update_r_inverse();
+    cout << "... r inverse is calculated ..." << endl;
     cout << "... Initializing Pk interpolator ..." << endl;
     //this->update_Pk_interpolator(this->fiducial_params);
     this->update_Pk_interpolator_direct(this->fiducial_params);
+    this->update_Pk_interpolator_full(this->fiducial_params);
     cout << "... Pks calculated ..." << endl;
 
     cout << "... Creating Bessels ..." << endl;
@@ -78,6 +88,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... generating 21cm interface ..." << endl;
     G21 = new Global21cmInterface();
     this->update_G21(fiducial_params);
+    this->update_G21_full(fiducial_params);
     cout << "... 21cm interface built ..." << endl;
 
     cout << "... CosmoCalc built ..." << endl;
@@ -399,6 +410,79 @@ double CosmoCalc::n_e(double z)
     return this->n_p(z);
 }
 
+void CosmoCalc::update_Hf()
+{
+    double z;
+    real_1d_array xs, ys;
+    xs.setlength(10*zmax_interp + 1);
+    ys.setlength(10*zmax_interp + 1);
+
+    for (int i = 0; i <= 10*zmax_interp; ++i) {
+        z = i * 0.1;
+        xs[i] = z;
+        ys[i] = this->H(z);
+    }
+    spline1dbuildlinear(xs,ys,H_f_interp_full);
+}
+void CosmoCalc::update_r_inverse()
+{
+    this->r_inv.clear();
+    real_1d_array xs, ys;
+    xs.setlength(10*zmax_interp + 1);
+    ys.setlength(10*zmax_interp + 1);
+
+    double z;
+    for (int n = 0; n <= 10*zmax_interp; ++n) {
+        z =  n * 0.1;
+        this->r_inv.push_back(this->D_C(z));
+        xs[n] = z;
+        ys[n] = r_inv[n];
+    }
+    spline1dbuildlinear(ys,xs,rinv_interp);
+}
+
+double CosmoCalc::r_inverse(double r)
+{
+    return spline1dcalc(rinv_interp, r);
+}
+
+void CosmoCalc::update_q_full()
+{
+    real_1d_array xs, ys;
+    xs.setlength(10*zmax_interp + 1);
+    ys.setlength(10*zmax_interp + 1);
+
+    double z;
+    for (int n = 0; n <= 10*zmax_interp; ++n) {
+        z =  n * 0.1;
+        xs[n] = z;
+        ys[n] = D_C(z);
+    }
+    spline1dbuildlinear(xs,ys,q_interp_full);
+}
+
+void CosmoCalc::update_q_prime_full()
+{
+    double z;
+    double h = 10e-4;
+    cout << "TEST" << endl; 
+    real_1d_array xs, ys;
+    xs.setlength(zmax_interp + 1);
+    ys.setlength(zmax_interp + 1);
+
+    for (int n = 0; n <= 10*zmax_interp; ++n) {
+        z = 0.1 + n * 0.1;
+        double res = 0;
+        res = - D_C(z+2*h) + 8 * D_C(z+h) - 8 * D_C(z-h) + D_C(z-2*h);
+        res = abs(res);
+        xs[n] = z;
+        ys[n] = res/(12*h);
+    }
+    cout << "bla" << endl;
+    spline1dbuildlinear(xs,ys,q_p_interp_full);
+    cout << "baj" << endl;
+}
+
 void CosmoCalc::update_q()
 {
     this->q_Ml.clear();
@@ -541,6 +625,70 @@ double CosmoCalc::bessel_j_interp_basic(int l, double x)
     }
 }
 
+void CosmoCalc::update_G21_full(map<string,double> params)
+{
+    bool do_calc = true;
+    for (unsigned int i = 0; i < Tbs.size(); ++i) {
+        if (params["ombh2"] == Tbs_full[i].ombh2 && params["omnuh2"] == Tbs_full[i].omnuh2 &&\
+                params["omch2"] == Tbs_full[i].omch2 && params["omk"] == Tbs_full[i].omk &&\
+                params["hubble"] == Tbs_full[i].hubble && params["sigma8"] == Tbs_full[i].s8 &&\
+                params["T_CMB"] == Tbs_full[i].T_CMB && params["n_s"] == Tbs_full[i].n_s &&\
+                params["fstar"] == Tbs_full[i].fstar && params["fesc"] == Tbs_full[i].fesc &&\
+                params["nion"] == Tbs_full[i].nion && params["fx"] == Tbs_full[i].fx &&\
+                params["flya"] == Tbs_full[i].flya) {
+
+            do_calc = false;
+            this->Tb_index = i;
+            break;
+        }
+    }
+    if (do_calc) {
+        Tb_interpolator interp;
+        interp.ombh2 = params["ombh2"];
+        interp.omnuh2 = params["omnuh2"];
+        interp.omch2 = params["omch2"];
+        interp.omk = params["omk"];
+        interp.hubble = params["hubble"];
+        interp.s8 = params["sigma8"];
+        interp.T_CMB = params["T_CMB"];
+        interp.n_s = params["n_s"];
+        interp.fstar = params["fstar"];
+        interp.fesc = params["fesc"];
+        interp.nion = params["nion"];
+        interp.fx = params["fx"];
+        interp.flya = params["flya"];
+
+        cout << "G21 is being updated" << endl;
+        G21->updateGlobal21cm_full(params);
+        vector<double> vz, vTb;
+        G21->getTb(&vz, &vTb);
+        
+        real_1d_array g21_z, g21_Tb;
+        g21_z.setlength(vz.size());
+        g21_Tb.setlength(vTb.size());
+
+        for (unsigned int i = 0; i < vz.size(); i++){
+            g21_z[i] = vz[i];
+        }
+        for (unsigned int i = 0; i < vTb.size(); i++){
+            g21_Tb[i] = vTb[i];
+        }
+
+        spline1dinterpolant interpolator;
+        spline1dbuildcubic(g21_z, g21_Tb, interpolator);
+        interp.interpolator = interpolator;
+
+        Tbs_full.push_back(interp);
+        this->Tb_index = Tbs_full.size() - 1;
+
+    }
+}
+
+double CosmoCalc::Tb_interp_full(double z)
+{
+    // The * 1000.0 is so we get the result in mK
+    return spline1dcalc(Tbs_full[Tb_index].interpolator,z) * 1000.0;
+}
 void CosmoCalc::update_G21(map<string,double> params)
 {
     bool do_calc = true;
@@ -605,6 +753,69 @@ double CosmoCalc::Tb_interp(double z)
     // The * 1000.0 is so we get the result in mK
     return spline1dcalc(Tbs[Tb_index].interpolator,z) * 1000.0;
 }
+
+void CosmoCalc::update_Pk_interpolator_full(map<string, double> params)
+{
+    bool do_calc = true;
+    for (unsigned int i = 0; i < Pks_full.size(); ++i) {
+        if (params["ombh2"] == Pks_full[i].ombh2 && params["omnuh2"] == Pks_full[i].omnuh2 &&\
+                params["omch2"] == Pks_full[i].omch2 && params["omk"] == Pks_full[i].omk &&\
+                params["hubble"] == Pks_full[i].hubble) {
+
+            do_calc = false;
+            this->Pk_index = i;
+            break;
+        }
+    }
+
+
+    if (do_calc) {
+        Pk_interpolator interp;
+        interp.ombh2 = params["ombh2"];
+        interp.omnuh2 = params["omnuh2"];
+        interp.omch2 = params["omch2"];
+        interp.omk = params["omk"];
+        interp.hubble = params["hubble"];
+
+        CAMB->call_full(params);    
+        vector<double> vk = CAMB->get_k_values();
+        vector<vector<double>> Pz = CAMB->get_Pz_values();
+
+        double z_stepsize = 1;
+        vector<double> vz, vP;
+        for (unsigned int i = 0; i < Pz.size(); ++i) {
+            vz.push_back(i * z_stepsize);
+            vP.insert(vP.end(), Pz[i].begin(), Pz[i].end());
+        }
+
+        real_1d_array matterpowerspectrum_k, matterpowerspectrum_z, matterpowerspectrum_P;
+        matterpowerspectrum_k.setlength(vk.size());
+        matterpowerspectrum_z.setlength(vz.size());
+        matterpowerspectrum_P.setlength(vP.size());
+        for (unsigned int i = 0; i < vk.size(); i++){
+            matterpowerspectrum_k[i] = vk[i];
+        }
+        for (unsigned int i = 0; i < vP.size(); i++){
+            matterpowerspectrum_P[i] = vP[i];
+        }
+        for (unsigned int i = 0; i < vz.size(); i++){
+            matterpowerspectrum_z[i] = vz[i];
+        }
+
+        spline2dinterpolant interpolator;
+        spline2dbuildbilinearv(matterpowerspectrum_k, vk.size(),matterpowerspectrum_z, vz.size(),\
+                matterpowerspectrum_P, 1, interpolator);
+        interp.interpolator = interpolator;
+
+        Pks_full.push_back(interp);
+        this->Pk_index = Pks_full.size() - 1;
+    }
+}
+double CosmoCalc::Pk_interp_full(double k, double z)
+{
+    return spline2dcalc(Pks_full[this->Pk_index].interpolator, k, z);
+}
+
 
 void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params)
 {

@@ -17,7 +17,6 @@ using namespace alglib;
 class CosmoCalc : public CosmoBasis {
     
     public:
-
          
         // ------------ Functions -------------- //
 
@@ -37,6 +36,8 @@ class CosmoCalc : public CosmoBasis {
         ~CosmoCalc();
         void update_G21(map<string, double> params);
         void update_Pk_interpolator_direct(map<string, double> params);
+        void update_G21_full(map<string, double> params);
+        void update_Pk_interpolator_full(map<string, double> params);
 
         /**
          * Function outputs some standard cosmological calculations to the user.
@@ -44,7 +45,12 @@ class CosmoCalc : public CosmoBasis {
         void show_cosmo_calcs();
         void updateClass(map<string, double> params);
         void update_q();
+        void update_q_full();
+        void update_Hf();
+        double r_inverse(double r);
+        void update_r_inverse();
         void update_q_prime();
+        void update_q_prime_full();
         double limber(int l, double r);
         double limber2(int l, double r);
         /**
@@ -328,6 +334,9 @@ class CosmoCalc : public CosmoBasis {
          */
         double Pk_interp(double k, double z);
         double Tb_interp(double z);
+        double Pk_interp_full(double k, double z);
+        double Tb_interp_full(double z);
+
 
         /** 
          * TODO: determine units...
@@ -455,12 +464,14 @@ class CosmoCalc : public CosmoBasis {
         int zsteps_Ml, Pk_steps;
         int lmin_bess;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml, k_stepsize;
-        vector<double> q_Ml, r_Ml, H_f, q_p_Ml;
+        double zmax_interp;
+        vector<double> q_Ml, r_Ml, H_f, q_p_Ml, r_inv;
         
         spline1dinterpolant q_interp, r_interp, q_p_interp, H_f_interp;
+        spline1dinterpolant q_interp_full, q_p_interp_full, H_f_interp_full, rinv_interp;
 
-        vector<Pk_interpolator> Pks;
-        vector<Tb_interpolator> Tbs;
+        vector<Pk_interpolator> Pks, Pks_full;
+        vector<Tb_interpolator> Tbs, Tbs_full;
 
         int Pk_index;
         int Tb_index;

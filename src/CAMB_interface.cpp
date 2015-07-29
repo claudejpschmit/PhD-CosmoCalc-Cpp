@@ -52,6 +52,70 @@ void CAMB_CALLER::call(map<string, double> params)
     read_matterpower_files(params["Pk_steps"]);    
 }
 
+void CAMB_CALLER::call_full(map<string, double> params)
+{
+    cout << "CAMB is called with an ombh2 value of " << params["ombh2"] << endl;
+    update_params_ini_full(params);
+
+    //call camb with new_params.ini
+    system("./CAMB/camb CAMB/new_params.ini");
+
+    //recovering Power spectrum.
+    read_matterpower_files(params["zmax_interp"]+1);    
+}
+
+
+void CAMB_CALLER::update_params_ini_full(map<string, double> params)
+{
+    int n_redshifts = params["zmax_interp"] + 1;
+    double zmin = 0;
+    double zmax = params["zmax_interp"];
+    double stepsize_z = (zmax - zmin)/(double)(n_redshifts - 1);
+
+    int found_n_params = 0;
+    for (int i = 0; i < file_content.size(); ++i) {
+        if (file_content[i].find("output_root =") != string::npos) {
+            file_content[i] = "output_root = CAMB/test";
+        }
+        for (int j = 0; j < 8; j++) {
+            //pos[j] = file_content[i].find(parameter_names[j]);
+            if (file_content[i].find(parameter_names[j]) != string::npos) {
+                found_n_params += 1;
+                string pn = parameter_names[j];
+                stringstream val;
+                if (pn == "transfer_num_redshifts")
+                    val << n_redshifts;
+                else if (pn == "transfer_redshift(1)")
+                    val << zmax;
+                else if (pn =="transfer_matterpower(1)") 
+                    val << "matterpower_1.dat";
+                else
+                    val << params[pn];
+
+                string new_parameter = parameter_names[j] + " = " + val.str();
+                file_content[i] = new_parameter;
+
+                break;
+            }
+        }
+        if (found_n_params == 8){
+            break;
+        }
+    }
+    if (run_first_time) {
+        for (int i = 1; i < n_redshifts; ++i){
+            stringstream line1, line2;
+            line1 << "transfer_redshift(" << i+1 << ") = " << (zmax - i * stepsize_z);
+            line2 << "transfer_matterpower(" << i+1 << ") = matterpower_" << i+1 << ".dat";
+            file_content.push_back(line1.str());
+            file_content.push_back(line2.str());
+        }
+        run_first_time = false;
+    }
+    create_output_file();
+}
+
+
 void CAMB_CALLER::update_params_ini(map<string, double> params)
 {
     int n_redshifts = params["Pk_steps"];

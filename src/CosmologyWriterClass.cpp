@@ -64,6 +64,42 @@ void CosmoWrite::calculate_Nl(int l, double k_fixed, double k2_low, double k2_hi
 
     file.close();
 }
+void CosmoWrite::calculate_comoving(double zmax)
+{
+    ofstream file;
+    string filename = "tabulated_values/comoving_r.dat";
+    file.open(filename);
+    file << "# This file contains data for comoving distances vs redshift." << endl;
+    file << "# Column 2: Line of sight comoving distance D_C" << endl;
+
+    double y, x;
+    int steps = 10 * zmax;
+    for (int i = 0; i < steps; i++) {
+        x = (double)i/10.0;
+        y = this->D_C(x); 
+
+        file << x << " " << y << endl;
+    }
+    file.close();
+}
+void CosmoWrite::calculate_inverse_comoving(double rmax)
+{
+    ofstream file;
+    string filename = "output/inverse_comoving_r.dat";
+    file.open(filename);
+    file << "# This file contains data for the inverse comoving distances, ie z vs r." << endl;
+    file << "# Column 2: redshift" << endl;
+
+    double y, x;
+    int steps = 10 * rmax;
+    for (int i = 0; i < steps; i++) {
+        x = (double)i/10.0;
+        y = this->r_inverse(x); 
+
+        file << x << " " << y << endl;
+    }
+    file.close();
+}
 
 void CosmoWrite::calculate_distances(double zmax)
 {
@@ -84,7 +120,7 @@ void CosmoWrite::calculate_distances(double zmax)
         x = (double)i/100.0;
         y1 = this->D_A(x) * norm;
         y2 = this->D_L(x) * norm;
-        y3 = this->D_now(x) * norm;
+        y3 = this->D_now(x); //* norm;
         y4 = this->D_ltt(x) * norm;
 
         file << x << " " << y1 << " " << y2 << " " << y3 << " " << y4 << endl;

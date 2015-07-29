@@ -70,6 +70,38 @@ void SanityChecker::compare_interp(int l, double k1, double k2, double z, double
     cout << res2 / res1 << endl;
 }
 
+void SanityChecker::compare_new(int l, double k1, double k2, double kappa, double *out1, double *out2)
+{
+    double res1 = pow(kappa,2) * this->M(l,k1,kappa) * this->M(l,k2,kappa);
+    double res2 = pow(kappa,2) * 2 * pow(this->b_bias,2) * pow(this->c,2)/this->pi;
+    double zstar1 = r_inverse((l+0.5)/k1);
+    double zstar2 = r_inverse((l+0.5)/k2);
+
+    cout << zstar1 << " " << zstar2 << endl;
+    double H1 = spline1dcalc(H_f_interp, zstar1)*1000.0;
+    double H2 = spline1dcalc(H_f_interp, zstar2)*1000.0;
+    double Tb1 = Tb_interp(zstar1);
+    double Tb2 = Tb_interp(zstar2);
+    double q1 = spline1dcalc(q_interp, zstar1);
+    double q2 = spline1dcalc(q_interp, zstar2);
+    double hhh = pow(this->h,3);
+    double sP1 = sqrt(this->Pk_interp(kappa*this->h,zstar1)/hhh);
+    double sP2 = sqrt(this->Pk_interp(kappa*this->h,zstar2)/hhh);
+
+
+
+    double jl1 = sph_bessel_camb(l,q1*kappa);
+    double jl2 = sph_bessel_camb(l,q2*kappa);
+
+    res2 = res2*pow(l+0.5,3)/(k1*k1*k2*k2* H1 * H2) * sP1 * sP2 * Tb1 * Tb2 * jl1 * jl2;
+    *out1 = res1;
+    *out2 = res2;
+
+    cout << "Full calculation: " << res1 << endl;
+    cout << "Simplified calculation: " << res2 << endl;
+
+
+}
 
 double SanityChecker::limber3(int l, double z)
 {

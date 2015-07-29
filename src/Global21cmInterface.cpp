@@ -60,6 +60,54 @@ void Global21cmInterface::updateGlobal21cm(map<string,double> params)
     calc_Tb(params["zmin"]-1, params["zmax"]+1, 20);
 }
 
+void Global21cmInterface::updateGlobal21cm_full(map<string,double> params)
+{
+    s8 = params["sigma8"];
+    h = params["hubble"] / 100.0;
+
+    omb = params["ombh2"] / (h*h);
+
+    double T_CMB = params["T_CMB"];
+    double O_cdm = params["omch2"] / pow(h,2);
+    double O_nu = params["omnuh2"] / pow(h,2);
+    double O_gamma = pow(pi,2) * pow(T_CMB/11605.0,4) / (15.0*8.098*pow(10,-11)*pow(h,2));
+    double O_nu_rel = O_gamma * 3.0 * 7.0/8.0 * pow(4.0/11.0, 4.0/3.0);
+    double O_R = O_gamma + O_nu_rel;
+    double O_k = params["omk"];
+    double O_tot = 1.0 - O_k;
+
+    om0 = omb + O_cdm + O_nu;
+    lam0 = O_tot - om0 - O_R;
+    n = params["n_s"];
+    omNu = O_nu;
+
+    fstar = params["fstar"];
+    fesc = params["fesc"];
+    nion = params["nion"];
+    fx = params["fx"];
+    flya = params["flya"];
+    popflag = (int)params["popflag"];
+    xrayflag = (int)params["xrayflag"];
+    lyaxrayflag = (int)params["lyaxrayflag"];
+
+    // TODO:
+    // THIS IS A HACK, so that I don't run into a zmax too large issue...
+    om0 += abs (1 - (om0 + lam0)); 
+    //om0 = 0.3;
+    //lam0 = 0.7;
+    c = new Cosmology(om0,lam0,omb,h,s8,n,omNu);
+    int popflag_in = 0;
+    int xin = 1;
+    int lyaxray_in = 0;
+    a = new Astrophysics(c,popflag_in,xin,lyaxray_in,1.0);
+    tocm = new TwentyOneCM(c,a);
+
+    //Astrophysics a(&c,popflag_in,xin,lyaxray_in,1.0);
+    a->initAstrophysics(fstar,fesc,nion,fx,flya,popflag,xrayflag,lyaxrayflag, true);
+
+    calc_Tb(0, params["zmax_interp"]+1, 10*params["zmax_interp"]);
+}
+
 double Global21cmInterface::getTb_interp_cubic(double z)
 {
     double y0, y1, y2, y3, a0, a1, a2, a3, mu, mu2, z0;

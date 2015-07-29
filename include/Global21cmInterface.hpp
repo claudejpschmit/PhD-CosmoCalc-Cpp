@@ -21,6 +21,8 @@ class Global21cmInterface
         ~Global21cmInterface();
         
         void updateGlobal21cm(map<string,double> params);
+        void updateGlobal21cm_full(map<string,double> params);
+
         double getTb_interp_cubic(double z);
         void getTb(vector<double>* zp, vector<double>* Tbp);
 
