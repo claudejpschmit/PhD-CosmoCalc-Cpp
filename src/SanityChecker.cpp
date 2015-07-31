@@ -27,7 +27,7 @@ void SanityChecker::compare_interp(int l, double k1, double k2, double z, double
     double r,q;
     r = spline1dcalc(r_interp, z);
     q = spline1dcalc(q_interp, z);
-    
+
     double hubble_z = spline1dcalc(H_f_interp,z)*1000.0;
 
     auto integrand2 = [&](double zp)
@@ -140,14 +140,14 @@ void SanityChecker::kappa_integrand(int l, double k1, double k2, double z, doubl
     double hhh = pow(this->h,3);
     double sP = sqrt(this->Pk_interp(kappa*this->h,z)/hhh);
     double sPp = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
-    
+
     double res1 = kappa*kappa * sP * sPp * this->sph_bessel_camb(l,kappa*q) *\
                   this->sph_bessel_camb(l,kappa*qp);
 
     double res2 = rp*rp / hubble_zp * this->Tb_interp(zp) * jzp * res1;
 
     double res3 = pow(this->prefactor_Ml,2) * r*r / hubble_z * this->Tb_interp(z) * jz * res2;
-   
+
     *out1 = res1;
 }
 
@@ -170,14 +170,14 @@ void SanityChecker::kappa_integral(int l, double k1, double k2, double z, double
     int steps = 4*(int)((k_high - k_low)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
-    
+
     auto integrand3 = [&](double kap)
-        {
-            double sP1 = sqrt(this->Pk_interp(kap*this->h,z)/hhh);
-            double sPp1 = sqrt(this->Pk_interp(kap*this->h,zp)/hhh);
-            return kap*kap * sP1 * sPp1 * this->sph_bessel_camb(l,kap*q) *\
-                this->sph_bessel_camb(l,kap*qp);
-        };
+    {
+        double sP1 = sqrt(this->Pk_interp(kap*this->h,z)/hhh);
+        double sPp1 = sqrt(this->Pk_interp(kap*this->h,zp)/hhh);
+        return kap*kap * sP1 * sPp1 * this->sph_bessel_camb(l,kap*q) *\
+            this->sph_bessel_camb(l,kap*qp);
+    };
     double integral2 = integrate_simps(integrand3, k_low, k_high, steps);
     //double integral2 = qromb(integrand3, k_low, k_high, 10E-10);
     //cout << integral2 << endl;
@@ -188,7 +188,7 @@ void SanityChecker::zp_integrand(int l, double k1, double k2, double z, double z
 {
     double integral;
     kappa_integral(l, k1, k2, z, zp, &integral, k_low, k_high);
-    
+
     double r,q;
     r = spline1dcalc(r_interp, z);
     q = spline1dcalc(q_interp, z);   
@@ -225,14 +225,14 @@ void SanityChecker::zp_integrand2(int l, double k1, double k2, double z, double 
     int steps = 4*(int)((k_high - k_low)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
-    
+
     auto integrand3 = [&](double kap)
-        {
-            return this->sph_bessel_camb(l,kap*q) * this->sph_bessel_camb(l,kap*qp);
-        };
+    {
+        return this->sph_bessel_camb(l,kap*q) * this->sph_bessel_camb(l,kap*qp);
+    };
     integral = integrate_simps(integrand3, k_low, k_high, steps);
 
-    
+
     double res1 = integral * jzp;
 
     *out1 = res1;
@@ -272,4 +272,71 @@ void SanityChecker::z_integrand_no_jq(int l, double k1, double kappa, double z, 
     double jr = sph_bessel_camb(l,k1 * r);
 
     *res = jr * r*r/hubble * sP * Tb;
-}  
+}
+
+double SanityChecker::f(int l, double kappa, double z)
+{
+    double r = spline1dcalc(r_interp,z);
+    double hubble = spline1dcalc(H_f_interp,z)*1000.0; //unit conversion
+    double Tb = Tb_interp(z);
+    double q = spline1dcalc(q_interp,z);
+    double sP = sqrt(Pk_interp(kappa, z));
+    double jq = sph_bessel_camb(l,kappa*q);
+
+    return r*r/hubble * sP * Tb;
+}
+
+double SanityChecker::integral_z_nojq(int l, double k1, double kappa)
+{
+    auto integrand = [&](double z)
+    {
+        double r = spline1dcalc(r_interp,z);
+        double hubble = spline1dcalc(H_f_interp,z)*1000.0; //unit conversion
+        double Tb = Tb_interp_full(z);
+        double q = spline1dcalc(q_interp,z);
+        double sP = sqrt(Pk_interp_full(kappa, z));
+        double jr = sph_bessel_camb(l,k1 * r);
+        
+        return jr * r*r/hubble *sP * Tb;
+    };
+    double integral = integrate_simps(integrand, 7,9,10000);
+    return integral;
+}
+
+double SanityChecker::integral_z_jq(int l, double k1, double kappa)
+{
+    auto integrand = [&](double z)
+    {
+        double r = spline1dcalc(r_interp,z);
+        double hubble = spline1dcalc(H_f_interp,z)*1000.0; //unit conversion
+        double Tb = Tb_interp_full(z);
+        double q = spline1dcalc(q_interp,z);
+        double sP = sqrt(Pk_interp_full(kappa, z));
+        double jr = sph_bessel_camb(l,k1 * r);
+        double jq = sph_bessel_camb(l,kappa*q);
+        return jr * r*r/hubble *sP * Tb * jq;
+    };
+    double integral = integrate_simps(integrand, 7.0,9.0,10000);
+    return integral;
+}
+
+double SanityChecker::integral_limber(int l, double k1, double kappa)
+{
+    double pre = sqrt(pi/(2.0 * ((double)l+0.5)));
+    double zstar1 = r_inverse(((double)l+0.5)/k1);
+    cout << zstar1 << endl;
+    double hhh = pow(this->h,3);   
+    double H1 = spline1dcalc(H_f_interp_full, zstar1)*1000.0;
+    cout << "H: " << H1 << endl; 
+    double Tb1 = Tb_interp_full(zstar1);
+    cout << "Tb: " << Tb1 << endl;
+    double q1 = spline1dcalc(q_interp_full, zstar1);
+    cout << "q: " << q1 << endl;
+    double qp1 = spline1dcalc(q_p_interp_full, zstar1);
+    cout << "r': " << qp1 << endl;
+    double sP1 = sqrt(this->Pk_interp_full(kappa*this->h,zstar1)/hhh);
+    cout << "sP: " << sP1 << endl;
+    double jq = sph_bessel_camb(l, kappa*(l+0.5)/k1);
+    return pre / (k1*k1*k1 * qp1 * H1)* Tb1 * sP1 * ((double)l+0.5)*\
+        ((double)l+0.5) * jq;
+}

@@ -35,37 +35,6 @@ double fl (double x)
 {
     return boost::math::cyl_bessel_j(0,100*x);
 }
-/*
-template<typename T>
-double integrate_levin2(T &f, const int nterm = 10)
-{
-    const double pi = boost::math::constants::pi<double>();
-    double beta = 1.0, a = 0.0, b = 0.0, sum = 0.0;
-    double ans;
-    if (nterm > 100)
-    {
-        cout << "nterm too large" << endl;
-        throw("nterm too large");
-    }
-    else {
-        Levin series(100,0.0);
-        cout << setw(5) << "N" << setw(19) << "Sum (direct)" << setw(21) << "Sum (Levin)" << endl;
-        cout << "what?" << endl;
-        for (int n = 0; n<=nterm;n++) {
-            b+=pi;
-            cout << " qromb " << endl;
-            double s = qromb(f, a, b, 1.0E-8);
-            cout << " qromb done " << endl;
-            a=b;
-            sum += s;
-            double omega = (beta+n)*s;
-            ans = series.next(sum, omega, beta);
-            cout << setw(5) << n << fixed << setprecision(14) << setw(21) << sum << setw(21) << ans << endl;
-        }
-    }
-    return ans;
-}
-*/
 
 double u(double x, int k, double d)
 {
@@ -94,13 +63,13 @@ void fun()
     {
         point(i,0) = a + (i-1.0)*(b-a)/(double)(n-1.0);
     }
-    
+
     for (int i = 0; i < n; i++)
     {
         double x = point(i,0);
         rhs(i,0) = 1.0; //f(x)
         rhs(i+n,0) = 0; //g(x)
-        
+
         for (int k = 0; k < n; k++)
         {
             matrix(i, k) = up(x,k,d) + (double)l * u(x,k,d)/x;
@@ -117,7 +86,7 @@ void fun()
     double sum2 = 0;
     double sum3 = 0;
     double sum4 = 0;
-    
+
     for (int k = 0; k < n; k++)
     {
         sum1+=c(k,0) * u(b,k,d);
@@ -151,7 +120,7 @@ void fun2()
     {
         point(i,0) = a + (i-1.0)*(b-a)/(double)(n-1.0);
     }
-    
+
     for (int i = 0; i < n; i++)
     {
         double x = point(i,0);
@@ -159,24 +128,24 @@ void fun2()
         rhs(i+n,0) = 0; //g(x)
         rhs(i+2*n,0) = 0;
         rhs(i+3*n,0) = 0;
-        
+
         for (int k = 0; k < n; k++)
         {
             matrix(i, k) = up(x,k,d) -2*(double)(l+1) * u(x,k,d)/x;
             matrix(i, k + n) = r1 * u(x,k,d);
             matrix(i, k + 2*n) = r2 * u(x,k,d);
             matrix(i, k + 3*n) = 0;
-            
+
             matrix(i + n, k) = -r1 * u(x,k,d);
             matrix(i + n, k + n) = up(x,k,d) - 2*u(x,k,d)/x;
             matrix(i + n, k + 2*n) = 0;
             matrix(i + n, k + 3*n) = r2*u(x,k,d);
-            
+
             matrix(i + 2*n, k) = -r2 * u(x,k,d);
             matrix(i + 2*n, k + n) = 0;
             matrix(i + 2*n, k + 2*n) = up(x,k,d)-2*u(x,k,d)/x;
             matrix(i + 2*n, k + 3*n) = r1*u(x,k,d);
-        
+
             matrix(i + 3*n, k) = 0;
             matrix(i + 3*n, k + n) = -r2 * u(x,k,d);
             matrix(i + 3*n, k + 2*n) = -r1 * u(x,k,d);
@@ -195,7 +164,7 @@ void fun2()
     double sum6 = 0;
     double sum7 = 0;
     double sum8 = 0;
-    
+
     for (int k = 0; k < n; k++)
     {
         sum1+=c(k,0) * u(b,k,d);
@@ -242,24 +211,24 @@ void fun3()
     {
         point(i,0) = a + (i-1.0)*(b-a)/(double)(n-1.0);
     }
-    
+
     for (int i = 0; i < n; i++)
     {
         double x = point(i,0);
         rhs(i,0) = 1.0; //f(x)
         rhs(i+n,0) = 0; //g(x)
         rhs(i+2*n,0) = 0;
-        
+
         for (int k = 0; k < n; k++)
         {
             matrix(i, k) = up(x,k,d) + 2*(double)(l-1) * u(x,k,d)/x;
             matrix(i, k + n) = -2*r * u(x,k,d);
             matrix(i, k + 2*n) = 0;
-            
+
             matrix(i + n, k) = r * u(x,k,d);
             matrix(i + n, k + n) = up(x,k,d) - u(x,k,d)/x;
             matrix(i + n, k + 2*n) = -r * u(x,k,d);
-            
+
             matrix(i + 2*n, k) = 0;
             matrix(i + 2*n, k + n) = 2.0*r * u(x,k,d);
             matrix(i + 2*n, k + 2*n) = up(x,k,d)-2.0*(double)l*u(x,k,d)/x;
@@ -275,7 +244,7 @@ void fun3()
     double sum4 = 0;
     double sum5 = 0;
     double sum6 = 0;
-    
+
     for (int k = 0; k < n; k++)
     {
         sum1+=c(k,0) * u(b,k,d);
@@ -303,24 +272,52 @@ int main(int argc, char* argv[])
     map<string,double> params;
     SanityChecker check(params);
     ofstream file;
-    file.open("testing.dat");
-    
+
     double res1, res2;
     int l = 1000;
-    double k1 = 0.4;
-    double kappa = 0.2;
-    double z = 7;
+    double k1 = 0.11;
+    int nmax = 10;
+    double zmin = 7;
     double zmax = 9;
     double zstepsize = 0.001;
-    int zsteps = (zmax - z)/zstepsize;
-    for (int i = 0; i < zsteps; i++)
+    int zsteps = (zmax - zmin)/zstepsize;
+    double kappa = 0.1;
+    double I1 = check.integral_z_jq(l, k1, kappa);
+    double I2 = check.integral_z_nojq(l, k1, kappa);
+    double limber = check.integral_limber(l,k1,kappa);
+
+    file.open("test.dat");
+    
+    for (int i = 0; i< 1000; i++)
     {
-        z += zstepsize;
-        check.z_integrand_with_jq(l, k1, kappa, z, &res1);
-        check.z_integrand_no_jq(l, k1, kappa, z, &res2);
-        file << z << " " << res1 << " " << res2 << endl;
+        kappa += 0.001;
+        double I1 = check.integral_z_jq(l, k1, kappa);
+        double I2 = check.integral_z_nojq(l, k1, kappa);
+        double limber = check.integral_limber(l,k1,kappa);
+
+        file << kappa << " " << I1 << " " << I2 << " " << limber << endl;
     }
+    
     file.close();
-   
+  
+    /*
+    for (int n = 0; n < nmax; n++)
+    {
+        double kappa = 0.1 + n * 0.1;
+        stringstream filename;
+        filename << "f_" << kappa << ".dat"; 
+        file.open(filename.str());
+
+        for (int i = 0; i < zsteps; i++)
+        {
+            double z = zmin + i*zstepsize;
+            double f = check.f(l, kappa, z);
+            double j = check.sph_bessel_camb(l, k1 * check.D_C(z));
+        
+            file << z << " " << f << " " << j << endl;
+        }
+        file.close();
+    }
+    */
     return 0;
 }
