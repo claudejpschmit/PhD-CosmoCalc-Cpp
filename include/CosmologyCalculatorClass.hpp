@@ -5,7 +5,6 @@
 #include <map>
 #include <cmath>
 #include <vector>
-#include "ClassEngine.hpp"
 #include "stdafx.h"
 #include "interpolation.h"
 #include "CAMB_interface.hpp"
@@ -43,7 +42,6 @@ class CosmoCalc : public CosmoBasis {
          * Function outputs some standard cosmological calculations to the user.
          */
         void show_cosmo_calcs();
-        void updateClass(map<string, double> params);
         void update_q();
         void update_q_full();
         void update_Hf();
@@ -53,19 +51,7 @@ class CosmoCalc : public CosmoBasis {
         void update_q_prime_full();
         double limber(int l, double r);
         double limber2(int l, double r);
-        /**
-         * Writing the Pk's at a redshift to a file.
-         * The Pk's range from k = 0.0001 to k = 10.
-         * Two files are writte, the original filename contains CLASS values 
-         * and a second file, with the prefix "new_" contains the interpolated 
-         * values from CAMB.
-         *
-         * @param filename is the name of the file to which the 
-         *                 results will be written.
-         *
-         * @param z is the redshift at which the power spectrum is calculated.
-         */
-        void write_pks(string filename, double z);
+        
         
         /**
          * Determines the Hubble Time in [s * Mpc/km]:
@@ -385,6 +371,8 @@ class CosmoCalc : public CosmoBasis {
 
         double Cl(int l, double k1, double k2, double k_low, double k_high);
         double Cl_simplified(int l, double k1, double k2);
+        double Cl_simplified2(int l, double k1, double k2);
+        double Cl_simplified3(int l, double k1, double k2);
         double Cl_simplified_rsd(int l, double k1, double k2);
         double Cl_noise(int l, double k1, double k2);
         double Cl_simplified_levin(int l, double k1, double k2);
@@ -480,8 +468,6 @@ class CosmoCalc : public CosmoBasis {
         
         vector<vector<double>> bessel_values;
 
-        ClassParams pars;
-        ClassEngine *CLASS;
         CAMB_CALLER *CAMB;
         Global21cmInterface *G21; 
        

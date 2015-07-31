@@ -282,4 +282,3 @@ double integrate_levin(T &f, const double a, const double b)
     }
     return ans;
 }
-

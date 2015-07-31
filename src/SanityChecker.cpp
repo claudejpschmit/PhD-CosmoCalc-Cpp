@@ -78,22 +78,23 @@ void SanityChecker::compare_new(int l, double k1, double k2, double kappa, doubl
     double zstar2 = r_inverse((l+0.5)/k2);
 
     cout << zstar1 << " " << zstar2 << endl;
-    double H1 = spline1dcalc(H_f_interp, zstar1)*1000.0;
-    double H2 = spline1dcalc(H_f_interp, zstar2)*1000.0;
-    double Tb1 = Tb_interp(zstar1);
-    double Tb2 = Tb_interp(zstar2);
-    double q1 = spline1dcalc(q_interp, zstar1);
-    double q2 = spline1dcalc(q_interp, zstar2);
+    double H1 = spline1dcalc(H_f_interp_full, zstar1)*1000.0;
+    double H2 = spline1dcalc(H_f_interp_full, zstar2)*1000.0;
+    double Tb1 = Tb_interp_full(zstar1);
+    double Tb2 = Tb_interp_full(zstar2);
+    double q1 = spline1dcalc(q_interp_full, zstar1);
+    double q2 = spline1dcalc(q_interp_full, zstar2);
     double hhh = pow(this->h,3);
-    double sP1 = sqrt(this->Pk_interp(kappa*this->h,zstar1)/hhh);
-    double sP2 = sqrt(this->Pk_interp(kappa*this->h,zstar2)/hhh);
-
+    double sP1 = sqrt(this->Pk_interp_full(kappa*this->h,zstar1)/hhh);
+    double sP2 = sqrt(this->Pk_interp_full(kappa*this->h,zstar2)/hhh);
+    double qp1 = spline1dcalc(q_p_interp_full, zstar1);
+    double qp2 = spline1dcalc(q_p_interp_full, zstar2);
 
 
     double jl1 = sph_bessel_camb(l,q1*kappa);
     double jl2 = sph_bessel_camb(l,q2*kappa);
 
-    res2 = res2*pow(l+0.5,3)/(k1*k1*k2*k2* H1 * H2) * sP1 * sP2 * Tb1 * Tb2 * jl1 * jl2;
+    res2 = res2*pow(l+0.5,3)/(k1*k1*k1*k2*k2*k2* H1 * H2 * qp1 * qp2) * sP1 * sP2 * Tb1 * Tb2 * jl1 * jl2;
     *out1 = res1;
     *out2 = res2;
 
@@ -244,11 +245,11 @@ void SanityChecker::zp_integrand2(int l, double k1, double k2, double z, double 
 void SanityChecker::Cl_compare(int l, double k1, double k2)
 {
     double k_low = 0.1;
-    double k_high = 2.0;
-    double res_simple = this->Cl_simplified(l, k1, k2);
-    cout << "simple done" << endl;
+    double k_high = 1.0;
+    double res_simple = this->Cl_simplified3(l, k1, k2);
+    cout << "simple done " << res_simple << endl;
     double res_full = this->corr_Tb_new(l,k1,k2,k_low, k_high);
-
+    cout << "full done " << res_full << endl;
     cout << "Cl_simple/Cl_full = " << res_simple/res_full << endl;
 }
     

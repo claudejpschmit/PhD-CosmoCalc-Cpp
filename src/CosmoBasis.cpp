@@ -55,12 +55,12 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("T_CMB",2.7255));
     this->fiducial_params.insert(pair<string,double>("zmin",7.0));
     this->fiducial_params.insert(pair<string,double>("zmax",9.0));
-    this->fiducial_params.insert(pair<string,double>("zsteps",100));
+    this->fiducial_params.insert(pair<string,double>("zsteps",1000));
     this->fiducial_params.insert(pair<string,double>("Pk_steps",3));
     this->fiducial_params.insert(pair<string,double>("k_stepsize",0.0001));
     this->fiducial_params.insert(pair<string,double>("kmin",0.1));
     this->fiducial_params.insert(pair<string,double>("kmax",2));
-    this->fiducial_params.insert(pair<string,double>("zmax_interp",50));
+    this->fiducial_params.insert(pair<string,double>("zmax_interp",12));
     // Do not go above 1000 different ls!!! 
 
     this->fiducial_params.insert(pair<string,double>("l_min",999));

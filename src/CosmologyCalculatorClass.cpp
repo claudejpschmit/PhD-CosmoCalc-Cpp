@@ -20,33 +20,11 @@ CosmoCalc::CosmoCalc(map<string, double> params)
 
     //generate object that is the CAMB interface.
     CAMB = new CAMB_CALLER;
-    pars.add("100*theta_s",0);
-    pars.add("omega_b",0);
-    pars.add("omega_cdm",0);
-    pars.add("A_s",0);
-    pars.add("n_s",0);
-    pars.add("tau_reio",0);
-    pars.add("k_pivot",0);
-    pars.add("YHe",0);
-    pars.add("z_pk",0);
-    //This doesn't work currently
-    //pars.add("h", 0);
-    pars.add("Omega_k",0);
-    //pars.add("Omega_Lambda", 0);
-    pars.add("T_cmb",0);
-    //pars.add("bias",0);
-
-    //Unchanging
-    pars.add("output","mPk"); //pol +clphi
-    pars.add("P_k_max_h/Mpc",100);
-    cout << "... Initializing Class ..." << endl;
-    //updateClass(this->fiducial_params);
-    cout << "... Class initialized ..." << endl;
 
     cout << "... precalculating Ml dependencies ..." << endl;
     this->update_q_full();
     cout << "qdone" << endl;
-    //this->update_q_prime_full();
+    this->update_q_prime_full();
     this->update_Hf();
 
     cout << "qdot done" << endl;
@@ -91,7 +69,6 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... 21cm interface built ..." << endl;
 
     cout << "... CosmoCalc built ..." << endl;
-
 }
 
 double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high)
@@ -124,7 +101,7 @@ double CosmoCalc::Cl_noise(int l, double k1, double k2)
         double hub = this->H_f[n]*1000.0;
         return r*r*jl/hub; 
     };
-    
+
     if (k1==k2) {
         // in mK
         double Tsys = 700000;
@@ -133,7 +110,7 @@ double CosmoCalc::Cl_noise(int l, double k1, double k2)
         double tau = 365.25*24*60*60;
         double prefactor = 2.0 *pi*c*c * Tsys*Tsys/(fcover*fcover * fiducial_params["df"] * lmax * lmax * tau);
         double integral = integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml,\
-            this->zsteps_Ml);
+                this->zsteps_Ml);
         return prefactor * integral * integral;
     } else {
         return 0.0;
@@ -147,66 +124,14 @@ CosmoCalc::~CosmoCalc()
     delete G21;
 }
 
-void CosmoCalc::write_pks(string filename, double z)
-{
-    ofstream file;
-    file.open(filename);
-    cout.precision( 16 );
-    this->CLASS->writePks(file, z);
-    file.close();
-
-    filename = "new_"+filename;
-    file.open(filename);
-
-    double k = 0.0001;
-    double kstep = k;
-    for (int n = 0; n < 10000; ++n) {
-        k += kstep;
-        file << k << " " << this->Pk_interp(k,z) << endl; 
-    }
-    file.close();
-
-}
 void CosmoCalc::show_cosmo_calcs()
 {
-    write_pks("outputtest_z0.dat", 0);
-    write_pks("outputtest_z1.dat", 1);
-    write_pks("outputtest_z2.dat", 2);
-    write_pks("outputtest_z755.dat", 7.55);
-    //updateClass(current_params);
-    current_params["ombh2"] = 0.04;
-    updateClass(current_params);
-    write_pks("outputtestuuu.dat", 0);
-
     cout << hubble_time() << endl;
     cout << hubble_dist() << endl;
     cout << comoving_radial_dist(10) << endl;
     cout << "O_m = " << O_M << ", O_V = " << O_V << "." << endl;
     cout << "Age in Gigayears "<< age_of_universe(0) * pow(10,10) *\
         3.08568 / (365.25 * 24 * 3600) << endl;
-}
-
-void CosmoCalc::updateClass(map<string, double> params)
-{
-    pars.updateParam("omega_b", params["ombh2"]);
-    pars.updateParam("omega_cdm", params["omch2"]);
-    //This doesn't work currently
-    //pars.updateParam("h", params["hubble"]/100.0);
-    pars.updateParam("Omega_k", params["omk"]);
-    //pars.updateParam("Omega_Lambda", this->O_V);
-    pars.updateParam("T_cmb", params["T_CMB"]);
-    pars.updateParam("A_s", params["A_s"]);
-    pars.updateParam("n_s", params["n_s"]);
-    pars.updateParam("tau_reio", params["tau_reio"]);
-    pars.updateParam("k_pivot", params["k_pivot"]);
-    pars.updateParam("YHe", params["YHe"]);
-    pars.updateParam("z_pk", params["z_pk"]);
-    pars.updateParam("100*theta_s", params["100*theta_s"]);
-
-    //Not quite sure if this is = b_bias...
-    //pars.updateParam("bias", 1);
-
-    CLASS = new ClassEngine(pars);
 }
 
 double CosmoCalc::hubble_time()
@@ -465,20 +390,20 @@ void CosmoCalc::update_q_prime_full()
     double z;
     double h = 10e-4;
     cout << "TEST" << endl; 
-    real_1d_array xs, ys;
-    xs.setlength(zmax_interp + 1);
-    ys.setlength(zmax_interp + 1);
+    real_1d_array xs1, ys1;
+    xs1.setlength(10*zmax_interp + 1);
+    ys1.setlength(10*zmax_interp + 1);
 
     for (int n = 0; n <= 10*zmax_interp; ++n) {
         z = 0.1 + n * 0.1;
         double res = 0;
         res = - D_C(z+2*h) + 8 * D_C(z+h) - 8 * D_C(z-h) + D_C(z-2*h);
         res = abs(res);
-        xs[n] = z;
-        ys[n] = res/(12*h);
+        xs1[n] = z;
+        ys1[n] = res/(12*h);
     }
     cout << "bla" << endl;
-    spline1dbuildlinear(xs,ys,this->q_p_interp_full);
+    spline1dbuildlinear(xs1,ys1,q_p_interp_full);
     cout << "baj" << endl;
 }
 
@@ -504,7 +429,7 @@ void CosmoCalc::update_q_prime()
     this->q_p_Ml.clear();
     double z;
     double h = 10e-4;
-    
+
     real_1d_array xs, ys;
     xs.setlength(this->zsteps_Ml+1);
     ys.setlength(this->zsteps_Ml+1);
@@ -516,7 +441,7 @@ void CosmoCalc::update_q_prime()
         res = abs(res);
 
         this->q_p_Ml.push_back(res/(12*h));
-        
+
         xs[n] = z;
         ys[n] = q_p_Ml[n];
     }
@@ -661,7 +586,7 @@ void CosmoCalc::update_G21_full(map<string,double> params)
         G21->updateGlobal21cm_full(params);
         vector<double> vz, vTb;
         G21->getTb(&vz, &vTb);
-        
+
         real_1d_array g21_z, g21_Tb;
         g21_z.setlength(vz.size());
         g21_Tb.setlength(vTb.size());
@@ -725,7 +650,7 @@ void CosmoCalc::update_G21(map<string,double> params)
         G21->updateGlobal21cm(params);
         vector<double> vz, vTb;
         G21->getTb(&vz, &vTb);
-        
+
         real_1d_array g21_z, g21_Tb;
         g21_z.setlength(vz.size());
         g21_Tb.setlength(vTb.size());
@@ -1097,6 +1022,79 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
     }
 }
 
+double CosmoCalc::Cl_simplified2(int l, double k1, double k2)
+{
+    double res2 = 2 * pow(this->b_bias,2) * pow(this->c,2)/this->pi;
+    double zstar1 = r_inverse((l+0.5)/k1);
+    double zstar2 = r_inverse((l+0.5)/k2);
+
+    double H1 = spline1dcalc(H_f_interp_full, zstar1)*1000.0;
+    double H2 = spline1dcalc(H_f_interp_full, zstar2)*1000.0;
+    double Tb1 = Tb_interp_full(zstar1);
+    double Tb2 = Tb_interp_full(zstar2);
+    double q1 = spline1dcalc(q_interp_full, zstar1);
+    double q2 = spline1dcalc(q_interp_full, zstar2);
+    double qp1 = spline1dcalc(q_p_interp_full, zstar1);
+    double qp2 = spline1dcalc(q_p_interp_full, zstar2);
+
+    double hhh = pow(this->h,3);
+    auto integrand = [&](double kappa)
+    {
+        double sP1 = sqrt(this->Pk_interp_full(kappa*this->h,zstar1)/hhh);
+        double sP2 = sqrt(this->Pk_interp_full(kappa*this->h,zstar2)/hhh);
+
+        double jl1 = sph_bessel_camb(l,q1*kappa);
+        double jl2 = sph_bessel_camb(l,q2*kappa);
+
+        return pow(kappa,2) * sP1*sP2*jl1*jl2;
+    };
+    double integral = integrate_simps(integrand, 0.1,1,100000);
+    res2 = res2*pow(l+0.5,3)/(k1*k1*k1*k2*k2*k2* H1 * H2 * qp1 * qp2) * Tb1 * Tb2 * integral;
+    return res2;
+
+}
+
+double CosmoCalc::Cl_simplified3(int l, double k1, double k2)
+{   
+    double hhh = pow(this->h,3);
+    auto integrand1 = [&] (double zp)
+    {
+        const double n_old2 = (zp - this->zmin_Ml)/this->stepsize_Ml;
+        int n2;
+        int n_old_int2 = (int)n_old2;
+        if (abs(n_old2 - (double)n_old_int2) > 0.5)
+            n2 = n_old_int2 + 1;
+        else
+            n2 = n_old_int2;
+        double rp,qp;
+        rp = this->r_Ml[n2];
+        qp = this->q_Ml[n2];
+
+        auto integrand2 = [&](double z)
+        {
+            const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
+            int n;
+            int n_old_int = (int)n_old;
+            if (abs(n_old - (double)n_old_int) > 0.5)
+                n = n_old_int + 1;
+            else
+                n = n_old_int;
+            double r,q;
+            r = this->r_Ml[n];
+            q = this->q_Ml[n];
+            double sP = sqrt(this->Pk_interp((l+0.5)/q*this->h,z)/hhh);
+            double sPp = sqrt(this->Pk_interp((l+0.5)/q*this->h,zp)/hhh);
+            double jqq = this->bessel_j_interp_cubic(l,(l+0.5)*qp/q);
+            return r*r / (q*q*q * this->H_f[n]*1000.0) * this->Tb_interp(z) *\
+                this->bessel_j_interp_cubic(l,k1*r) * jqq * sP * sPp;
+        };
+        double integral = integrate_simps(integrand2, this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
+        return rp*rp / (this->H_f[n2]*1000.0) * this->Tb_interp(zp) * this->bessel_j_interp_cubic(l,k2*rp) * integral;
+    };
+    double integral2 = integrate_simps(integrand1, this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
+    return pow(this->prefactor_Ml,2) * sqrt(this->pi/(2*(l+0.5))) * pow((l+0.5),2) * integral2;
+}
+
 double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
         double k_high)
 {       
@@ -1302,8 +1300,8 @@ double CosmoCalc::M(int l, double k1, double k2)
         q = this->q_Ml[n];
 
         //TODO: check whether we need to multiply py h.
-        return pow(r,2) * this->Tb_interp(z) * this->bessel_j_interp_cubic(l,k1*r) *\
-            this->bessel_j_interp_cubic(l,k2*q) * sqrt(this->Pk_interp(k2*this->h,z)/\
+        return pow(r,2) * this->Tb_interp_full(z) * this->bessel_j_interp_cubic(l,k1*r) *\
+            this->bessel_j_interp_cubic(l,k2*q) * sqrt(this->Pk_interp_full(k2*this->h,z)/\
                     pow(this->h,3)) / (this->H_f[n]*1000.0);
 
         //return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel_camb(l,k1*r) *
@@ -1462,9 +1460,6 @@ double CosmoCalc::integrandsimple(int l, double k1, double k2, double z)
         this->bessel_j_interp_cubic(l,k2*r) *\
         this->Pk_interp(((double)l + 0.5)/q * this->h,z)/(pow(this->h,3)*hh);
 }
-
-
-
 
 double CosmoCalc::help_long(int l, double kp, double kappa)
 {

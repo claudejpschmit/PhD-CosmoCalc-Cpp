@@ -346,13 +346,29 @@ int main(int argc, char* argv[])
     
     clock_t t1, t2;
 
-    CosmoWrite writer(params);   
+    //CosmoWrite writer(params);   
     //writer.calculate_inverse_comoving(15000);
-    //SanityChecker check(params);
-    //ofstream file;
-    //file.open("zp_integrand3.dat");
-    //double res1, res2;
-    //check.compare_interp(1000, 0.6, 0.5, 8.0,  &res1, &res2);
+    //double res1,res2;
+    SanityChecker check(params);
+    check.Cl_compare(1000, 0.2, 0.4);
+
+    //check.Cl_compare(1000,0.11,0.108);  
+    //check.compare_new(1000,0.11,0.108, 0.2, &res1, &res2);
+    /*
+    ofstream file;
+    file.open("compare.dat");
+    
+    double res1, res2;
+    
+    for (int i = 0; i < 10000; i++)
+    {
+        double kappa = 0.1+i * 0.0001;
+        check.compare_new(1000,0.11,0.108, kappa, &res1, &res2);
+        file << kappa << " " << res1 << " " << res2 << endl;
+    }
+    file.close();
+    */
+
     //check.compare_interp(1000, 0.4, 0.5, 8.3,  &res1, &res2);
     //check.compare_interp(1000, 0.4, 0.5, 8.6341,  &res1, &res2);
     //check.compare_interp(1000, 0.4, 0.5, 7.0,  &res1, &res2);

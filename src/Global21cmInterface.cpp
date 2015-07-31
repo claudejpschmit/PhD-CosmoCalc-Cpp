@@ -104,8 +104,7 @@ void Global21cmInterface::updateGlobal21cm_full(map<string,double> params)
 
     //Astrophysics a(&c,popflag_in,xin,lyaxray_in,1.0);
     a->initAstrophysics(fstar,fesc,nion,fx,flya,popflag,xrayflag,lyaxrayflag, true);
-
-    calc_Tb(0, params["zmax_interp"]+1, 10*params["zmax_interp"]);
+    calc_Tb(2.5, params["zmax_interp"]+1, 10*(params["zmax_interp"]-2.5));
 }
 
 double Global21cmInterface::getTb_interp_cubic(double z)
