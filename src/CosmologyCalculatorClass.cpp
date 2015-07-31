@@ -23,11 +23,9 @@ CosmoCalc::CosmoCalc(map<string, double> params)
 
     cout << "... precalculating Ml dependencies ..." << endl;
     this->update_q_full();
-    cout << "qdone" << endl;
     this->update_q_prime_full();
     this->update_Hf();
 
-    cout << "qdot done" << endl;
     this->update_q();
     this->update_q_prime();
     this->r_Ml = this->q_Ml;
@@ -389,7 +387,6 @@ void CosmoCalc::update_q_prime_full()
 {
     double z;
     double h = 10e-4;
-    cout << "TEST" << endl; 
     real_1d_array xs1, ys1;
     xs1.setlength(10*zmax_interp + 1);
     ys1.setlength(10*zmax_interp + 1);
@@ -402,9 +399,7 @@ void CosmoCalc::update_q_prime_full()
         xs1[n] = z;
         ys1[n] = res/(12*h);
     }
-    cout << "bla" << endl;
     spline1dbuildlinear(xs1,ys1,q_p_interp_full);
-    cout << "baj" << endl;
 }
 
 void CosmoCalc::update_q()

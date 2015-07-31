@@ -100,8 +100,6 @@ void SanityChecker::compare_new(int l, double k1, double k2, double kappa, doubl
 
     cout << "Full calculation: " << res1 << endl;
     cout << "Simplified calculation: " << res2 << endl;
-
-
 }
 
 double SanityChecker::limber3(int l, double z)
@@ -207,8 +205,8 @@ void SanityChecker::zp_integrand(int l, double k1, double k2, double z, double z
     double res2 = pow(this->prefactor_Ml,2) * r*r / hubble_z * this->Tb_interp(z) * jz * res1;
 
     *out1 = res1;
-   
 }
+
 void SanityChecker::zp_integrand2(int l, double k1, double k2, double z, double zp, double *out1, double k_low, double k_high)
 {
     double integral;
@@ -238,9 +236,7 @@ void SanityChecker::zp_integrand2(int l, double k1, double k2, double z, double 
     double res1 = integral * jzp;
 
     *out1 = res1;
-   
 }
-
 
 void SanityChecker::Cl_compare(int l, double k1, double k2)
 {
@@ -252,4 +248,28 @@ void SanityChecker::Cl_compare(int l, double k1, double k2)
     cout << "full done " << res_full << endl;
     cout << "Cl_simple/Cl_full = " << res_simple/res_full << endl;
 }
-    
+
+void SanityChecker::z_integrand_with_jq(int l, double k1, double kappa, double z, double *res)
+{
+    double r = spline1dcalc(r_interp,z);
+    double hubble = spline1dcalc(H_f_interp,z)*1000.0; //unit conversion
+    double Tb = Tb_interp(z);
+    double q = spline1dcalc(q_interp,z);
+    double sP = sqrt(Pk_interp(kappa, z));
+    double jq = sph_bessel_camb(l,kappa*q);
+    double jr = sph_bessel_camb(l,k1 * r);
+
+    *res = jr * r*r/hubble * sP * Tb * jq;
+}  
+
+void SanityChecker::z_integrand_no_jq(int l, double k1, double kappa, double z, double *res)
+{
+    double r = spline1dcalc(r_interp,z);
+    double hubble = spline1dcalc(H_f_interp,z)*1000.0; //unit conversion
+    double Tb = Tb_interp(z);
+    double q = spline1dcalc(q_interp,z);
+    double sP = sqrt(Pk_interp(kappa, z));
+    double jr = sph_bessel_camb(l,k1 * r);
+
+    *res = jr * r*r/hubble * sP * Tb;
+}  
