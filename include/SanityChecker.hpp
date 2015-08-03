@@ -24,5 +24,10 @@ class SanityChecker : public CosmoCalc {
         void zp_integrand2(int l, double k1, double k2, double z, double zp, double *out1, double k_low, double k_high);
         void z_integrand_with_jq(int l, double k1, double kappa, double z, double *res);
         void z_integrand_no_jq(int l, double k1, double kappa, double z, double *res);
+        double f(int l, double kappa, double z);
+        double integral_z_jq(int l, double k1, double kappa);
+        double integral_z_nojq(int l, double k1, double kappa);
+        double integral_limber(int l, double k1, double kappa);
+
 
 };
