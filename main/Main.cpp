@@ -18,309 +18,78 @@
 #include "Global21cmInterface.hpp"
 #include <boost/math/special_functions/bessel.hpp>
 #include "SanityChecker.hpp"
+#include "LevinIntegrator.hpp"
 
 using namespace std;
 using namespace arma;
 using namespace alglib;
 
-double f (double x)
-{
-    if (x == 0.0)
-        return 0.0;
-    else
-        return boost::math::sph_bessel(1,100*x) * boost::math::sph_bessel(1,101*x);
-}
+
 
 double fl (double x)
 {
     return boost::math::cyl_bessel_j(0,100*x);
 }
-/*
-template<typename T>
-double integrate_levin2(T &f, const int nterm = 10)
+double f(double x)
 {
-    const double pi = boost::math::constants::pi<double>();
-    double beta = 1.0, a = 0.0, b = 0.0, sum = 0.0;
-    double ans;
-    if (nterm > 100)
-    {
-        cout << "nterm too large" << endl;
-        throw("nterm too large");
-    }
-    else {
-        Levin series(100,0.0);
-        cout << setw(5) << "N" << setw(19) << "Sum (direct)" << setw(21) << "Sum (Levin)" << endl;
-        cout << "what?" << endl;
-        for (int n = 0; n<=nterm;n++) {
-            b+=pi;
-            cout << " qromb " << endl;
-            double s = qromb(f, a, b, 1.0E-8);
-            cout << " qromb done " << endl;
-            a=b;
-            sum += s;
-            double omega = (beta+n)*s;
-            ans = series.next(sum, omega, beta);
-            cout << setw(5) << n << fixed << setprecision(14) << setw(21) << sum << setw(21) << ans << endl;
-        }
-    }
-    return ans;
-}
-*/
-
-double u(double x, int k, double d)
-{
-    return pow(x-d, k-1);
+    return x;
 }
 
-double up(double x, int k, double d)
+double integr(double r1, double r2, int l, double a, double b, int nsteps)
 {
-    return (k-1)*pow(x-d, k-2);
+    auto integrand = [&](double x)
+    {
+        return x*boost::math::sph_bessel(l, r1*x)*boost::math::sph_bessel(l, r2*x);
+    };
+
+    double res = integrate_simps(integrand, a, b, nsteps);
+    return res;
 }
-
-
-void fun()
-{
-    mat matrix, rhs, c, point;
-    int n = 9;
-    double a = 1;
-    double b = 2;
-    double r = 100;
-    int l = 0;
-    matrix = randu<mat>(2*n,2*n);
-    rhs = randu<mat>(2*n,1);
-    point = randu<mat>(n,1);
-    double d = (a+b)/2.0 + 0.00000000000001;
-    for (int i = 0; i < n; i++)
-    {
-        point(i,0) = a + (i-1.0)*(b-a)/(double)(n-1.0);
-    }
-    
-    for (int i = 0; i < n; i++)
-    {
-        double x = point(i,0);
-        rhs(i,0) = 1.0; //f(x)
-        rhs(i+n,0) = 0; //g(x)
-        
-        for (int k = 0; k < n; k++)
-        {
-            matrix(i, k) = up(x,k,d) + (double)l * u(x,k,d)/x;
-            matrix(i, k + n) = r * u(x,k,d);
-            matrix(i + n, k) = -r * u(x,k,d);
-            matrix(i + n, k + n) = up(x,k,d) - (double)(l+1)*u(x,k,d)/x;
-        }
-    }
-    matrix = matrix.i();
-    c = randu<mat>(n*2,1);
-    c = matrix * rhs;
-
-    double sum1 = 0;
-    double sum2 = 0;
-    double sum3 = 0;
-    double sum4 = 0;
-    
-    for (int k = 0; k < n; k++)
-    {
-        sum1+=c(k,0) * u(b,k,d);
-        sum2+=c(k,0) * u(a,k,d);
-        sum3+=c(k+n,0) * u(b,k,d);
-        sum4+=c(k+n,0) * u(a,k,d);
-    }
-    double j1 = boost::math::cyl_bessel_j(l,r*b);
-    double j2 = boost::math::cyl_bessel_j(l,r*a);
-    double j3 = boost::math::cyl_bessel_j(l+1,r*b);
-    double j4 = boost::math::cyl_bessel_j(l+1,r*a);
-    double result = sum1 * j1 - sum2 * j2 + sum3 * j3 - sum4 * j4;
-
-    cout << result << endl;
-}
-
-void fun2()
-{
-    mat matrix, rhs, c, point;
-    int n = 9;
-    double a = 1;
-    double b = 2;
-    double r1 = 100;
-    double r2 = 101;
-    int l = 1;
-    matrix = randu<mat>(4*n,4*n);
-    rhs = randu<mat>(4*n,1);
-    point = randu<mat>(n,1);
-    double d = (a+b)/2.0 + 0.00000000000001;
-    for (int i = 0; i < n; i++)
-    {
-        point(i,0) = a + (i-1.0)*(b-a)/(double)(n-1.0);
-    }
-    
-    for (int i = 0; i < n; i++)
-    {
-        double x = point(i,0);
-        rhs(i,0) = 1.0; //f(x)
-        rhs(i+n,0) = 0; //g(x)
-        rhs(i+2*n,0) = 0;
-        rhs(i+3*n,0) = 0;
-        
-        for (int k = 0; k < n; k++)
-        {
-            matrix(i, k) = up(x,k,d) -2*(double)(l+1) * u(x,k,d)/x;
-            matrix(i, k + n) = r1 * u(x,k,d);
-            matrix(i, k + 2*n) = r2 * u(x,k,d);
-            matrix(i, k + 3*n) = 0;
-            
-            matrix(i + n, k) = -r1 * u(x,k,d);
-            matrix(i + n, k + n) = up(x,k,d) - 2*u(x,k,d)/x;
-            matrix(i + n, k + 2*n) = 0;
-            matrix(i + n, k + 3*n) = r2*u(x,k,d);
-            
-            matrix(i + 2*n, k) = -r2 * u(x,k,d);
-            matrix(i + 2*n, k + n) = 0;
-            matrix(i + 2*n, k + 2*n) = up(x,k,d)-2*u(x,k,d)/x;
-            matrix(i + 2*n, k + 3*n) = r1*u(x,k,d);
-        
-            matrix(i + 3*n, k) = 0;
-            matrix(i + 3*n, k + n) = -r2 * u(x,k,d);
-            matrix(i + 3*n, k + 2*n) = -r1 * u(x,k,d);
-            matrix(i + 3*n, k + 3*n) = up(x,k,d) + 2 *(double)(l-1)*u(x,k,d)/x;
-        }
-    }
-    matrix = matrix.i();
-    c = randu<mat>(4*n,1);
-    c = matrix * rhs;
-
-    double sum1 = 0;
-    double sum2 = 0;
-    double sum3 = 0;
-    double sum4 = 0;
-    double sum5 = 0;
-    double sum6 = 0;
-    double sum7 = 0;
-    double sum8 = 0;
-    
-    for (int k = 0; k < n; k++)
-    {
-        sum1+=c(k,0) * u(b,k,d);
-        sum2+=c(k,0) * u(a,k,d);
-        sum3+=c(k+n,0) * u(b,k,d);
-        sum4+=c(k+n,0) * u(a,k,d);
-        sum5+=c(k+2*n,0) * u(b,k,d);
-        sum6+=c(k+2*n,0) * u(a,k,d);
-        sum7+=c(k+3*n,0) * u(b,k,d);
-        sum8+=c(k+3*n,0) * u(a,k,d);
-
-    }
-    double j1 = boost::math::sph_bessel(l,r1*b);
-    double j2 = boost::math::sph_bessel(l,r1*a);
-    double j3 = boost::math::sph_bessel(l-1,r1*b);
-    double j4 = boost::math::sph_bessel(l-1,r1*a);
-
-    double j5 = boost::math::sph_bessel(l,r2*b);
-    double j6 = boost::math::sph_bessel(l,r2*a);
-    double j7 = boost::math::sph_bessel(l-1,r2*b);
-    double j8 = boost::math::sph_bessel(l-1,r2*a);
-
-
-    double result = sum1 * j1 * j5 - sum2 * j2 * j6 +\
-                    sum3 * j3 * j5 - sum4 * j4 * j6 +\
-                    sum5 * j1 * j7 - sum6 * j2 * j8 +\
-                    sum7 * j3 * j7 - sum8 * j4 * j8;
-
-    cout << result << endl;
-}
-void fun3()
-{
-    mat matrix, rhs, c, point;
-    int n = 8;
-    double a = 1;
-    double b = 2;
-    double r = 10;
-    int l = 1; // calculate integral for l-1
-    matrix = randu<mat>(3*n,3*n);
-    rhs = randu<mat>(3*n,1);
-    point = randu<mat>(n,1);
-    double d = (a+b)/2.0 + 0.00000000000001;
-    for (int i = 0; i < n; i++)
-    {
-        point(i,0) = a + (i-1.0)*(b-a)/(double)(n-1.0);
-    }
-    
-    for (int i = 0; i < n; i++)
-    {
-        double x = point(i,0);
-        rhs(i,0) = 1.0; //f(x)
-        rhs(i+n,0) = 0; //g(x)
-        rhs(i+2*n,0) = 0;
-        
-        for (int k = 0; k < n; k++)
-        {
-            matrix(i, k) = up(x,k,d) + 2*(double)(l-1) * u(x,k,d)/x;
-            matrix(i, k + n) = -2*r * u(x,k,d);
-            matrix(i, k + 2*n) = 0;
-            
-            matrix(i + n, k) = r * u(x,k,d);
-            matrix(i + n, k + n) = up(x,k,d) - u(x,k,d)/x;
-            matrix(i + n, k + 2*n) = -r * u(x,k,d);
-            
-            matrix(i + 2*n, k) = 0;
-            matrix(i + 2*n, k + n) = 2.0*r * u(x,k,d);
-            matrix(i + 2*n, k + 2*n) = up(x,k,d)-2.0*(double)l*u(x,k,d)/x;
-        }
-    }
-    matrix = matrix.i();
-    c = randu<mat>(3*n,1);
-    c = matrix * rhs;
-
-    double sum1 = 0;
-    double sum2 = 0;
-    double sum3 = 0;
-    double sum4 = 0;
-    double sum5 = 0;
-    double sum6 = 0;
-    
-    for (int k = 0; k < n; k++)
-    {
-        sum1+=c(k,0) * u(b,k,d);
-        sum2+=c(k,0) * u(a,k,d);
-        sum3+=c(k+n,0) * u(b,k,d);
-        sum4+=c(k+n,0) * u(a,k,d);
-        sum5+=c(k+2*n,0) * u(b,k,d);
-        sum6+=c(k+2*n,0) * u(a,k,d);
-    }
-    double j1 = boost::math::cyl_bessel_j(l,r*b);
-    double j2 = boost::math::cyl_bessel_j(l,r*a);
-    double j3 = boost::math::cyl_bessel_j(l-1,r*b);
-    double j4 = boost::math::cyl_bessel_j(l-1,r*a);
-
-    double result = sum1 * j3 * j3 - sum2 * j4 * j4 +\
-                    sum3 * j1 * j3 - sum4 * j2 * j4 +\
-                    sum5 * j1 * j1 - sum6 * j2 * j2;
-
-    cout << result << endl;
-}
-
 
 int main(int argc, char* argv[])
-{ 
-    map<string,double> params;
-    SanityChecker check(params);
-    ofstream file;
-    file.open("testing.dat");
+{
+    clock_t t1, t2;
+    double r1 = 1000;
+    double r2 = 1000;
+    double nu = 12;
+    int l = 1;
+    int nsteps = 15;
+    double a = 1;
+    double b = 2;
+    /*
+    Levin levin(a,b);
+    double res1 = levin.integrate_2sphj(&f, r1,r2, l, nsteps);
+    double res2 = integr(r1,r2, l, a, b, 100000);
+    cout << res1 << endl;
+    cout << res2<< endl;
+    */
     
-    double res1, res2;
-    int l = 1000;
-    double k1 = 0.4;
-    double kappa = 0.2;
-    double z = 7;
-    double zmax = 9;
-    double zstepsize = 0.001;
-    int zsteps = (zmax - z)/zstepsize;
-    for (int i = 0; i < zsteps; i++)
+    ofstream file;
+    file.open("Levin2");
+
+    double res2 = integr(r1,r2,nu, a, b, 100000);
+    for (int i = 4; i < 100; i++)
     {
-        z += zstepsize;
-        check.z_integrand_with_jq(l, k1, kappa, z, &res1);
-        check.z_integrand_no_jq(l, k1, kappa, z, &res2);
-        file << z << " " << res1 << " " << res2 << endl;
+        nsteps = i;
+        Levin levin(a,b);
+        double res1 = levin.integrate_2sphj(&f, r1, r2, nu, nsteps);
+
+        cout << res1 << endl;
+        file << nsteps << " " << res1 << " " << res2 << " " << res1/res2 << endl;
     }
     file.close();
-   
+    
+    /*
+    t1 = clock();
+    double res2 = integr(r1,r2, l, a, b, 300000);
+    t2 = clock();
+    float time2 = ((float)t2 - (float)t1)/CLOCKS_PER_SEC;
+    cout << time2 << endl;
+    cout << res2 << endl;
+    */
+
+
+    
+
     return 0;
 }

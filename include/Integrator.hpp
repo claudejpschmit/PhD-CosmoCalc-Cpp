@@ -85,14 +85,14 @@ class simpson
 
 //Trying to integrate oscillatory functions more efficiently.
 // Structure for Levin u tranformation NRp215
-struct Levin { 
+struct LevinU { 
     vector<double> numer, denom;
     int n,ncv;
     bool cnvgd;
     double small, big;
     double eps,lastval,lasteps;
 
-    Levin(int nmax, double epss) 
+    LevinU(int nmax, double epss) 
         :
             n(0), 
             ncv(0),
@@ -267,7 +267,7 @@ double integrate_levin(T &f, const double a, const double b)
         throw("nterm too large");
     }
     else {
-        Levin series(50000,0.0);
+        LevinU series(50000,0.0);
         //cout << setw(5) << "N" << setw(19) << "Sum (direct)" << setw(21) << "Sum (Levin)" << endl;
         for (int n = 0; n<=nterm;n++) {
             bnew+=pi/2;
