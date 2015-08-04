@@ -12,7 +12,8 @@ class CosmoBasis {
     public:
         
         // ------------ Functions -------------- //
-
+        
+        CosmoBasis();
         /**
          * Constructor that initializes all the parameters 
          * for the CosmoCalc backbone.
@@ -22,7 +23,7 @@ class CosmoBasis {
          *               and the value a double.
          */
         CosmoBasis(map<string,double> params);
-
+        
         /**
          * Standard destructor
          */

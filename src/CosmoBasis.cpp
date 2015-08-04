@@ -5,6 +5,9 @@
 #include <boost/math/special_functions/bessel.hpp>
 using namespace std;
 
+CosmoBasis::CosmoBasis()
+{}
+
 CosmoBasis::CosmoBasis(map<string,double> params)
 {
     cout << "... Beginning to build CosmoBasis ..." << endl;

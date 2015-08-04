@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <boost/math/constants/constants.hpp>
+#include "CosmoBasis.hpp"
 
 using namespace std;
 
@@ -17,8 +18,8 @@ class Levin
         //template<typename Function>
         double integrate_singleJ(double (*f)(double), double r, double nu, int n);
         double integrate_doubleJ(double (*f)(double), double r, double nu, int n);
-        double integrate_2sphj(double (*f)(double), double r1, double r2, int l, int n);
-
+        double integrate_2sphj_2r(double (*f)(double), double r1, double r2, int l, int n);
+        double integrate_2sphj_1r(double (*f)(double), double r, int l, int n);
 
     protected:
         double bessel_J(double nu, double x);
@@ -28,5 +29,5 @@ class Levin
 
         double a, b, d;
         const double pi = boost::math::constants::pi<double>();
-
+        CosmoBasis* Basis;
 };
