@@ -51,8 +51,8 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... r inverse is calculated ..." << endl;
     cout << "... Initializing Pk interpolator ..." << endl;
     //this->update_Pk_interpolator(this->fiducial_params);
-    //this->update_Pk_interpolator_direct(this->fiducial_params);
-    this->update_Pk_interpolator_full(this->fiducial_params);
+    this->update_Pk_interpolator_direct(this->fiducial_params);
+    //this->update_Pk_interpolator_full(this->fiducial_params);
     cout << "... Pks calculated ..." << endl;
 
     cout << "... Creating Bessels ..." << endl;
@@ -63,7 +63,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
     cout << "... generating 21cm interface ..." << endl;
     G21 = new Global21cmInterface();
     //this->update_G21(fiducial_params);
-    this->update_G21_full(fiducial_params);
+    //this->update_G21_full(fiducial_params);
     cout << "... 21cm interface built ..." << endl;
 
     cout << "... CosmoCalc built ..." << endl;

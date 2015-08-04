@@ -10,6 +10,8 @@
 #include "CAMB_interface.hpp"
 #include "Global21cmInterface.hpp"
 #include "Helper.hpp"
+#include "LevinIntegrator.hpp"
+
 using namespace std;
 using namespace alglib;
 
@@ -469,6 +471,7 @@ class CosmoCalc : public CosmoBasis {
         vector<vector<double>> bessel_values;
 
         CAMB_CALLER *CAMB;
-        Global21cmInterface *G21; 
+        Global21cmInterface *G21;
+        Levin *LEVIN;
        
 };
