@@ -34,12 +34,29 @@ int main(int argc, char* argv[])
     double k2 = 0.4;
     double z = 7.8;
     double zp = 8.0;
-    double k_low = 0.1;
+    double k_low = 0.001;
     double k_high = 1.0;
 
     double res;
-    check.kappa_integral(l, k1, k2, z, zp, &res, k_low, k_high);
     
-    cout << res << endl;
+    for (int i = 0; i < 100; i++)
+    {
+        z = 7 + i*0.02;
+        check.kappa_integral(l, z, zp, &res, k_low, k_high);
+        if (res < 0.9 || res > 1.1) 
+            cout << z << " " << res << endl;
+    } 
+    
+    ofstream file;
+    file.open("integrand.dat");
+    z = 8.9;
+    for (int i = 0; i < 10000; i++)
+    {
+        double kappa = 0.001 + i*0.0001;
+        double res2 = check.kappa_integrand(l, z, zp, kappa);
+        file << kappa << " " << res2 << endl;
+    } 
+    file.close();
+
     return 0;
 }

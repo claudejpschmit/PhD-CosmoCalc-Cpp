@@ -15,7 +15,7 @@ SanityChecker::SanityChecker(map<string, double> params)
 SanityChecker::~SanityChecker()
 {}
 
-void SanityChecker::kappa_integral(int l, double k1, double k2, double z, double zp, double *out1, double k_low, double k_high)
+void SanityChecker::kappa_integral(int l, double z, double zp, double *out1, double k_low, double k_high)
 {
     double q;
     q = spline1dcalc(q_interp, z);   
@@ -39,8 +39,10 @@ void SanityChecker::kappa_integral(int l, double k1, double k2, double z, double
             this->sph_bessel_camb(l,kap*qp);
     };
     double integral2 = integrate_simps(integrand3, k_low, k_high, steps);
-    cout << "first done" << endl;
-    LEVIN = new Levin(k_low, k_high);
+    
+    double a = (double)(l-10)/q;
+    //cout<< a << endl;
+    LEVIN = new Levin(a, k_high);
 
     auto foo = [&](double kappa)
     {
@@ -48,9 +50,25 @@ void SanityChecker::kappa_integral(int l, double k1, double k2, double z, double
         double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
         return kappa*kappa * sP1 * sPp1;     
     };
-    int n = 10;
-    double integral3 = LEVIN->integrate_2sphj_2r(foo,q,qp,l,n);
+    int n = 12;
+    double integral3;
+    if (z == zp)
+        integral3 = LEVIN->integrate_2sphj_1r(foo,q,l,n);
+    else
+        integral3 = LEVIN->integrate_2sphj_2r(foo,q,qp,l,n);
 
     delete LEVIN;
     *out1 = integral2/integral3;
+}
+
+double SanityChecker::kappa_integrand(int l, double z, double zp, double kappa)
+{
+    double q = spline1dcalc(q_interp, z);   
+    double qp = spline1dcalc(q_interp,zp);
+
+    double hhh = pow(this->h,3);
+    double sP1 = sqrt(this->Pk_interp(kappa*this->h,z)/hhh);
+    double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
+    return kappa*kappa * sP1 * sPp1 * this->sph_bessel_camb(l,kappa*q) *\
+            this->sph_bessel_camb(l,kappa*qp);
 }
