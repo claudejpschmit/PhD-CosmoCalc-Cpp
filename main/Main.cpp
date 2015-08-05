@@ -30,27 +30,31 @@ int main(int argc, char* argv[])
     SanityChecker check(params);
 
     int l = 100;
-    double k1 = 0.3;
-    double k2 = 0.4;
-    double z = 7.8;
-    double zp = 8.0;
-    double k_low = 0.001;
+    double k1 = 0.6;
+    double k2 = 0.6;
+    double k_low = 0.01;
     double k_high = 1.0;
-
+    int n = 10;
     double res;
-    
-    for (int i = 0; i < 100; i++)
-    {
-        z = 7 + i*0.02;
-        check.kappa_integral(l, z, zp, &res, k_low, k_high);
-        if (res < 0.9 || res > 1.1) 
-            cout << z << " " << res << endl;
-    } 
-    
+    int counter = 0;
     ofstream file;
+    stringstream name;
+    name << "output/Cl_compare_" << n << "_samek.dat";
+    double ratio, time_r;
+    file.open(name.str());
+    for (int i = 0; i < 50; i++)
+    {
+        l = 100 + i * 100;
+        cout << "----- calc for l = " << l << endl;
+        check.Compare_Cl(l, k1, k2, k_low, k_high,n,&ratio,&time_r);
+        file << l << " " << ratio << " " << time_r << endl;
+    }
+    file.close();
+    cout << "This was for n = " << n << endl;
     file.open("integrand.dat");
-    z = 8.9;
-    for (int i = 0; i < 10000; i++)
+    double z = 7.0;
+    double zp = 8.0;
+    for (int i = 0; i < 20000; i++)
     {
         double kappa = 0.001 + i*0.0001;
         double res2 = check.kappa_integrand(l, z, zp, kappa);
@@ -60,3 +64,5 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
+

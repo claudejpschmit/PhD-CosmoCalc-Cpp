@@ -62,7 +62,7 @@ CosmoCalc::CosmoCalc(map<string, double> params)
 
     cout << "... generating 21cm interface ..." << endl;
     G21 = new Global21cmInterface();
-    //this->update_G21(fiducial_params);
+    this->update_G21(fiducial_params);
     //this->update_G21_full(fiducial_params);
     cout << "... 21cm interface built ..." << endl;
 
@@ -1158,16 +1158,16 @@ double CosmoCalc::corr_Tb_new(int l, double k1, double k2, double k_low,\
                 double hhh = pow(this->h,3);
                 double sP = sqrt(this->Pk_interp(kappa*this->h,z)/hhh);
                 double sPp = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
-                return kappa*kappa * sP * sPp * this->bessel_j_interp_cubic(l,kappa*q) *\
-                    this->bessel_j_interp_cubic(l,kappa*qp);
+                return kappa*kappa * sP * sPp * this->sph_bessel_camb(l,kappa*q) *\
+                    this->sph_bessel_camb(l,kappa*qp);
             };
             double integral3 = integrate_simps(integrand3, k_low, k_high, steps);
             return rp*rp / (this->H_f[n2]*1000.0) * this->Tb_interp(zp) *\
-                this->bessel_j_interp_cubic(l,k2*rp) * integral3;
+                this->sph_bessel_camb(l,k2*rp) * integral3;
         };
         double integral2 = integrate_simps(integrand2, this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
         return r*r / (this->H_f[n]*1000.0) * this->Tb_interp(z) *\
-            this->bessel_j_interp_cubic(l,k1*r) * integral2;
+            this->sph_bessel_camb(l,k1*r) * integral2;
     };
     double integral1 = integrate_simps(integrand1,this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
     return pow(this->prefactor_Ml,2) * integral1;

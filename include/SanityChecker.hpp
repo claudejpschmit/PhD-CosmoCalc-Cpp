@@ -13,6 +13,9 @@ class SanityChecker : public CosmoCalc {
         SanityChecker(map<string, double> params);
         ~SanityChecker();
     
-        void kappa_integral(int l, double z, double zp, double *out1, double k_low, double k_high);
+        void kappa_integral(int l, double z, double zp, double *out1, double k_low, double k_high, int n);
         double kappa_integrand(int l, double z, double zp, double kappa);
+        void Compare_Cl(int l, double k1, double k2, double k_low, double k_high, int n_levin, double *ratio, double *time_r);
+        double Cl_new(int l, double k1, double k2, double k_low, double k_high, int n_levin);
+
 };
