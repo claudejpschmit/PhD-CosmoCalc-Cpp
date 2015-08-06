@@ -29,22 +29,26 @@ class CosmoCalc : public CosmoBasis {
          *               The key to the dictionary is a string, 
          *               and the value a double.
          */
-        CosmoCalc(map<string, double> params);
+        CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, int *q_index);
 
         /**
          * Standard destructor, destroying CLASS object used.
          */
         ~CosmoCalc();
-        void update_G21(map<string, double> params);
-        void update_Pk_interpolator_direct(map<string, double> params);
-        void update_G21_full(map<string, double> params);
-        void update_Pk_interpolator_full(map<string, double> params);
+        void update_G21(map<string, double> params, int *Tb_index);
+        void update_Pk_interpolator_direct(map<string, double> params, int *Pk_index);
+        void update_G21_full(map<string, double> params, int *Tb_index);
+        void update_Pk_interpolator_full(map<string, double> params, int *Pk_index);
 
         /**
          * Function outputs some standard cosmological calculations to the user.
          */
         void show_cosmo_calcs();
-        void update_q();
+        void update_q(map<string, double> params, int *q_index);
+        double q_interp(double z, int q_index);
+        double r_interp(double z);
+        double Hf_interp(double z);
+
         void update_q_full();
         void update_Hf();
         double r_inverse(double r);
@@ -53,7 +57,9 @@ class CosmoCalc : public CosmoBasis {
         void update_q_prime_full();
         double limber(int l, double r);
         double limber2(int l, double r);
-        
+        double Cl_new(int l, double k1, double k2, double k_low,\
+                double k_high, int n_levin, int Pk_index, int Tb_index, int q_index);
+
         
         /**
          * Determines the Hubble Time in [s * Mpc/km]:
@@ -320,10 +326,10 @@ class CosmoCalc : public CosmoBasis {
          *
          * @param z is the redshift at which the power spectrum is evaluated.
          */
-        double Pk_interp(double k, double z);
-        double Tb_interp(double z);
-        double Pk_interp_full(double k, double z);
-        double Tb_interp_full(double z);
+        double Pk_interp(double k, double z, int Pk_index);
+        double Tb_interp(double z, int Tb_index);
+        double Pk_interp_full(double k, double z, int Pk_index);
+        double Tb_interp_full(double z, int Tb_index);
 
 
         /** 
@@ -371,31 +377,31 @@ class CosmoCalc : public CosmoBasis {
          */
 
 
-        double Cl(int l, double k1, double k2, double k_low, double k_high);
-        double Cl_simplified(int l, double k1, double k2);
-        double Cl_simplified2(int l, double k1, double k2);
-        double Cl_simplified3(int l, double k1, double k2);
-        double Cl_simplified_rsd(int l, double k1, double k2);
+        double Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
+        double Cl_simplified(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
+        double Cl_simplified2(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
+        double Cl_simplified3(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
+        double Cl_simplified_rsd(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_noise(int l, double k1, double k2);
-        double Cl_simplified_levin(int l, double k1, double k2);
+        double Cl_simplified_levin(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
          */
-        double corr_Tb_new(int l, double k1, double k2, double k_low, double k_high);
-        double corr_Tb_new2(int l, double k1, double k2, double k_low, double k_high);
+        double corr_Tb_new(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
+        double corr_Tb_new2(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
 
-        void compare(int l, double k1, double k2);
+        void compare(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
 
-        double corr_Tb(int l, double k1, double k2, double k_low, double k_high);/** 
+        double corr_Tb(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);/** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
          */
 
         double corr_Tb_rsd(int l, double k1, double k2,\
-                           double k_low, double k_high);
+                           double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
         
         /** 
          * Determines the critical density at a redshift [kg/m^3].
@@ -403,7 +409,7 @@ class CosmoCalc : public CosmoBasis {
          * @param z is the redshift at which the critical density is calculated.
          */
 
-        double M(int l, double k1, double k2);/** 
+        double M(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);/** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
@@ -434,15 +440,15 @@ class CosmoCalc : public CosmoBasis {
          * @param z is the redshift at which the critical density is calculated.
          */
 
-        double N_bar(int l, double k1, double k2);
+        double N_bar(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
 
-        double integrandMM(int l, double k1, double k2, double k);
-        double integrandMN(int l, double k1, double k2, double k);
-        double integrandNN(int l, double k1, double k2, double k);
+        double integrandMM(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
+        double integrandMN(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
+        double integrandNN(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
         
-        double integrandlong(int l, double k1, double k2, double k);
-        double integrandsimple(int l, double k1, double k2, double k);
-        double help_long(int l, double kp, double kappa);
+        double integrandlong(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
+        double integrandsimple(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
+        double help_long(int l, double kp, double kappa, int Pk_index, int Tb_index, int q_index);
 
     protected:
 
@@ -457,14 +463,15 @@ class CosmoCalc : public CosmoBasis {
         int zmax_interp;
         vector<double> q_Ml, r_Ml, H_f, q_p_Ml, r_inv;
         
-        spline1dinterpolant q_interp, r_interp, q_p_interp, H_f_interp;
+        spline1dinterpolant q_p_interp, H_f_interp;
         spline1dinterpolant q_interp_full, q_p_interp_full, H_f_interp_full, rinv_interp;
 
         vector<Pk_interpolator> Pks, Pks_full;
         vector<Tb_interpolator> Tbs, Tbs_full;
+        vector<q_interpolator> qs;
 
-        int Pk_index;
-        int Tb_index;
+        //int Pk_index;
+        //int Tb_index;
 
         vector<spline1dinterpolant> bessel_interp_list;
         

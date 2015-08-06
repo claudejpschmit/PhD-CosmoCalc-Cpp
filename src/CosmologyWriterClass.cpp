@@ -3,7 +3,7 @@
 
 CosmoWrite::CosmoWrite(map<string, double> params)
     :
-        CosmoCalc(params)
+        CosmoCalc(params,Pk_index,Tb_index,q_index)
 {
     cout << "... Beginning to build CosmoWriter ..." << endl;
 
@@ -33,7 +33,7 @@ void CosmoWrite::calculate_Ml(int l, double k_fixed, double k2_low, double k2_hi
     file.open(filename);
     for (int n = 0; n < step; ++n) {
         k2 = k2_low + n * stepsize;
-        res = this->M(l, k_fixed, k2);
+        res = this->M(l, k_fixed, k2,0,0,0);
         file << k2 << " " << res << endl;
     }
 
@@ -58,7 +58,7 @@ void CosmoWrite::calculate_Nl(int l, double k_fixed, double k2_low, double k2_hi
     file.open(filename);
     for (int n = 0; n < step; ++n) {
         k2 = k2_low + n * stepsize;
-        res = this->N_bar(l, k_fixed, k2);
+        res = this->N_bar(l, k_fixed, k2,0,0,0);
         file << k2 << " " << res << endl;
     }
 
@@ -238,7 +238,7 @@ void CosmoWrite::calculate_P_CLASS(double kmin, double kmax, double z, int step)
     double y1, x;
     for (int i = 0; i < step; i++) {
         x = kmin + (double)i * stepsize ;
-        y1 = this->Pk_interp(x, z);
+        y1 = this->Pk_interp(x, z,0);
 
         file << x << " " << y1 << endl;
     }
@@ -353,7 +353,7 @@ void CosmoWrite::calculate_P_compare(double k_low, double k_high, int kstep, dou
         file << k << " ";
         for (int j = 0; j < zstep; j++) {
             z = z_low + (double)j * stepsize_z;
-            res = this->Pk_interp(k,z);
+            res = this->Pk_interp(k,z,0);
 
             file << res << " ";
         }
@@ -451,7 +451,7 @@ void CosmoWrite::calculate_integrandMM(int l, double k1, double k2, int step)
     double y1, x;
     for (int i = 0; i < step; i++) {
         x = 0.001 + i*stepsize;
-        y1 = this->integrandMM(l,k1,k2,x);
+        y1 = this->integrandMM(l,k1,k2,x,0,0,0);
         file << x << " " << y1 << endl;
     }
     file.close();
@@ -469,7 +469,7 @@ void CosmoWrite::calculate_integrandMN(int l, double k1, double k2, int step)
     double y1, x;
     for (int i = 0; i < step; i++) {
         x = 0.001 + i*stepsize;
-        y1 = this->integrandMN(l,k1,k2,x);
+        y1 = this->integrandMN(l,k1,k2,x,0,0,0);
         file << x << " " << y1 << endl;
     }
     file.close();
@@ -487,7 +487,7 @@ void CosmoWrite::calculate_integrandNN(int l, double k1, double k2, int step)
     double y1, x;
     for (int i = 0; i < step; i++) {
         x = 0.001 + i*stepsize;
-        y1 = this->integrandNN(l,k1,k2,x);
+        y1 = this->integrandNN(l,k1,k2,x,0,0,0);
         file << x << " " << y1 << endl;
     }
     file.close();
@@ -545,7 +545,7 @@ void CosmoWrite::calculate_integrandlong(int l, double k1, double k2, int step)
     double y1, x;
     for (int i = 0; i < step; i++) {
         x = 7 + i*stepsize;
-        y1 = this->integrandlong(l,k1,k2,x);
+        y1 = this->integrandlong(l,k1,k2,x,0,0,0);
         file << x << " " << y1 << endl;
     }
     file.close();
@@ -563,7 +563,7 @@ void CosmoWrite::calculate_integrandsimple(int l, double k1, double k2, int step
     double y1, x;
     for (int i = 0; i < step; i++) {
         x = 7 + i*stepsize;
-        y1 = this->integrandsimple(l,k1,k2,x);
+        y1 = this->integrandsimple(l,k1,k2,x,0,0,0);
         file << x << " " << y1 << endl;
     }
     file.close();
@@ -583,8 +583,8 @@ void CosmoWrite::generate_movie(int l)
             k2 = 0.01 + i * 0.01;
             for (int j = 0; j < 100; j++) {
                 x = 7 + j*stepsize;
-                y1 = this->integrandlong(l,k1,k2,x);
-                y2 = this->integrandsimple(l,k1,k2,x);
+                y1 = this->integrandlong(l,k1,k2,x,0,0,0);
+                y2 = this->integrandsimple(l,k1,k2,x,0,0,0);
 
                 file << x << " " << y1 << " " << y2 << endl;
             }
@@ -612,7 +612,7 @@ void CosmoWrite::calculate_Cl_simple(int l, double k, double k_min, double k_max
     int step = (k_max - k_min)/k_stepsize;
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
-        y = this->Cl_simplified(l,k,x);
+        y = this->Cl_simplified(l,k,x,0,0,0);
         file << x << " " << y << endl;
     }
     file.close();
@@ -633,8 +633,8 @@ void CosmoWrite::calculate_Cl_full(int l, double k, double k_min, double k_max, 
     int step = (k_max - k_min)/k_stepsize;
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
-        y = this->corr_Tb_new(l,k,x,0.0001,1.0);
-        y2 = this->corr_Tb(l,k,x,0.0001,1.0);
+        y = this->corr_Tb_new(l,k,x,0.0001,1.0,0,0,0);
+        y2 = this->corr_Tb(l,k,x,0.0001,1.0,0,0,0);
         file << x << " " << y << " " << y2 << " " << abs(y2 - y)/abs(y) << endl;
     }
     file.close();
@@ -654,7 +654,7 @@ void CosmoWrite::calculate_Cl_simple_rsd(int l, double k, double k_min, double k
     int step = (k_max - k_min)/k_stepsize;
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
-        y = this->Cl_simplified_rsd(l,k,x);
+        y = this->Cl_simplified_rsd(l,k,x,0,0,0);
         file << x << " " << y << endl;
     }
     file.close();
@@ -675,7 +675,7 @@ void CosmoWrite::calculate_Cl_full_rsd(int l, double k, double k_min, double k_m
     int step = (k_max - k_min)/k_stepsize;
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
-        y = this->corr_Tb_rsd(l,k,x,0.0001,1.0);
+        y = this->corr_Tb_rsd(l,k,x,0.0001,1.0,0,0,0);
         file << x << " " << y << endl;
     }
     file.close();
@@ -694,7 +694,7 @@ void CosmoWrite::generate_movie_Cl(int l_min, int l_max, double k, double k_min,
         int l = l_min + i;
         for (int j = 0; j < step; j++) {
             x = k_min + j*k_stepsize;
-            y = this->Cl_simplified(l,k,x);
+            y = this->Cl_simplified(l,k,x,0,0,0);
 
             file << x << " " << y << endl;
         }
@@ -721,7 +721,7 @@ void CosmoWrite::calculate_Ml(int lmin, int lmax, double k, double kappa)
     int step = (lmax - lmin);
     for (int i = 0; i < step; i++) {
         x = lmin + i;
-        y = this->M(x, k, kappa);
+        y = this->M(x, k, kappa,0,0,0);
         file << x << " " << y << endl;
     }
     file.close();
@@ -741,7 +741,7 @@ void CosmoWrite::calculate_Nl(int lmin, int lmax, double k, double kappa)
     int step = (lmax - lmin);
     for (int i = 0; i < step; i++) {
         x = lmin + i;
-        y = this->N_bar(x, k, kappa);
+        y = this->N_bar(x, k, kappa,0,0,0);
         file << x << " " << y << endl;
     }
     file.close();

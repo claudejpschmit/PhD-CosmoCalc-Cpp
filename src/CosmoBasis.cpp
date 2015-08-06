@@ -124,7 +124,7 @@ void CosmoBasis::generate_params(map<string,double> params)
     t_H = 1.0 / H_0;
 
     this->current_params = params;
-         
+
 }
 
 double CosmoBasis::sph_bessel(unsigned int l, double x)
@@ -138,6 +138,7 @@ double CosmoBasis::E(double z)
 {
     return sqrt(O_V + O_R * pow(1+z,4) + O_M * pow(1+z,3) + O_k * pow(1+z,2));
 }
+
 
 double CosmoBasis::Z(double z)
 {

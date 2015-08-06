@@ -17,7 +17,7 @@ vpath .base build
 
 # Compiler required for c++ code.
 # including -ffast-math may not be as bad as anticipated.
-CXX = g++ -Wall -std=c++11 -ffast-math -s -Wno-deprecated
+CXX = g++ -Wall -std=c++11 -ffast-math -s -Wno-deprecated -fopenmp
 # Compiler required for c code.
 CC = gcc -Wall -s
 # Compiler required for fortran RECFAST

@@ -56,5 +56,8 @@ class CosmoWrite : public CosmoCalc {
         void generate_movie_Cl(int l_min, int l_max, double k, double k_min,\
                 double k_max, double k_stepsize);
         void calculate_Ml(int lmin, int lmax, double k, double kappa);
-        void calculate_Nl(int lmin, int lmax, double k, double kappa);
+        void calculate_Nl(int lmin, int lmax, double k, double kappa); 
+        int *Pk_index;
+        int *Tb_index;
+        int *q_index;
 };

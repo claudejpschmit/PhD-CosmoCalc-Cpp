@@ -4,7 +4,7 @@
 
 SanityChecker::SanityChecker(map<string, double> params)
     :
-        CosmoCalc(params)
+        CosmoCalc(params,Pk_index,Tb_index,q_index)
 {
     cout << "... Beginning to build SanityChecker ..." << endl;
 
@@ -19,10 +19,10 @@ SanityChecker::~SanityChecker()
 void SanityChecker::kappa_integral(int l, double z, double zp, double *out1, double k_low, double k_high, int n)
 {
     double q;
-    q = spline1dcalc(q_interp, z);   
+    q = q_interp(z,0);   
 
     double qp;
-    qp = spline1dcalc(q_interp,zp);
+    qp = q_interp(zp,0);
 
     double hhh = pow(this->h,3);
 
@@ -51,8 +51,8 @@ void SanityChecker::kappa_integral(int l, double z, double zp, double *out1, dou
 
     auto integrand3 = [&](double kap)
     {
-        double sP1 = sqrt(this->Pk_interp(kap*this->h,z)/hhh);
-        double sPp1 = sqrt(this->Pk_interp(kap*this->h,zp)/hhh);
+        double sP1 = sqrt(this->Pk_interp(kap*this->h,z,0)/hhh);
+        double sPp1 = sqrt(this->Pk_interp(kap*this->h,zp,0)/hhh);
         return kap*kap * sP1 * sPp1 * this->sph_bessel_camb(l,kap*q) *\
             this->sph_bessel_camb(l,kap*qp);
     };
@@ -62,8 +62,8 @@ void SanityChecker::kappa_integral(int l, double z, double zp, double *out1, dou
 
     auto foo = [&](double kappa)
     {
-        double sP1 = sqrt(this->Pk_interp(kappa*this->h,z)/hhh);
-        double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
+        double sP1 = sqrt(this->Pk_interp(kappa*this->h,z,0)/hhh);
+        double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp,0)/hhh);
         return kappa*kappa * sP1 * sPp1;     
     };
 
@@ -87,12 +87,12 @@ void SanityChecker::kappa_integral(int l, double z, double zp, double *out1, dou
 
 double SanityChecker::kappa_integrand(int l, double z, double zp, double kappa)
 {
-    double q = spline1dcalc(q_interp, z);   
-    double qp = spline1dcalc(q_interp,zp);
+    double q = q_interp(z,0);   
+    double qp = q_interp(zp,0);
 
     double hhh = pow(this->h,3);
-    double sP1 = sqrt(this->Pk_interp(kappa*this->h,z)/hhh);
-    double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
+    double sP1 = sqrt(this->Pk_interp(kappa*this->h,z,0)/hhh);
+    double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp,0)/hhh);
     return kappa*kappa * sP1 * sPp1 * this->sph_bessel_camb(l,kappa*q) *\
         this->sph_bessel_camb(l,kappa*qp);
 }
@@ -108,7 +108,7 @@ void SanityChecker::Compare_Cl(int l, double k1, double k2, double k_low, double
     cout << "time = " << ta/CLOCKS_PER_SEC << endl;
 
     t1 = clock();
-    double Cl_full = corr_Tb_new(l, k1, k2, k_low, k_high);
+    double Cl_full = corr_Tb_new(l, k1, k2, k_low, k_high,0,0,0);
     t2 = clock();
     double tb = (double)t2 - (double)t1;
     cout << "C_full = " << Cl_full << endl;
@@ -136,15 +136,15 @@ double SanityChecker::Cl_new(int l, double k1, double k2, double k_low,\
         else
             n = n_old_int;
         double r,q;
-        r = this->r_Ml[n];
-        q = this->q_Ml[n];
+        r = r_interp(z); 
+        q = q_interp(z,0); 
 
         if (l < 1000){
             low = (double)l/(1.2*q);
-            a = (double)(l+1000)/q;
+            a = (double)(l+1000)/(1.5*q);
         } else {
             low = (double)l/(q);
-            a = (double)(l+1000)/q;
+            a = (double)(l+1000)/(1.5*q);
         }
         double lower_kappa_bound;
         if (low > k_low)
@@ -166,14 +166,14 @@ double SanityChecker::Cl_new(int l, double k1, double k2, double k_low,\
             else
                 n2 = n_old_int2;
             double rp,qp;
-            rp = this->r_Ml[n2];
-            qp = this->q_Ml[n2];
+            rp = r_interp(zp); 
+            qp = q_interp(zp,0); 
 
             auto integrand3 = [&](double kappa)
             {
                 double hhh = pow(this->h,3);
-                double sP = sqrt(this->Pk_interp(kappa*this->h,z)/hhh);
-                double sPp = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
+                double sP = sqrt(this->Pk_interp(kappa*this->h,z,0)/hhh);
+                double sPp = sqrt(this->Pk_interp(kappa*this->h,zp,0)/hhh);
                 return kappa*kappa * sP * sPp * this->sph_bessel_camb(l,kappa*q) *\
                     this->sph_bessel_camb(l,kappa*qp);
             };
@@ -184,8 +184,8 @@ double SanityChecker::Cl_new(int l, double k1, double k2, double k_low,\
 
             auto foo = [&](double kappa)
             {
-                double sP1 = sqrt(this->Pk_interp(kappa*this->h,z)/hhh);
-                double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp)/hhh);
+                double sP1 = sqrt(this->Pk_interp(kappa*this->h,z,0)/hhh);
+                double sPp1 = sqrt(this->Pk_interp(kappa*this->h,zp,0)/hhh);
                 return kappa*kappa * sP1 * sPp1;     
             };
 
@@ -197,11 +197,11 @@ double SanityChecker::Cl_new(int l, double k1, double k2, double k_low,\
 
             delete LEVIN;
             integral3 += integral;
-            return rp*rp / (this->H_f[n2]*1000.0) * this->Tb_interp(zp) *\
+            return rp*rp / (this->H_f[n2]*1000.0) * this->Tb_interp(zp,0) *\
                 this->sph_bessel_camb(l,k2*rp) * integral3;
         };
         double integral2 = integrate_simps(integrand2, this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
-        return r*r / (this->H_f[n]*1000.0) * this->Tb_interp(z) *\
+        return r*r / (this->H_f[n]*1000.0) * this->Tb_interp(z,0) *\
             this->sph_bessel_camb(l,k1*r) * integral2;
     };
     double integral1 = integrate_simps(integrand1,this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);

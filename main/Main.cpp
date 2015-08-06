@@ -26,20 +26,25 @@ using namespace alglib;
 
 int main(int argc, char* argv[])
 {
+    
     map<string, double> params;
+    
+    // Uncomment for Cl_compare
+    /*
+
     SanityChecker check(params);
 
-    int l = 100;
-    double k1 = 0.6;
+        int l = 100;
+    double k1 = 0.3;
     double k2 = 0.6;
     double k_low = 0.01;
     double k_high = 1.0;
-    int n = 10;
+    int n = 8;
     double res;
     int counter = 0;
     ofstream file;
     stringstream name;
-    name << "output/Cl_compare_" << n << "_samek.dat";
+    name << "output/Cl_compare_" << n << "_new2.dat";
     double ratio, time_r;
     file.open(name.str());
     for (int i = 0; i < 50; i++)
@@ -61,6 +66,10 @@ int main(int argc, char* argv[])
         file << kappa << " " << res2 << endl;
     } 
     file.close();
+    */
+   
+    Fisher fish(params,"Fisher3.dat");
+    fish.F("ombh2","ombh2");
 
     return 0;
 }
