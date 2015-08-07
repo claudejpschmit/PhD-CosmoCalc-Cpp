@@ -64,8 +64,8 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     //return this->Cl_simplified(l, k1, k2);
     //return this->Cl_simplified_rsd(l,k1,k2);
     //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
-    //return this->Cl_new(l,k1,k2,k_low,k_high,8, Pk_index, Tb_index, q_index);
-    return (k1+k2) * k1;
+    return this->Cl_new(l,k1,k2,k_low,k_high,8, Pk_index, Tb_index, q_index);
+    //return (k1+k2) * k1;
 }
 
 double CosmoCalc::Cl_noise(int l, double k1, double k2)
@@ -384,7 +384,6 @@ void CosmoCalc::update_q_prime_full()
 
 void CosmoCalc::update_q(map<string,double> params, int *q_index)
 {
-    cout << " -------- update q called --------- " << endl;
     bool do_calc = true;
     for (unsigned int i = 0; i < qs.size(); ++i) {
         if (params["ombh2"] == qs[i].ombh2 && params["omnuh2"] == qs[i].omnuh2 &&\
@@ -396,7 +395,6 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
             break;
         }
     }
-    cout << "problem" << do_calc << endl;
 
     if (do_calc) {
         q_interpolator interp;
@@ -409,21 +407,20 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         // TODO: Do this in a way that works with parallelism....
         //UPDATE D_C to use the above parameters.
 
-        double T_CMB = params["T_CMB"];
-        double T_gamma = T_CMB;
-        double H_0 = params["hubble"];
-        double h = H_0 / 100.0;
-        double O_b = params["ombh2"] / pow(h,2);
-        double O_cdm = params["omch2"] / pow(h,2);
-        double O_nu = params["omnuh2"] / pow(h,2);
-        double O_gamma = pow(pi,2) * pow(T_CMB/11605.0,4) / (15.0*8.098*pow(10,-11)*pow(h,2));
-        double O_nu_rel = O_gamma * 3.0 * 7.0/8.0 * pow(4.0/11.0, 4.0/3.0);
-        double O_R = O_gamma + O_nu_rel;
-        double O_k = params["omk"];
-        double O_M = O_b + O_cdm + O_nu;
-        double O_tot = 1.0 - O_k;
-        double O_V = O_tot - O_M - O_R;
-        double D_H = c / (1000.0 * H_0);
+        double T_CMB2 = params["T_CMB"];
+        double H_02 = params["hubble"];
+        double h2 = H_02 / 100.0;
+        double O_b2 = params["ombh2"] / pow(h2,2);
+        double O_cdm2 = params["omch2"] / pow(h2,2);
+        double O_nu2 = params["omnuh2"] / pow(h2,2);
+        double O_gamma2 = pow(pi,2) * pow(T_CMB2/11605.0,4) / (15.0*8.098*pow(10,-11)*pow(h2,2));
+        double O_nu_rel2 = O_gamma2 * 3.0 * 7.0/8.0 * pow(4.0/11.0, 4.0/3.0);
+        double O_R2 = O_gamma2 + O_nu_rel2;
+        double O_k2 = params["omk"];
+        double O_M2 = O_b2 + O_cdm2 + O_nu2;
+        double O_tot2 = 1.0 - O_k2;
+        double O_V2 = O_tot2 - O_M2 - O_R2;
+        double D_H2 = c / (1000.0 * H_02);
 
         real_1d_array xs, ys, hs;
         xs.setlength(this->zsteps_Ml+1);
@@ -434,17 +431,19 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
             z = this->zmin_Ml + n * this->stepsize_Ml;
             xs[n] = z;
     
-            auto integrand = [&](double x){return 1/sqrt(O_V + O_R * pow(1+z,4) + O_M * pow(1+z,3) + O_k * pow(1+z,2));};
+            auto integrand = [&](double x){
+				return 1/sqrt(O_V2 + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) + O_k2 * pow(1+z,2));
+				};
             double Z = integrate(integrand, 0.0, z, 1000, simpson());
 
-            ys[n] = D_H * Z;
-            hs[n] = H_0 * sqrt(O_V + O_R * pow(1+z,4) + O_M * pow(1+z,3) + O_k * pow(1+z,2));
+            ys[n] = D_H2 * Z;
+            hs[n] = H_02 * sqrt(O_V2 + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) + O_k2 * pow(1+z,2));
         }
         spline1dinterpolant interpolator, interpolator_Hf;
         spline1dbuildlinear(xs,ys,interpolator);
         spline1dbuildlinear(xs,hs,interpolator_Hf);
  
-        interp.h = h;
+        interp.h = h2;
         interp.interpolator = interpolator;
         interp.interpolator_Hf = interpolator_Hf;
         
@@ -660,7 +659,6 @@ double CosmoCalc::Tb_interp_full(double z, int Tb_index)
 }
 void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
 {
-    cout << " -------- update G21 called --------- " << endl;
     bool do_calc = true;
     for (unsigned int i = 0; i < Tbs.size(); ++i) {
         if (params["ombh2"] == Tbs[i].ombh2 && params["omnuh2"] == Tbs[i].omnuh2 &&\
@@ -790,7 +788,6 @@ double CosmoCalc::Pk_interp_full(double k, double z, int Pk_index)
 
 void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *Pk_index)
 {
-    cout << " -------- update Pk called --------- " << endl;
     bool do_calc = true;
     for (unsigned int i = 0; i < Pks.size(); ++i) {
         if (params["ombh2"] == Pks[i].ombh2 && params["omnuh2"] == Pks[i].omnuh2 &&\
@@ -964,7 +961,7 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
             double integral = integrate_simps(integrand3, lower_kappa_bound, a, steps);
             double integral3;
             
-            LEVIN = new Levin(a, k_high);
+            Levin LEVIN(a, k_high);
 
             auto foo = [&](double kappa)
             {
@@ -975,11 +972,11 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
 
             
             if (z == zp)
-                integral3 = LEVIN->integrate_2sphj_1r(foo,q,l,n_levin);
+                integral3 = LEVIN.integrate_2sphj_1r(foo,q,l,n_levin);
             else
-                integral3 = LEVIN->integrate_2sphj_2r(foo,q,qp,l,n_levin);
+                integral3 = LEVIN.integrate_2sphj_2r(foo,q,qp,l,n_levin);
 
-            delete LEVIN;
+           
             integral3 += integral;
             return rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_interp(zp, Tb_index) *\
                 this->sph_bessel_camb(l,k2*rp) * integral3;

@@ -479,6 +479,6 @@ class CosmoCalc : public CosmoBasis {
 
         CAMB_CALLER *CAMB;
         Global21cmInterface *G21;
-        Levin *LEVIN;
+        //Levin *LEVIN;
        
 };
