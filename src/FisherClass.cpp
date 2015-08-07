@@ -34,12 +34,9 @@ Fisher::~Fisher()
 void Fisher::update_Model(map<string, double> new_params, int *Pk_index, int *Tb_index, int *q_index)
 {
     //generate params should not be necessary anymore...
-    //this->CALC->generate_params(new_params);
     this->CALC->update_q(new_params, q_index);
-    //this->CALC->update_q_prime();
     this->CALC->update_Pk_interpolator_direct(new_params, Pk_index);
     this->CALC->update_G21(new_params, Tb_index);
-    //this->CALC->updateClass(new_params);
 }
 
 mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange)
@@ -251,9 +248,7 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
     vector<double> row;
     working_params[param_key] = x + 2 * h;
-    cout << "before updating model1" << endl;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    cout << "after updating model1" << endl;
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
         row.clear();
@@ -266,9 +261,7 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     }
     working_params[param_key] = x + h;
 
-    cout << "before updating model2" << endl;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    cout << "after updating model2" << endl;
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
         row.clear();
@@ -327,9 +320,6 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     //This determines the size of the Cl matrices.
     int ksteps_Cl = 4;
     vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
-    //for (int i = 0; i < krange.size(); i++)
-    //    cout << krange[i] << " ";
-    //cout << endl;
 
     mat Cl = randu<mat>(krange.size(),krange.size());
     mat Cl_inv = Cl;
@@ -345,7 +335,6 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
 
     Cl = compute_Cl(l, *Pk_index, *Tb_index, *q_index, krange);
-    //cout << Cl << endl;
     Cl_inv = Cl.i();
     
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
@@ -356,7 +345,6 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
         for (unsigned int j = 0; j < krange.size(); ++j) {
             Cl_a(i,j) = Cl_alpha[i][j];
             Cl_b(i,j) = Cl_beta[i][j];
-
         }
     } 
    
@@ -383,7 +371,10 @@ double Fisher::F(string param_key1, string param_key2)
     sum += (2*l0 + 1) * fl;
     
     // The following line parallelizes the code
-    #pragma omp parallel num_threads(2) private(Pk_index, Tb_index, q_index) 
+    // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
+    // to define how many threads should be used.
+
+    #pragma omp parallel private(Pk_index, Tb_index, q_index) 
     {
         #pragma omp for reduction (+:sum)
         for (int l = l0+1; l <= lmax; ++l) {

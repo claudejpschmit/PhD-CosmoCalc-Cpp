@@ -16,7 +16,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     this->stepsize_Ml = (this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_stepsize = this->fiducial_params["k_stepsize"];
-    this->zmax_interp = this->fiducial_params["zmax_interp"];
+    //this->zmax_interp = this->fiducial_params["zmax_interp"];
 
     //generate object that is the CAMB interface.
     CAMB = new CAMB_CALLER;
@@ -24,15 +24,15 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     cout << "... precalculating Ml dependencies ..." << endl;
     //this->update_q_full();
     //this->update_q_prime_full();
-    this->update_Hf();
+    //this->update_Hf();
 
     this->update_q(fiducial_params, q_index);
     //this->update_q_prime();
     
-    this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
+    //this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     cout << "... Dependencies calculated ..." << endl;
     cout << "... precalculating inverse r ..." << endl;
-    this->update_r_inverse();
+    //this->update_r_inverse();
     cout << "... r inverse is calculated ..." << endl;
     cout << "... Initializing Pk interpolator ..." << endl;
     //this->update_Pk_interpolator(this->fiducial_params);
@@ -42,7 +42,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
 
     cout << "... Creating Bessels ..." << endl;
     //this->create_bessel_interpolant_ALGLIB(0, this->fiducial_params["l_max"]);
-    this->create_bessel_interpolant_OWN(this->fiducial_params["l_min"],this->fiducial_params["l_max"]);
+    //this->create_bessel_interpolant_OWN(this->fiducial_params["l_min"],this->fiducial_params["l_max"]);
     cout << "... Bessels built ..." << endl;
 
     cout << "... generating 21cm interface ..." << endl;
@@ -97,7 +97,6 @@ double CosmoCalc::Cl_noise(int l, double k1, double k2)
 
 CosmoCalc::~CosmoCalc()
 {
-    // delete CLASS;
     delete CAMB;
     delete G21;
 }
@@ -431,9 +430,10 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
             z = this->zmin_Ml + n * this->stepsize_Ml;
             xs[n] = z;
     
-            auto integrand = [&](double x){
+            auto integrand = [&](double x)
+            {
 				return 1/sqrt(O_V2 + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) + O_k2 * pow(1+z,2));
-				};
+			};
             double Z = integrate(integrand, 0.0, z, 1000, simpson());
 
             ys[n] = D_H2 * Z;
@@ -447,7 +447,6 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         interp.interpolator = interpolator;
         interp.interpolator_Hf = interpolator_Hf;
         
-        cout << " get to here " << endl;
         qs.push_back(interp);
         *q_index = qs.size() - 1;
     }
@@ -578,7 +577,6 @@ double CosmoCalc::bessel_j_interp_cubic(int l, double x)
 
 double CosmoCalc::bessel_j_interp_basic(int l, double x)
 {
-
     if ((unsigned int)(2*x) + 1 >= bessel_values[l].size()) {
         return bessel_values[l][bessel_values[l].size()-1];
     } else {
@@ -657,6 +655,7 @@ double CosmoCalc::Tb_interp_full(double z, int Tb_index)
     // The * 1000.0 is so we get the result in mK
     return spline1dcalc(Tbs_full[Tb_index].interpolator,z) * 1000.0;
 }
+
 void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
 {
     bool do_calc = true;
@@ -1251,7 +1250,7 @@ double CosmoCalc::corr_Tb_new(int l, double k1, double k2, double k_low,\
         {
             double rp,qp;
             rp = r_interp(zp);
-            qp = q_interp(z, q_index);
+            qp = q_interp(zp, q_index);
 
 
             auto integrand3 = [&](double kappa)
