@@ -61,7 +61,7 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("zsteps",100));
     this->fiducial_params.insert(pair<string,double>("Pk_steps",3));
     this->fiducial_params.insert(pair<string,double>("k_stepsize",0.0001));
-    this->fiducial_params.insert(pair<string,double>("kmin",0.1));
+    this->fiducial_params.insert(pair<string,double>("kmin",0.0001));
     this->fiducial_params.insert(pair<string,double>("kmax",2));
     this->fiducial_params.insert(pair<string,double>("zmax_interp",10));
     // Do not go above 1000 different ls!!! 
@@ -124,7 +124,6 @@ void CosmoBasis::generate_params(map<string,double> params)
     t_H = 1.0 / H_0;
 
     this->current_params = params;
-
 }
 
 double CosmoBasis::sph_bessel(unsigned int l, double x)

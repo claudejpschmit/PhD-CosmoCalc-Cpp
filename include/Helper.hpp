@@ -24,3 +24,8 @@ struct q_interpolator {
     spline1dinterpolant interpolator_Hf;
 };
 
+struct Tb_analytic_interpolator {
+    double ombh2, omnuh2, omch2, hubble, t_cmb;
+    spline1dinterpolant interpolator;
+};
+

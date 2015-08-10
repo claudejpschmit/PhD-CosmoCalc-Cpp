@@ -19,7 +19,7 @@ Fisher::Fisher(map<string, double> params, string Fl_filename)
         else
             var_params.insert(pair<string,double>(key,current_params[key]/100));
     }
-    
+
     Fl_file.open(Fl_filename);
 
     cout << "... Fisher built ..." << endl;
@@ -37,6 +37,7 @@ void Fisher::update_Model(map<string, double> new_params, int *Pk_index, int *Tb
     this->CALC->update_q(new_params, q_index);
     this->CALC->update_Pk_interpolator_direct(new_params, Pk_index);
     this->CALC->update_G21(new_params, Tb_index);
+    //this->CALC->update_Tb_analytic(new_params, Tb_index);
 }
 
 mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange)
@@ -68,14 +69,14 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2, int 
     working_params[param_key] = x + 2*h;
     /*
      * CAN'T do this in parallel.
-    for (unsigned int i = 0; i < this->abcisses_done_simple.size(); ++i) { 
-        if (this->abcisses_done_simple[i] == this->current_params[param_key]) {
-            do_calc = false;
-            index = i;
-            break;
-        }
-    }
-    */
+     for (unsigned int i = 0; i < this->abcisses_done_simple.size(); ++i) { 
+     if (this->abcisses_done_simple[i] == this->current_params[param_key]) {
+     do_calc = false;
+     index = i;
+     break;
+     }
+     }
+     */
 
     if (do_calc) {
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
@@ -152,87 +153,31 @@ double Fisher::Cl_derivative(int l, string param_key, double k1, double k2, int 
 double Fisher::Cl_loglog_derivative(int l, string param_key,\
         double k1, double k2, int *Pk_index, int *Tb_index, int *q_index)
 {
+    map<string,double> working_params = fiducial_params;
     double h = this->var_params[param_key];
-    double x = this->current_params[param_key];
+    double x = working_params[param_key];
+
     double f1,f2,f3,f4;
-    bool do_calc = true;
-    int index;
 
-    this->current_params[param_key] = x + 2*h;
-    for (unsigned int i = 0; i < this->abcisses_done.size(); ++i) { 
-        if (this->abcisses_done[i] == this->current_params[param_key]) {
-            do_calc = false;
-            index = i;
-            break;
-        }
-    }
+    working_params[param_key] = x + 2*h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    f1 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
 
-    if (do_calc) {
-        this->update_Model(this->current_params, Pk_index, Tb_index, q_index);
-        f1 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
-        abcisses_done.push_back(current_params[param_key]);
-        logderivs_calculated.push_back(f1); 
-    } else 
-        f1 = logderivs_calculated[index];
-    do_calc = true;
+    working_params[param_key] = x + h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    f2 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
 
-    this->current_params[param_key] = x + h;
-    for (unsigned int i = 0; i < this->abcisses_done.size(); ++i) { 
-        if (this->abcisses_done[i] == this->current_params[param_key]) {
-            do_calc = false;
-            index = i;
-            break;
-        }
-    }
+    working_params[param_key] = x - h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    f3 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
 
-    if (do_calc) {
-        this->update_Model(this->current_params, Pk_index, Tb_index, q_index);
-        f2 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
-        abcisses_done.push_back(current_params[param_key]);
-        logderivs_calculated.push_back(f2); 
-    } else 
-        f2 = logderivs_calculated[index];
-    do_calc = true;
+    working_params[param_key] = x - 2*h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    f4 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
 
-
-    this->current_params[param_key] = x - h;
-    for (unsigned int i = 0; i < this->abcisses_done.size(); ++i) { 
-        if (this->abcisses_done[i] == this->current_params[param_key]) {
-            do_calc = false;
-            index = i;
-            break;
-        }
-    }
-
-    if (do_calc) {
-        this->update_Model(this->current_params, Pk_index, Tb_index, q_index);
-        f3 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
-        abcisses_done.push_back(current_params[param_key]);
-        logderivs_calculated.push_back(f3); 
-    } else 
-        f3 = logderivs_calculated[index];
-    do_calc = true;
-
-    this->current_params[param_key] = x - 2*h;
-    for (unsigned int i = 0; i < this->abcisses_done.size(); ++i) { 
-        if (this->abcisses_done[i] == this->current_params[param_key]) {
-            do_calc = false;
-            index = i;
-            break;
-        }
-    }
-
-    if (do_calc) {
-        this->update_Model(this->current_params, Pk_index, Tb_index, q_index);
-        f4 = log(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
-        abcisses_done.push_back(current_params[param_key]);
-        logderivs_calculated.push_back(f4); 
-    } else 
-        f4 = logderivs_calculated[index];
-    do_calc = true;
-
-    this->current_params[param_key] = x;
-
+    working_params[param_key] = x;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    
     double num = -f1 + 8*f2 - 8*f3 + f4;
     double res = num /(12*h);
 
@@ -244,7 +189,6 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     map<string,double> working_params = fiducial_params;
     double h = this->var_params[param_key];
     double x = working_params[param_key];
-
     vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
     vector<double> row;
     working_params[param_key] = x + 2 * h;
@@ -336,7 +280,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
 
     Cl = compute_Cl(l, *Pk_index, *Tb_index, *q_index, krange);
     Cl_inv = Cl.i();
-    
+
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
     mat Cl_a, Cl_b;
     Cl_a = randu<mat> (krange.size(), krange.size());
@@ -347,7 +291,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
             Cl_b(i,j) = Cl_beta[i][j];
         }
     } 
-   
+
     mat product = Cl_a * Cl_inv;
     product = product * Cl_b;
     product = product * Cl_inv;
@@ -358,25 +302,25 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
 double Fisher::F(string param_key1, string param_key2)
 {
     int Pk_index, Tb_index, q_index;
-    int lmax = 15;
+    int lmax = 1600;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
 
     //first calculation outside so that all the dependencies are calculated.
-    int l0 = 10;
+    int l0 = 1000;
     cout << "Computation of Fl starts for l = " << l0 << endl;
     double fl = this->compute_Fl(l0, param_key1, param_key2, &Pk_index, &Tb_index, &q_index);
     cout << "fl with l = " << l0 << " is: " << fl << endl;
     Fl_file << l0 << " " << fl << endl;
     sum += (2*l0 + 1) * fl;
-    
+
     // The following line parallelizes the code
     // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
     // to define how many threads should be used.
 
-    #pragma omp parallel private(Pk_index, Tb_index, q_index) 
+#pragma omp parallel private(Pk_index, Tb_index, q_index) 
     {
-        #pragma omp for reduction (+:sum)
+#pragma omp for reduction (+:sum)
         for (int l = l0+1; l <= lmax; ++l) {
             int Pk_index, Tb_index, q_index;
             cout << "Computation of Fl starts for l = " << l << endl;

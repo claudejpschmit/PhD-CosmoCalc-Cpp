@@ -18,5 +18,5 @@ class SanityChecker : public CosmoCalc {
         void Compare_Cl(int l, double k1, double k2, double k_low,\
                 double k_high, int n_levin, double *ratio, double *time_r);
         void plot_integrad_z(int l, double k1, double k2, int zsteps, string filename);
-
+        void plot_intjj(int l, double zp, int zsteps, string filename);
 };

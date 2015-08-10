@@ -28,7 +28,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
 
     this->update_q(fiducial_params, q_index);
     //this->update_q_prime();
-    
+
     //this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     cout << "... Dependencies calculated ..." << endl;
     cout << "... precalculating inverse r ..." << endl;
@@ -51,6 +51,10 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     //this->update_G21_full(fiducial_params);
     cout << "... 21cm interface built ..." << endl;
 
+    cout << "... generate analytic Tb ..." << endl;
+    //this->update_Tb_analytic(fiducial_params, Tb_index);
+    cout << "... Tb analytic done..." << endl;
+
     cout << "... CosmoCalc built ..." << endl;
 }
 
@@ -64,7 +68,9 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     //return this->Cl_simplified(l, k1, k2);
     //return this->Cl_simplified_rsd(l,k1,k2);
     //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
-    return this->Cl_new(l,k1,k2,k_low,k_high,8, Pk_index, Tb_index, q_index);
+    return this->Cl_new(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);
+    //return this->Cl_new_analyticTb(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);
+
     //return (k1+k2) * k1;
 }
 
@@ -429,11 +435,11 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         for (int n = 0; n <= this->zsteps_Ml; ++n) {
             z = this->zmin_Ml + n * this->stepsize_Ml;
             xs[n] = z;
-    
-            auto integrand = [&](double x)
+
+            auto integrand = [&](double zp)
             {
-				return 1/sqrt(O_V2 + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) + O_k2 * pow(1+z,2));
-			};
+                return 1/sqrt(O_V2 + O_R2 * pow(1+zp,4) + O_M2 * pow(1+zp,3) + O_k2 * pow(1+zp,2));
+            };
             double Z = integrate(integrand, 0.0, z, 1000, simpson());
 
             ys[n] = D_H2 * Z;
@@ -442,11 +448,11 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         spline1dinterpolant interpolator, interpolator_Hf;
         spline1dbuildlinear(xs,ys,interpolator);
         spline1dbuildlinear(xs,hs,interpolator_Hf);
- 
+
         interp.h = h2;
         interp.interpolator = interpolator;
         interp.interpolator_Hf = interpolator_Hf;
-        
+
         qs.push_back(interp);
         *q_index = qs.size() - 1;
     }
@@ -711,7 +717,7 @@ void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
 
         Tbs.push_back(interp);
         *Tb_index = Tbs.size() - 1;
-        
+
         cout << "G21 update done" << endl;
     }
 }
@@ -920,6 +926,90 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
     double a;
     double low;
     double hhh = pow(qs[q_index].h,3);
+    if (l < 50){
+        low = k_low;
+        a = (double)(l+1000)/(1.5*10000);
+
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+        a = (double)(l+1000)/(1.5*10000);
+    } else {
+        low = (double)l/(10000);
+        a = (double)(l+1000)/(1.5*10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+    
+   
+    if (a < lower_kappa_bound)
+        a += 0.1;
+    if (a > k_high)
+        a = k_high;
+    int steps = (int)((a - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+    //cout << lower_kappa_bound << " " << a << endl;
+
+    auto integrand1 = [&](double z)
+    {
+        double r,q;
+        r = r_interp(z);
+        q = q_interp(z, q_index);
+
+        auto integrand2 = [&](double zp)
+        {
+            double rp,qp;
+            rp = r_interp(zp);
+            qp = q_interp(zp, q_index);
+
+            auto integrand3 = [&](double kappa)
+            {
+                double sP = sqrt(this->Pk_interp(kappa*qs[q_index].h,z, Pk_index)/hhh);
+                double sPp = sqrt(this->Pk_interp(kappa*qs[q_index].h,zp, Pk_index)/hhh);
+                return kappa*kappa * sP * sPp * this->sph_bessel_camb(l,kappa*q) *\
+                    this->sph_bessel_camb(l,kappa*qp);
+            };
+            double integral = integrate_simps(integrand3, lower_kappa_bound, a, steps);
+
+            if (a < k_high) {
+                Levin LEVIN(a, k_high);
+
+                auto foo = [&](double kappa)
+                {
+                    double sP1 = sqrt(this->Pk_interp(kappa*qs[q_index].h,z, Pk_index)/hhh);
+                    double sPp1 = sqrt(this->Pk_interp(kappa*qs[q_index].h,zp, Pk_index)/hhh);
+                    return kappa*kappa * sP1 * sPp1;     
+                };
+
+                double integral3;
+                if (z == zp)
+                    integral3 = LEVIN.integrate_2sphj_1r(foo,q,l,n_levin);
+                else
+                    integral3 = LEVIN.integrate_2sphj_2r(foo,q,qp,l,n_levin);
+
+
+                integral += integral3;
+            }
+            return rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_interp(zp, Tb_index) *\
+                this->sph_bessel_camb(l,k2*rp) * integral;
+        };
+        double integral2 = integrate_simps(integrand2, this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
+        return r*r / (Hf_interp(z)*1000.0) * this->Tb_interp(z, Tb_index) *\
+            this->sph_bessel_camb(l,k1*r) * integral2;
+    };
+    double integral1 = integrate_simps(integrand1,this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
+    return pow(this->prefactor_Ml,2) * integral1;
+}
+
+double CosmoCalc::Cl_new_analyticTb(int l, double k1, double k2, double k_low,\
+        double k_high, int n_levin, int Pk_index, int Tb_index, int q_index)
+{
+    double a;
+    double low;
+    double hhh = pow(qs[q_index].h,3);
 
     auto integrand1 = [&](double z)
     {
@@ -959,7 +1049,7 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
             };
             double integral = integrate_simps(integrand3, lower_kappa_bound, a, steps);
             double integral3;
-            
+
             Levin LEVIN(a, k_high);
 
             auto foo = [&](double kappa)
@@ -969,25 +1059,24 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
                 return kappa*kappa * sP1 * sPp1;     
             };
 
-            
+
             if (z == zp)
                 integral3 = LEVIN.integrate_2sphj_1r(foo,q,l,n_levin);
             else
                 integral3 = LEVIN.integrate_2sphj_2r(foo,q,qp,l,n_levin);
 
-           
+
             integral3 += integral;
-            return rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_interp(zp, Tb_index) *\
+            return rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_analytic_interp(zp, Tb_index) *\
                 this->sph_bessel_camb(l,k2*rp) * integral3;
         };
         double integral2 = integrate_simps(integrand2, this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
-        return r*r / (Hf_interp(z)*1000.0) * this->Tb_interp(z, Tb_index) *\
+        return r*r / (Hf_interp(z)*1000.0) * this->Tb_analytic_interp(z, Tb_index) *\
             this->sph_bessel_camb(l,k1*r) * integral2;
     };
     double integral1 = integrate_simps(integrand1,this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
     return pow(this->prefactor_Ml,2) * integral1;
 }
-
 
 double CosmoCalc::Cl_simplified_rsd(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index)
 {
@@ -1235,7 +1324,25 @@ double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
 double CosmoCalc::corr_Tb_new(int l, double k1, double k2, double k_low,\
         double k_high, int Pk_index, int Tb_index, int q_index)
 {
-    int steps = (int)((k_high - k_low)/this->k_stepsize);
+    double a;
+    double low;
+    double hhh = pow(qs[q_index].h,3);
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    if (a < lower_kappa_bound)
+        a += 0.2;
+    int steps = (int)((k_high - lower_kappa_bound)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
 
@@ -1445,6 +1552,69 @@ double CosmoCalc::N_bar(int l, double k1, double k2, int Pk_index, int Tb_index,
     return integral * this->prefactor_Ml;
 }
 
+void CosmoCalc::update_Tb_analytic(map<string, double> params, int *Tb_index)
+{
+    bool do_calc = true;
+    for (unsigned int i = 0; i < Tbas.size(); ++i) {
+        if (params["ombh2"] == Tbas[i].ombh2 && params["omnuh2"] == Tbas[i].omnuh2 &&\
+                params["omch2"] == Tbas[i].omch2 && params["hubble"] == Tbas[i].hubble &&\
+                params["T_CMB"] == Tbas[i].t_cmb) {
+
+            do_calc = false;
+            *Tb_index = i;
+            break;
+        }
+    }
+    if (do_calc) {
+        Tb_analytic_interpolator interp;
+        interp.ombh2 = params["ombh2"];
+        interp.omnuh2 = params["omnuh2"];
+        interp.omch2 = params["omch2"];
+        interp.hubble = params["hubble"];
+        interp.t_cmb = params["T_CMB"];
+
+        cout << "Tb_analytic is being updated" << endl;
+
+        double T_CMB2 = params["T_CMB"];
+        double H_02 = params["hubble"];
+        double h2 = H_02 / 100.0;
+        double O_b2 = params["ombh2"] / pow(h2,2);
+        double O_cdm2 = params["omch2"] / pow(h2,2);
+        double O_nu2 = params["omnuh2"] / pow(h2,2);
+        double O_M2 = O_b2 + O_cdm2 + O_nu2;
+
+        real_1d_array xs, ys, hs;
+        xs.setlength(this->zsteps_Ml+1);
+        ys.setlength(this->zsteps_Ml+1);
+        double z;
+        for (int n = 0; n <= this->zsteps_Ml; ++n) {
+            z = this->zmin_Ml + n * this->stepsize_Ml;
+            xs[n] = z;
+
+            double constant_A = 27.0 * O_b2 * pow(h2, 2) / 0.023 *\
+                                sqrt(0.015 / (O_M2 * pow(h2,2)));
+            double T_S = this->T_S(z);
+            double Tz = T_CMB2 * (1+z);
+            ys[n] = constant_A * this->x_HI(z) * (T_S - Tz)/T_S * sqrt(1+z);
+
+        }
+        spline1dinterpolant interpolator;
+        spline1dbuildlinear(xs,ys,interpolator);
+
+        interp.interpolator = interpolator;
+
+        Tbas.push_back(interp);
+        *Tb_index = Tbas.size() - 1;
+
+        cout << "Tb analytic update done" << endl;
+    }
+}
+
+double CosmoCalc::Tb_analytic_interp(double z, int Tb_index)
+{
+    return spline1dcalc(Tbas[Tb_index].interpolator,z);
+}
+
 double CosmoCalc::delta_Tb_bar(double z)
 {
     double constant_A = 27.0 * this->O_b * pow(this->h, 2) / 0.023 *\
@@ -1544,7 +1714,7 @@ double CosmoCalc::help_long(int l, double kp, double kappa, int Pk_index, int Tb
 {
     auto integrand1 = [&](double zz)
     {
-        
+
         double r,q,hh,Tb;
         r = r_interp(zz);
         q = q_interp(zz, q_index);

@@ -10,7 +10,7 @@ class CosmoWrite : public CosmoCalc {
     public:
  
         // ------------ Functions -------------- //
-        CosmoWrite(map<string, double> params);
+        CosmoWrite(map<string, double> params, int *Pk_index, int *Tb_index, int *q_index);
 
         ~CosmoWrite();
 
@@ -57,7 +57,4 @@ class CosmoWrite : public CosmoCalc {
                 double k_max, double k_stepsize);
         void calculate_Ml(int lmin, int lmax, double k, double kappa);
         void calculate_Nl(int lmin, int lmax, double k, double kappa); 
-        int *Pk_index;
-        int *Tb_index;
-        int *q_index;
 };

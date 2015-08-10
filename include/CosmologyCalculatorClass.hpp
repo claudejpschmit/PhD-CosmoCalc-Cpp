@@ -39,7 +39,9 @@ class CosmoCalc : public CosmoBasis {
         void update_Pk_interpolator_direct(map<string, double> params, int *Pk_index);
         void update_G21_full(map<string, double> params, int *Tb_index);
         void update_Pk_interpolator_full(map<string, double> params, int *Pk_index);
+        void update_Tb_analytic(map<string, double> params, int *Tb_index);
 
+        double Tb_analytic_interp(double z, int Tb_index);
         /**
          * Function outputs some standard cosmological calculations to the user.
          */
@@ -58,6 +60,8 @@ class CosmoCalc : public CosmoBasis {
         double limber(int l, double r);
         double limber2(int l, double r);
         double Cl_new(int l, double k1, double k2, double k_low,\
+                double k_high, int n_levin, int Pk_index, int Tb_index, int q_index);
+        double Cl_new_analyticTb(int l, double k1, double k2, double k_low,\
                 double k_high, int n_levin, int Pk_index, int Tb_index, int q_index);
 
         
@@ -469,6 +473,7 @@ class CosmoCalc : public CosmoBasis {
         vector<Pk_interpolator> Pks, Pks_full;
         vector<Tb_interpolator> Tbs, Tbs_full;
         vector<q_interpolator> qs;
+        vector<Tb_analytic_interpolator> Tbas;
 
         //int Pk_index;
         //int Tb_index;

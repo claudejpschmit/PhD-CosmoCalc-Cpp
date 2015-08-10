@@ -1,7 +1,7 @@
 #include "CosmologyWriterClass.hpp"
 #include <fstream>
 
-CosmoWrite::CosmoWrite(map<string, double> params)
+CosmoWrite::CosmoWrite(map<string, double> params, int *Pk_index, int *Tb_index, int *q_index)
     :
         CosmoCalc(params,Pk_index,Tb_index,q_index)
 {

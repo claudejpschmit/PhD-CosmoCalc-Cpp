@@ -150,16 +150,49 @@ void SanityChecker::plot_integrad_z(int l, double k1, double k2, int zsteps, str
                 return kappa*kappa * sP * sPp * this->sph_bessel_camb(l,kappa*q) *\
                     this->sph_bessel_camb(l,kappa*qp);
             };
-            double integral3 = integrate_simps(integrand3, 0.3, 2.0, kappa_steps);
+            double integral3 = integrate_simps(integrand3, 0.001, 2.0, kappa_steps);
             return rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_interp(zp, 0) *\
                 this->sph_bessel_camb(l,k2*rp) * integral3;
         };
         double integral2 = integrate_simps(integrand2, 7.0, 9.0, zsteps);
         double result = r*r / (Hf_interp(z)*1000.0) * this->Tb_interp(z,0) *\
-            this->sph_bessel_camb(l,k1*r) * integral2;
-        
+                        this->sph_bessel_camb(l,k1*r) * integral2;
+
         file << z << " " << result << endl;
     }
     file.close();
-
 }
+
+void SanityChecker::plot_intjj(int l, double zp, int zsteps, string filename)
+{
+    int kappa_steps = (int)((0.001 - 2.0)/this->k_stepsize);
+    if (kappa_steps % 2 == 1)
+        ++kappa_steps;
+    ofstream file;
+    file.open(filename);
+
+    double zstepsize = 2.0/(double)zsteps;
+    double hhh = pow(qs[0].h,3);
+    double rp = r_interp(zp);
+    double qp = q_interp(zp, 0);
+    for (int i = 0; i < zsteps; i++)
+    {
+        double z = 7.0 + i*zstepsize;
+        double q = q_interp(z, 0);
+
+
+        auto integrand3 = [&](double kappa)
+        {
+            //double sP = sqrt(this->Pk_interp(kappa*qs[0].h,z, 0)/hhh);
+            //double sPp = sqrt(this->Pk_interp(kappa*qs[0].h,zp, 0)/hhh);
+            return kappa*kappa*this->sph_bessel_camb(l,kappa*q) *\
+                this->sph_bessel_camb(l,kappa*qp);
+
+        };
+        double integral3 = integrate_simps(integrand3, 0.0001, 1.0, kappa_steps);
+
+        file << z << " " << integral3 << endl;
+    }
+    file.close();
+}
+
