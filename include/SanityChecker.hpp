@@ -17,6 +17,12 @@ class SanityChecker : public CosmoCalc {
         double kappa_integrand(int l, double z, double zp, double kappa);
         void Compare_Cl(int l, double k1, double k2, double k_low,\
                 double k_high, int n_levin, double *ratio, double *time_r);
-        void plot_integrad_z(int l, double k1, double k2, int zsteps, string filename);
+        void plot_integrand_z(int l, double k1, double k2, int zsteps, string filename);
         void plot_intjj(int l, double zp, int zsteps, string filename);
+        void plot_integrand_zp(int l, double z, double k2, int zsteps, string filename);
+
+        double Cl_gauss(int l, double k1, double k2, double k_low,\
+                double k_high, int Pk_index, int Tb_index, int q_index);
+
+
 };

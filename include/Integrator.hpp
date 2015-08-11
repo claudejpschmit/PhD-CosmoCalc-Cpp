@@ -78,7 +78,7 @@ class simpson
         template<typename Function, typename Double>
             double operator()(Function f, Double x, Double h) const
             {
-                return (f(x) + 4*f(x+h/2) + f(x+h))/6;
+                return (f(x) + 4.0*f(x+h/2.0) + f(x+h))/6.0;
             }
 };
 

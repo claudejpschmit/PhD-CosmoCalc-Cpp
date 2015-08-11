@@ -31,13 +31,17 @@ int main(int argc, char* argv[])
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0;
-/*
-    SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
-    check.plot_integrad_z(2000, 0.8, 0.75, 1000, "integrand_z.dat");
 
-    int l = 100;
-    double k1 = 1.5;
-    double k2 = 1.34;
+    //CosmoWrite writer(params, &Pk_index, &Tb_index, &q_index);
+    /*SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
+    //check.plot_integrand_zp(1200, 8.0, 1.0, 10000, "integrand_zp.dat");
+    
+    //check.plot_integrand_z(2000, 0.8, 0.75, 1000, "integrand_z.dat");
+
+    //int l = 100;
+    
+    double k1 = 1.0;
+    double k2 = 0.4;
     double k_low = 0.0001;
     double k_high = 2.0;
     int n = 8;
@@ -45,12 +49,12 @@ int main(int argc, char* argv[])
     int counter = 0;
     ofstream file;
     stringstream name;
-    name << "output/Cl_compare_" << n << "_2.dat";
+    name << "output/Cl_compare_gauss_Levin_highzsteps.dat";
     double ratio, time_r;
     file.open(name.str());
     for (int i = 0; i < 50; i++)
     {
-        l = 1 + i*100;
+        int l = 1 + i*100;
         cout << "----- calc for l = " << l << endl;
         check.Compare_Cl(l, k1, k2, k_low, k_high,n,&ratio,&time_r);
         file << l << " " << ratio << " " << time_r << endl;
@@ -67,11 +71,11 @@ int main(int argc, char* argv[])
         file << kappa << " " << res2 << endl;
     } 
     file.close();
+    */
     
-  */
     
-    Fisher fish(params,"Fisher3.dat");
-    cout << "The result is = " << fish.F("ombh2","ombh2")<< endl;
+    //Fisher fish(params,"Fisher3.dat");
+    //cout << "The result is = " << fish.F("ombh2","ombh2")<< endl;
     /*
     double k1 = 0.5;
     double k2 = 0.7;
@@ -99,10 +103,10 @@ int main(int argc, char* argv[])
     file.close();
     */
     
-    //SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
+    SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
     //check.plot_integrad_z(221, 0.4, 0.4, 1000, "test.dat");
     //for (int l = 10; l < 1000; l++) 
-    //check.plot_intjj(14, 8.8, 10000, "test.dat");
+    check.plot_intjj(5000, 8.0, 200, "test.dat");
 
 
     //CosmoWrite write(params, &Pk_index, &Tb_index, &q_index);

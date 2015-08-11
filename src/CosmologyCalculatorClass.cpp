@@ -13,7 +13,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     this->zmin_Ml = this->fiducial_params["zmin"];
     this->zmax_Ml = this->fiducial_params["zmax"];
     this->zsteps_Ml = this->fiducial_params["zsteps"];
-    this->stepsize_Ml = (this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
+    this->stepsize_Ml = abs(this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_stepsize = this->fiducial_params["k_stepsize"];
     //this->zmax_interp = this->fiducial_params["zmax_interp"];
@@ -948,7 +948,7 @@ double CosmoCalc::Cl_new(int l, double k1, double k2, double k_low,\
         a += 0.1;
     if (a > k_high)
         a = k_high;
-    int steps = (int)((a - lower_kappa_bound)/this->k_stepsize);
+    int steps = (int)(abs(a - lower_kappa_bound)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
     //cout << lower_kappa_bound << " " << a << endl;
@@ -1324,7 +1324,6 @@ double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
 double CosmoCalc::corr_Tb_new(int l, double k1, double k2, double k_low,\
         double k_high, int Pk_index, int Tb_index, int q_index)
 {
-    double a;
     double low;
     double hhh = pow(qs[q_index].h,3);
     if (l < 50){
@@ -1340,9 +1339,7 @@ double CosmoCalc::corr_Tb_new(int l, double k1, double k2, double k_low,\
     else
         lower_kappa_bound = k_low;
 
-    if (a < lower_kappa_bound)
-        a += 0.2;
-    int steps = (int)((k_high - lower_kappa_bound)/this->k_stepsize);
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
 

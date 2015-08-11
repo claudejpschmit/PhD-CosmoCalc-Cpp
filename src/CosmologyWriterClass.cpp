@@ -254,15 +254,22 @@ void CosmoWrite::calculate_dTb(double zmin, double zmax, int step)
     file.open(filename);
     file << "# This file contains data for delta T_b vs redshift." << endl;
     file << "# Column 1: redshift z " << endl;
-    file << "# Column 2: delta T_b" << endl;
+    file << "# Column 2: delta T_b" << endl; 
+    file << "# Column 3: delta T_b from G21 code" << endl;
+    file << "# Column 4: delta T_b from analytic interpolation" << endl;
 
-    double y1, x;
+    int index_g21 = 0;
+    int index_analytic = 0;
+    update_G21(fiducial_params, &index_g21);
+    update_Tb_analytic(fiducial_params, &index_analytic);
+
+    double y1, y2, y3, z;
     for (int i = 0; i < step; i++) {
-        cout << "fine" << endl;
-        x = zmin + (double)i * stepsize ;
-        y1 = this->delta_Tb_bar(x);
-
-        file << x << " " << y1 << endl;
+        z = zmin + (double)i * stepsize ;
+        y1 = delta_Tb_bar(z);
+        y2 = Tb_interp(z, index_g21);
+        y3 = Tb_analytic_interp(z, index_analytic);
+        file << z << " " << y1 << " " << y2 << " " << y3 << endl;
     }
     file.close();
 }
