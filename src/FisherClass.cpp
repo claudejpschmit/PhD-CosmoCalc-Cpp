@@ -318,7 +318,7 @@ double Fisher::F(string param_key1, string param_key2)
     // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
     // to define how many threads should be used.
 
-#pragma omp parallel private(Pk_index, Tb_index, q_index) 
+#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
     {
 #pragma omp for reduction (+:sum)
         for (int l = l0+1; l <= lmax; ++l) {

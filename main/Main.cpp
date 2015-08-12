@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     int q_index = 0;
 
     //CosmoWrite writer(params, &Pk_index, &Tb_index, &q_index);
-    /*SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
+    SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
     //check.plot_integrand_zp(1200, 8.0, 1.0, 10000, "integrand_zp.dat");
     
     //check.plot_integrand_z(2000, 0.8, 0.75, 1000, "integrand_z.dat");
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     int counter = 0;
     ofstream file;
     stringstream name;
-    name << "output/Cl_compare_gauss_Levin_highzsteps.dat";
+    name << "Cl_compare_gauss_corrTb.dat";
     double ratio, time_r;
     file.open(name.str());
     for (int i = 0; i < 50; i++)
@@ -60,7 +60,9 @@ int main(int argc, char* argv[])
         file << l << " " << ratio << " " << time_r << endl;
     }
     file.close();
+    /*
     cout << "This was for n = " << n << endl;
+    
     file.open("integrand.dat");
     double z = 7.0;
     double zp = 8.0;
@@ -71,11 +73,11 @@ int main(int argc, char* argv[])
         file << kappa << " " << res2 << endl;
     } 
     file.close();
-    
     */
     
-    Fisher fish(params,"Fisher.dat");
-    cout << "The result is = " << fish.F("ombh2","ombh2")<< endl;
+    
+    //Fisher fish(params,"Fisher.dat");
+    //cout << "The result is = " << fish.F("ombh2","ombh2")<< endl;
     /*
     double k1 = 0.5;
     double k2 = 0.7;

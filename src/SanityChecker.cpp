@@ -100,20 +100,20 @@ void SanityChecker::Compare_Cl(int l, double k1, double k2, double k_low, double
 {
     clock_t t1,t2;
     t1 = clock();
-    double Cl_levin = Cl_gauss(l,k1,k2,k_low,k_high,0,0,0);
+    double Cl_g = Cl_gauss_fewerZ(l,k1,k2,k_low,k_high,0,0,0);
     t2 = clock();
     double ta = (double)t2 - (double)t1;
-    cout << "C_levin = " << Cl_levin << endl;
+    cout << "C_gauss = " << Cl_g << endl;
     cout << "time = " << ta/CLOCKS_PER_SEC << endl;
 
     t1 = clock();
-    double Cl_full = Cl_new(l,k1,k2,k_low,k_high,n_levin,0,0,0);
+    double Cl_full = corr_Tb_MM(l,k1,k2,k_low,k_high,0,0,0);
     t2 = clock();
     double tb = (double)t2 - (double)t1;
     cout << "C_full = " << Cl_full << endl;
     cout << "time = " << tb/CLOCKS_PER_SEC << endl;
-    cout << "ratio = " << Cl_levin/Cl_full << endl;
-    *ratio = Cl_levin/Cl_full;
+    cout << "ratio = " << Cl_g/Cl_full << endl;
+    *ratio = Cl_g/Cl_full;
     *time_r = tb/ta;
     cout << "time_ratio = " << tb/ta << endl;
 }
