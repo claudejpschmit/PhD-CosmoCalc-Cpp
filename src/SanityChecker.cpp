@@ -391,8 +391,8 @@ double SanityChecker::Cl_gauss(int l, double k1, double k2, double k_low,double 
         ++steps;
 
     // delta is independent of kappa, z & zp so we can calculate it once.
-    //double delta = pow(pi/(double)l,0.5);
-    double delta = 2.26*pow((double)l,-0.677);
+    double delta = pow(pi/(double)l,0.5);
+    //double delta = 2.26*pow((double)l,-0.677);
     if (delta > 0.1)
         delta = 0.1;
     // Now comes the integral.
@@ -630,3 +630,4 @@ double SanityChecker::corr_Tb_MN(int l, double k1, double k2, double k_low,\
 
     return integrate_simps(integrand, k_low, k_high, steps);
 }
+

@@ -381,7 +381,13 @@ class CosmoCalc : public CosmoBasis {
          */
 
 
-        double Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
+        double Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index,\
+                int Tb_index, int q_index);
+        double Cl(int l, double k1, double k2, double k_low, double k_high,\
+                int Pk_index, int Tb_index, int q_index, vector<double> bessels);
+        double Cl(int l, double k1, double k2, double k_low, double k_high,\
+                int Pk_index, int Tb_index, int q_index, vector<double> bessels,\
+                vector<double> bessels_lminus1);
         double Cl_simplified(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_simplified2(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_simplified3(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
@@ -393,12 +399,19 @@ class CosmoCalc : public CosmoBasis {
          *
          * @param z is the redshift at which the critical density is calculated.
          */
-        double corr_Tb_new(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
-        double corr_Tb_new2(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
+        double corr_Tb_new(int l, double k1, double k2, double k_low, double k_high,\
+                int Pk_index, int Tb_index, int q_index);
+        double corr_Tb_new2(int l, double k1, double k2, double k_low, double k_high,\
+                int Pk_index, int Tb_index, int q_index);
 
         void compare(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
 
-        double corr_Tb(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index);/** 
+        double corr_Tb(int l, double k1, double k2, double k_low, double k_high,\
+                int Pk_index, int Tb_index, int q_index);
+        double corr_Tb(int l, double k1, double k2, double k_low,\
+                double k_high, int Pk_index, int Tb_index, int q_index, vector<double> bessels);
+
+       /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
@@ -406,14 +419,20 @@ class CosmoCalc : public CosmoBasis {
 
         double corr_Tb_rsd(int l, double k1, double k2,\
                            double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
-        
+        double corr_Tb_rsd(int l, double k1, double k2, double k_low,\
+                           double k_high, int Pk_index, int Tb_index, int q_index,\
+                           vector<double> bessels, vector<double> bessels_lminus1);
+
         /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
          */
 
-        double M(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);/** 
+        double M(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
+        double M(int l, double k1, double kappa, int Pk_index, int Tb_index, int q_index,\
+                vector<double> bessels);
+        /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
@@ -445,6 +464,8 @@ class CosmoCalc : public CosmoBasis {
          */
 
         double N_bar(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
+        double N_bar(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index,\
+                     vector<double> bessels, vector<double> bessels_lminus1);
 
         double integrandMM(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
         double integrandMN(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
@@ -453,11 +474,14 @@ class CosmoCalc : public CosmoBasis {
         double integrandlong(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
         double integrandsimple(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
         double help_long(int l, double kp, double kappa, int Pk_index, int Tb_index, int q_index);
+        
+        vector<double> generate_bessels(int l);
+        double j_interp_cubic(vector<double> bessels, double x);
 
     protected:
 
         // ------------ Functions -------------- //
-        
+       
         void create_bessel_interpolant_ALGLIB(int lmin, int lmax);
         void create_bessel_interpolant_OWN(int lmin, int lmax);
         // ------------ Variables -------------- //

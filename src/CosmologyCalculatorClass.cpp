@@ -63,8 +63,8 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     //double lambda = this->current_params["ombh2"];
     //cout << lambda << endl;
     //return pow(lambda, l) * (k1+k2);
-    return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
-    //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
+    //return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
+    return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
     //return this->Cl_simplified(l, k1, k2);
     //return this->Cl_simplified_rsd(l,k1,k2);
     //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
@@ -72,6 +72,20 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     //return this->Cl_new_analyticTb(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);
 
     //return (k1+k2) * k1;
+}
+
+double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high,\
+        int Pk_index, int Tb_index, int q_index, vector<double> bessels)
+{
+    return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index, bessels);
+}
+
+double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high,\
+        int Pk_index, int Tb_index, int q_index, vector<double> bessels,\
+        vector<double> bessels_lminus1)
+{
+    return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index,\
+            q_index, bessels, bessels_lminus1);
 }
 
 double CosmoCalc::Cl_noise(int l, double k1, double k2)
@@ -593,6 +607,48 @@ double CosmoCalc::bessel_j_interp_basic(int l, double x)
             return bessel_values[l][(int)(2 * x)] +\
                 (bessel_values[l][(int)(2 * x) + 1] -\
                  bessel_values[l][(int)(2 * x)]) * (x - (two_x0)/2) / 0.5;
+        }
+    }
+}
+
+vector<double> CosmoCalc::generate_bessels(int l)
+{
+    double xmax = 2 * 5 * r_interp(this->fiducial_params["zmax"]);
+    vector<double> bessels;
+    for (int j = 0; j < 2*(int)xmax; ++j) {
+        bessels.push_back(this->sph_bessel_camb(l,(double)j / 2.0));
+    } 
+    return bessels;
+}
+
+double CosmoCalc::j_interp_cubic(vector<double> bessels, double x)
+{
+    if ((unsigned int)(2*x) + 2 >= bessels.size()) {
+        return bessels[bessels.size()-1];
+    } else if (int(2*x) - 1 < 0) {
+        return bessels[0];
+    } else {
+        if (x-(int)x == 0 || x-(int)x == 0.5) {       
+            return bessels[(int)(2 * x)];
+        } else {
+            double y0, y1, y2, y3, a0, a1, a2, a3, mu, mu2, x0;
+
+            x0 = (int)(2*x);
+            x0 = x0/2;
+            mu = (x - x0)/0.5;
+            mu2 = mu*mu;
+
+            y0 = bessels[(int)(2 * x) - 1];
+            y1 = bessels[(int)(2 * x)];
+            y2 = bessels[(int)(2 * x) + 1];
+            y3 = bessels[(int)(2 * x) + 2];
+
+            a0 = 0.5*y3 - 1.5 * y2 - 0.5 * y0 + 1.5 * y1;
+            a1 = y0 - 2.5*y1 +2*y2 - 0.5*y3;
+            a2 = 0.5*y2 - 0.5*y0;
+            a3 = y1;
+
+            return a0*mu*mu2 + a1*mu2 + a2*mu + a3;
         }
     }
 }
@@ -1246,6 +1302,47 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
     }
 }
 
+double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
+        double k_high, int Pk_index, int Tb_index, int q_index, vector<double> bessels)
+{
+    double low;
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+    if (k1 == k2)
+    {
+        auto integrand = [&](double kappa)
+        {
+            return pow(kappa,2) * pow(this->M(l,k1,kappa,Pk_index,Tb_index,q_index, bessels),2);
+        };
+
+        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+        return integrate_simps(integrand, k_low, k_high, steps);
+    } else {
+        auto integrand = [&](double kappa)
+        {
+            return pow(kappa,2) * this->M(l,k1,kappa,Pk_index,Tb_index,q_index, bessels) *\
+                this->M(l,k2,kappa,Pk_index,Tb_index,q_index, bessels);
+        };
+
+        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+        return integrate_simps(integrand, k_low, k_high, steps);
+    }
+}
+
 double CosmoCalc::Cl_simplified2(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index)
 {
     double res2 = 2 * pow(this->b_bias,2) * pow(this->c,2)/this->pi;
@@ -1339,6 +1436,50 @@ double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
         } else {
             m2 = this->M(l,k2,k,Pk_index,Tb_index,q_index);
             n2 = this->N_bar(l,k2,k,Pk_index,Tb_index,q_index);
+        }
+        const double bb = this->b_bias * this->beta;
+        const double bb2 = pow(bb,2);
+
+        return pow(k,2) * m1 * m2 + bb * k * (m1*n2 + n1*m2) + bb2 * n1 * n2;
+    };
+    //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+
+    return integrate_simps(integrand, k_low, k_high, steps);
+}
+
+double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
+        double k_high, int Pk_index, int Tb_index, int q_index,\
+        vector<double> bessels, vector<double> bessels_lminus1)
+{       
+    double low;
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+
+    auto integrand = [&](double k)
+    {
+        double m1,n1,m2,n2;
+        m1 = this->M(l,k1,k,Pk_index,Tb_index,q_index,bessels);
+        n1 = this->N_bar(l,k1,k,Pk_index,Tb_index,q_index,bessels,bessels_lminus1);
+        if (k1 == k2) {
+            m2 = m1;
+            n2 = n1;
+        } else {
+            m2 = this->M(l,k2,k,Pk_index,Tb_index,q_index,bessels);
+            n2 = this->N_bar(l,k2,k,Pk_index,Tb_index,q_index,bessels,bessels_lminus1);
         }
         const double bb = this->b_bias * this->beta;
         const double bb2 = pow(bb,2);
@@ -1539,6 +1680,37 @@ double CosmoCalc::M(int l, double k1, double kappa, int Pk_index, int Tb_index, 
     return this->prefactor_Ml * integral;
 }
 
+double CosmoCalc::M(int l, double k1, double kappa, int Pk_index, int Tb_index, int q_index, vector<double> bessels)
+{
+    auto integrand = [&](double z)
+    {
+        double r,q;
+        r = r_interp(z);
+        q = q_interp(z, q_index);
+
+
+        //TODO: check whether we need to multiply py h.
+        //return pow(r,2) * this->Tb_interp_full(z, Tb_index) * this->bessel_j_interp_cubic(l,k1*r) *\
+        //   this->bessel_j_interp_cubic(l,k2*q) * sqrt(this->Pk_interp_full(k2*qs[q_index].h,z,Pk_index)/\
+        //            pow(qs[q_index].h,3)) / (Hf_interp(z)*1000.0);
+
+        return pow(r,2) * this->Tb_interp(z, Tb_index) * this->j_interp_cubic(bessels,k1*r) *\
+            this->j_interp_cubic(bessels,kappa*q) * sqrt(this->Pk_interp(kappa*qs[q_index].h,z, Pk_index)/\
+                pow(qs[q_index].h,3)) / (Hf_interp(z)*1000.0);
+    };
+
+    //double integral = integrate(integrand, this->zmin_Ml, this->zmax_Ml,
+    //this->zsteps_Ml, simpson());
+    //
+    //TODO: The problem here is that q_ml etc are not calculated necessarily for those values which
+    //is why it all goes to shit.
+    //int zstep = give_optimal_zstep(k1,k2);
+    int zstep = this->zsteps_Ml;
+    double integral = integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml, zstep);
+
+    return this->prefactor_Ml * integral;
+}
+
 double CosmoCalc::N_bar(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index)
 {
     auto integrand = [&](double z)
@@ -1568,6 +1740,42 @@ double CosmoCalc::N_bar(int l, double k1, double k2, int Pk_index, int Tb_index,
                       pow((double)l+1.0,2) / (k2 * q) * jl2r * jl2q;
         return pref * pkdtb * sums;
 
+    };
+
+    //double integral = integrate(integrand, this->zmin_Ml, this->zmax_Ml,
+    //this->zsteps_Ml, simpson());
+
+    int zstep = this->zsteps_Ml;//10000;//give_optimal_zstep(k1,k2);
+    double integral = integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml, zstep);
+
+    return integral * this->prefactor_Ml;
+}
+
+double CosmoCalc::N_bar(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index,\
+        vector<double> bessels, vector<double> bessels_lminus1)
+{
+    auto integrand = [&](double z)
+    {
+        double r,q;
+        r = r_interp(z);
+        q = q_interp(z, q_index);
+
+
+        double pref = r / (Hf_interp(z)*1000.0*(1+z));
+        double pk = sqrt(this->Pk_interp(k2*qs[q_index].h, z, Pk_index)/pow(qs[q_index].h, 3));
+        double dtb = this->Tb_interp(z, Tb_index);
+        double pkdtb = pk * dtb;
+
+        double jl1r = this->j_interp_cubic(bessels_lminus1, k1 * r);
+        double jl2r = this->j_interp_cubic(bessels, k1 * r);
+        double jl1q = this->j_interp_cubic(bessels_lminus1, k2 * q);
+        double jl2q = this->j_interp_cubic(bessels, k2 * q);
+
+        double sums = k1 * r * jl1r * jl1q -\
+                      k1 * r * ((double)l+1.0) / (k2 * q) * jl1r * jl2q -\
+                      ((double)l+1.0) * jl2r * jl1q +\
+                      pow((double)l+1.0,2) / (k2 * q) * jl2r * jl2q;
+        return pref * pkdtb * sums;
     };
 
     //double integral = integrate(integrand, this->zmin_Ml, this->zmax_Ml,
