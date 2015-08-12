@@ -63,12 +63,12 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     //double lambda = this->current_params["ombh2"];
     //cout << lambda << endl;
     //return pow(lambda, l) * (k1+k2);
-    //return this->corr_Tb(l, k1, k2, k_low, k_high);
-    //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high);
+    return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
+    //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
     //return this->Cl_simplified(l, k1, k2);
     //return this->Cl_simplified_rsd(l,k1,k2);
     //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
-    return this->Cl_new(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);
+    //return this->Cl_new(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);
     //return this->Cl_new_analyticTb(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);
 
     //return (k1+k2) * k1;
@@ -1208,21 +1208,37 @@ double CosmoCalc::Cl_simplified_levin(int l, double k1, double k2, int Pk_index,
 double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
         double k_high, int Pk_index, int Tb_index, int q_index)
 {
-    int steps = (int)((k_high - k_low)/this->k_stepsize);
+    double low;
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
 
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
     if (k1 == k2)
     {
-        auto integrand = [&](double k)
+        auto integrand = [&](double kappa)
         {
-            return pow(k,2) * pow(this->M(l,k1,k,Pk_index,Tb_index,q_index),2);
+            return pow(kappa,2) * pow(this->M(l,k1,kappa,Pk_index,Tb_index,q_index),2);
         };
 
         //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
         return integrate_simps(integrand, k_low, k_high, steps);
     } else {
-        auto integrand = [&](double k)
+        auto integrand = [&](double kappa)
         {
-            return pow(k,2) * this->M(l,k1,k,Pk_index,Tb_index,q_index) * this->M(l,k2,k,Pk_index,Tb_index,q_index);
+            return pow(kappa,2) * this->M(l,k1,kappa,Pk_index,Tb_index,q_index) *\
+                this->M(l,k2,kappa,Pk_index,Tb_index,q_index);
         };
 
         //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
@@ -1294,7 +1310,21 @@ double CosmoCalc::Cl_simplified3(int l, double k1, double k2, int Pk_index, int 
 double CosmoCalc::corr_Tb_rsd(int l, double k1, double k2, double k_low,\
         double k_high, int Pk_index, int Tb_index, int q_index)
 {       
-    int steps = (int)((k_high - k_low)/this->k_stepsize);
+    double low;
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
 
@@ -1478,7 +1508,7 @@ void CosmoCalc::compare(int l, double k1, double k2, int Pk_index, int Tb_index,
     cout << res2 / (14.6*res1) << endl;
 }
 
-double CosmoCalc::M(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index)
+double CosmoCalc::M(int l, double k1, double kappa, int Pk_index, int Tb_index, int q_index)
 {
     auto integrand = [&](double z)
     {
@@ -1488,13 +1518,13 @@ double CosmoCalc::M(int l, double k1, double k2, int Pk_index, int Tb_index, int
 
 
         //TODO: check whether we need to multiply py h.
-        return pow(r,2) * this->Tb_interp_full(z, Tb_index) * this->bessel_j_interp_cubic(l,k1*r) *\
-            this->bessel_j_interp_cubic(l,k2*q) * sqrt(this->Pk_interp_full(k2*qs[q_index].h,z,Pk_index)/\
-                    pow(qs[q_index].h,3)) / (Hf_interp(z)*1000.0);
+        //return pow(r,2) * this->Tb_interp_full(z, Tb_index) * this->bessel_j_interp_cubic(l,k1*r) *\
+        //   this->bessel_j_interp_cubic(l,k2*q) * sqrt(this->Pk_interp_full(k2*qs[q_index].h,z,Pk_index)/\
+        //            pow(qs[q_index].h,3)) / (Hf_interp(z)*1000.0);
 
-        //return pow(r,2) * this->delta_Tb_bar(z) * this->sph_bessel_camb(l,k1*r) *
-        //this->sph_bessel_camb(l,k2*q) * sqrt(this->Pk_interp(k2*qs[q_index].h,z, Pk_index)/
-        //        pow(qs[q_index].h,3)) / (Hf_interp(z)*1000.0);
+        return pow(r,2) * this->Tb_interp(z, Tb_index) * this->sph_bessel_camb(l,k1*r) *\
+            this->sph_bessel_camb(l,kappa*q) * sqrt(this->Pk_interp(kappa*qs[q_index].h,z, Pk_index)/\
+                pow(qs[q_index].h,3)) / (Hf_interp(z)*1000.0);
     };
 
     //double integral = integrate(integrand, this->zmin_Ml, this->zmax_Ml,
@@ -1522,15 +1552,15 @@ double CosmoCalc::N_bar(int l, double k1, double k2, int Pk_index, int Tb_index,
         double pk = sqrt(this->Pk_interp(k2*qs[q_index].h, z, Pk_index)/pow(qs[q_index].h, 3));
         double dtb = this->Tb_interp(z, Tb_index);
         double pkdtb = pk * dtb;
-        double jl1r = this->bessel_j_interp_cubic(l - 1, k1 * r);
-        double jl2r = this->bessel_j_interp_cubic(l, k1 * r);
-        double jl1q = this->bessel_j_interp_cubic(l - 1, k2 * q);
-        double jl2q = this->bessel_j_interp_cubic(l, k2 * q);
+        //double jl1r = this->bessel_j_interp_cubic(l - 1, k1 * r);
+        //double jl2r = this->bessel_j_interp_cubic(l, k1 * r);
+        //double jl1q = this->bessel_j_interp_cubic(l - 1, k2 * q);
+        //double jl2q = this->bessel_j_interp_cubic(l, k2 * q);
 
-        //double jl1r = this->sph_bessel_camb(l - 1, k1 * r);
-        //double jl2r = this->sph_bessel_camb(l, k1 * r);
-        //double jl1q = this->sph_bessel_camb(l - 1, k2 * q);
-        //double jl2q = this->sph_bessel_camb(l, k2 * q);
+        double jl1r = this->sph_bessel_camb(l - 1, k1 * r);
+        double jl2r = this->sph_bessel_camb(l, k1 * r);
+        double jl1q = this->sph_bessel_camb(l - 1, k2 * q);
+        double jl2q = this->sph_bessel_camb(l, k2 * q);
 
         double sums = k1 * r * jl1r * jl1q -\
                       k1 * r * ((double)l+1.0) / (k2 * q) * jl1r * jl2q -\
@@ -1543,7 +1573,7 @@ double CosmoCalc::N_bar(int l, double k1, double k2, int Pk_index, int Tb_index,
     //double integral = integrate(integrand, this->zmin_Ml, this->zmax_Ml,
     //this->zsteps_Ml, simpson());
 
-    int zstep = 10000;//give_optimal_zstep(k1,k2);
+    int zstep = this->zsteps_Ml;//10000;//give_optimal_zstep(k1,k2);
     double integral = integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml, zstep);
 
     return integral * this->prefactor_Ml;

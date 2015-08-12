@@ -120,14 +120,35 @@ void SanityChecker::Compare_Cl(int l, double k1, double k2, double k_low, double
 
 void SanityChecker::plot_integrand_z(int l, double k1, double k2, int zsteps, string filename)
 {
-    int kappa_steps = (int)(abs(0.001 - 2.0)/this->k_stepsize);
-    if (kappa_steps % 2 == 1)
-        ++kappa_steps;
+    double zp_stepsize = abs(this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
+    double low;
+    double k_low = 0.0001;
+    double k_high = 2.0;
+    double hhh = pow(qs[0].h,3);
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
     ofstream file;
     file.open(filename);
+    
+    double delta = 2.26*pow((double)l,-0.677);
+    if (delta > 0.1)
+        delta = 0.1;
 
     double zstepsize = 2.0/(double)zsteps;
-    double hhh = pow(qs[0].h,3);
     for (int i = 0; i < zsteps; i++)
     {
         double z = 7.0 + i*zstepsize;
@@ -150,15 +171,73 @@ void SanityChecker::plot_integrand_z(int l, double k1, double k2, int zsteps, st
                 return kappa*kappa * sP * sPp * this->sph_bessel_camb(l,kappa*q) *\
                     this->sph_bessel_camb(l,kappa*qp);
             };
-            double integral3 = integrate_simps(integrand3, 0.001, 2.0, kappa_steps);
+            double integral3 = integrate_simps(integrand3, lower_kappa_bound, k_high, steps);
             return rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_interp(zp, 0) *\
                 this->sph_bessel_camb(l,k2*rp) * integral3;
         };
         double integral2 = integrate_simps(integrand2, 7.0, 9.0, zsteps);
-        double result = r*r / (Hf_interp(z)*1000.0) * this->Tb_interp(z,0) *\
+        double full = r*r / (Hf_interp(z)*1000.0) * this->Tb_interp(z,0) *\
                         this->sph_bessel_camb(l,k1*r) * integral2;
 
-        file << z << " " << result << endl;
+        // simplified
+        //
+        //calculate I(z,delta) & change delta if necessary
+        double q_delta = q_interp(z+delta, 0);
+        auto I = [&](double kappa)
+        {
+            double sP = sqrt(this->Pk_interp(kappa*qs[0].h,z, 0)/hhh);
+            double sPp = sqrt(this->Pk_interp(kappa*qs[0].h,z+delta, 0)/hhh);
+            return kappa*kappa*sP*sPp*this->sph_bessel_camb(l,kappa*q) *\
+                this->sph_bessel_camb(l,kappa*q_delta);
+        };
+        double Izd = integrate_simps(I, lower_kappa_bound, k_high, steps);
+        // in case I(z,delta) is negative we need to fix at a different delta, so that ln(I) exists.
+        while (Izd <= 0) {
+            cout << "Izd calculated again, from delta = " << delta << " to delta = ";
+            delta -= 0.0001;
+            cout << delta << endl;
+            q_delta = q_interp(z+delta, 0);
+            Izd = integrate_simps(I, lower_kappa_bound, k_high, steps);  
+        }
+        
+        // Calculate a_l(z):
+        auto a_integrand = [&](double kappa)
+        {
+            double P = this->Pk_interp(kappa*qs[0].h, z, 0)/hhh;
+            double jlkap = sph_bessel_camb(l, kappa*q);
+            return kappa*kappa * P * jlkap * jlkap;
+        };
+        double alz = integrate_simps(a_integrand, lower_kappa_bound, k_high, steps); 
+        // calculate ln(I/a):
+        double lnIA = log(Izd/alz);
+        // and ln(I/a)/delta^2:
+        double frac = lnIA/pow(delta,2);
+        // This concludes calculating all z dependencies for zp integral, so:
+
+        auto integrand_zp = [&](double zp)
+        {
+            double rp = r_interp(zp);
+            double hfp = Hf_interp(zp) * 1000.0;
+            double Tbp = Tb_interp(zp, 0);
+            double jlp = sph_bessel_camb(l, k2*rp);
+            double exponential = exp(pow(z-zp,2)*frac);
+            return rp*rp/hfp * Tbp * jlp * exponential;
+        };
+        double cc2 = -delta*delta/(2.0*lnIA);
+        double fwtm = 2.0*sqrt(2*log(10))*sqrt(cc2);
+        double zp_low = max(this->zmin_Ml, z-2*fwtm);
+        double zp_high = min(this->zmax_Ml, z+2*fwtm);
+               
+        int zp_steps = abs(zp_high - zp_low)/zp_stepsize;
+        if (zp_steps % 2 == 1)
+            ++zp_steps;
+        double integral_zp = integrate_simps(integrand_zp, zp_low, zp_high, zp_steps);
+        double hf = Hf_interp(z) * 1000.0;
+        double Tb = Tb_interp(z, 0);
+        double jl = sph_bessel_camb(l, k1 * r);
+        double simple = r*r/hf * Tb * jl * alz * integral_zp;
+
+        file << z << " " << full << " " << simple << endl;
     }
     file.close();
 }
@@ -217,11 +296,11 @@ void SanityChecker::plot_intjj(int l, double zp, int zsteps, string filename)
 
 
     double cc2 = - delta*delta/(2.0*log(integI/aa));
-    double zstepsize = 2.0*4.29*sqrt(cc2)/(double)zsteps;
+    double zstepsize = 4.0*4.29*sqrt(cc2)/(double)zsteps;
     cout << zstepsize << endl;
     for (int i = 0; i < zsteps; i++)
     {
-        double z = zp - 4.29*sqrt(cc2) + i*zstepsize;
+        double z = zp - 2*4.29*sqrt(cc2) + i*zstepsize;
         double q = q_interp(z, 0);
         double r = r_interp(z);
 
@@ -239,7 +318,7 @@ void SanityChecker::plot_intjj(int l, double zp, int zsteps, string filename)
 
         double hf = Hf_interp(z)*1000.0;
         double tb = Tb_interp(z,0);
-        double pre = sph_bessel_camb(l, 1.5 * r) * r*r/hf *tb;
+        double pre = sph_bessel_camb(l, 0.4 * r) * r*r/hf *tb;
         file << z << " " << integral3 << " " << approx << endl;
     }
     file.close();
@@ -371,4 +450,183 @@ double SanityChecker::Cl_gauss(int l, double k1, double k2, double k_low,double 
     };
     double integral_z = integrate_simps(integrand_z,this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
     return pow(this->prefactor_Ml,2) * integral_z;
+}
+
+double SanityChecker::Cl_gauss_fewerZ(int l, double k1, double k2, double k_low,double k_high, int Pk_index, int Tb_index, int q_index)
+{
+    double zp_stepsize = abs(this->zmax_Ml - this->zmin_Ml)/(double)this->zsteps_Ml;
+    // This determines the lower bound of the kappa integral, basically it gets rid
+    // of the kappas for which k < l/q, since the integral is close to zero there.
+    double low;
+    double hhh = pow(qs[q_index].h,3);
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    // once the lower bound for kappa is found, we determine the best number of
+    // integration steps.
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+
+    // delta is independent of kappa, z & zp so we can calculate it once.
+    //double delta = pow(pi/(double)l,0.5);
+    double delta = 2.26*pow((double)l,-0.677);
+    if (delta > 0.1)
+        delta = 0.1;
+    // Now comes the integral.
+    auto integrand_z = [&](double z)
+    {
+        double q = q_interp(z,q_index);
+        double r = r_interp(z);
+        //calculate I(z,delta) & change delta if necessary
+        double q_delta = q_interp(z+delta, q_index);
+        auto I = [&](double kappa)
+        {
+            double sP = sqrt(this->Pk_interp(kappa*qs[q_index].h,z, Pk_index)/hhh);
+            double sPp = sqrt(this->Pk_interp(kappa*qs[q_index].h,z+delta, Pk_index)/hhh);
+            return kappa*kappa*sP*sPp*this->sph_bessel_camb(l,kappa*q) *\
+                this->sph_bessel_camb(l,kappa*q_delta);
+        };
+        double Izd = integrate_simps(I, lower_kappa_bound, k_high, steps);
+        // in case I(z,delta) is negative we need to fix at a different delta, so that ln(I) exists.
+        while (Izd <= 0) {
+            cout << "Izd calculated again, from delta = " << delta << " to delta = ";
+            delta -= 0.0001;
+            cout << delta << endl;
+            q_delta = q_interp(z+delta, q_index);
+            Izd = integrate_simps(I, lower_kappa_bound, k_high, steps);  
+        }
+        
+        // Calculate a_l(z):
+        auto a_integrand = [&](double kappa)
+        {
+            double P = this->Pk_interp(kappa*qs[q_index].h, z, Pk_index)/hhh;
+            double jlkap = sph_bessel_camb(l, kappa*q);
+            return kappa*kappa * P * jlkap * jlkap;
+        };
+        double alz = integrate_simps(a_integrand, lower_kappa_bound, k_high, steps); 
+        // calculate ln(I/a):
+        double lnIA = log(Izd/alz);
+        // and ln(I/a)/delta^2:
+        double frac = lnIA/pow(delta,2);
+        // This concludes calculating all z dependencies for zp integral, so:
+
+        auto integrand_zp = [&](double zp)
+        {
+            double rp = r_interp(zp);
+            double hfp = Hf_interp(zp) * 1000.0;
+            double Tbp = Tb_interp(zp, Tb_index);
+            double jlp = sph_bessel_camb(l, k2*rp);
+            double exponential = exp(pow(z-zp,2)*frac);
+            return rp*rp/hfp * Tbp * jlp * exponential;
+        };
+        double cc2 = -delta*delta/(2.0*lnIA);
+        double fwtm = 2.0*sqrt(2*log(10))*sqrt(cc2);
+        double zp_low = max(this->zmin_Ml, z-2*fwtm);
+        double zp_high = min(this->zmax_Ml, z+2*fwtm);
+               
+        int zp_steps = abs(zp_high - zp_low)/zp_stepsize;
+        if (zp_steps % 2 == 1)
+            ++zp_steps;
+        double integral_zp = integrate_simps(integrand_zp, zp_low, zp_high, zp_steps);
+        double hf = Hf_interp(z) * 1000.0;
+        double Tb = Tb_interp(z, Tb_index);
+        double jl = sph_bessel_camb(l, k1 * r);
+        return r*r/hf * Tb * jl * alz * integral_zp;
+    };
+    double integral_z = integrate_simps(integrand_z,this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
+    return pow(this->prefactor_Ml,2) * integral_z;
+}
+
+double SanityChecker::corr_Tb_MM(int l, double k1, double k2, double k_low,\
+        double k_high, int Pk_index, int Tb_index, int q_index)
+{
+    double low;
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+    if (k1 == k2)
+    {
+        auto integrand = [&](double kappa)
+        {
+            return pow(kappa,2) * pow(this->M(l,k1,kappa,Pk_index,Tb_index,q_index),2);
+        };
+
+        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+        return integrate_simps(integrand, k_low, k_high, steps);
+    } else {
+        auto integrand = [&](double kappa)
+        {
+            return pow(kappa,2) * this->M(l,k1,kappa,Pk_index,Tb_index,q_index) *\
+                this->M(l,k2,kappa,Pk_index,Tb_index,q_index);
+        };
+
+        //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+        return integrate_simps(integrand, k_low, k_high, steps);
+    }
+}
+double SanityChecker::corr_Tb_MN(int l, double k1, double k2, double k_low,\
+        double k_high, int Pk_index, int Tb_index, int q_index)
+{       
+    double low;
+    if (l < 50){
+        low = k_low;
+    } else if (l < 1000){
+        low = (double)l/(1.2*10000);
+    } else {
+        low = (double)l/(10000);
+    }
+    double lower_kappa_bound;
+    if (low > k_low)
+        lower_kappa_bound = low;
+    else
+        lower_kappa_bound = k_low;
+
+    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    if (steps % 2 == 1)
+        ++steps;
+   
+    auto integrand = [&](double k)
+    {
+        double m1,n1,m2,n2;
+        m1 = this->M(l,k1,k,Pk_index,Tb_index,q_index);
+        n1 = this->N_bar(l,k1,k,Pk_index,Tb_index,q_index);
+        if (k1 == k2) {
+            m2 = m1;
+            n2 = n1;
+        } else {
+            m2 = this->M(l,k2,k,Pk_index,Tb_index,q_index);
+            n2 = this->N_bar(l,k2,k,Pk_index,Tb_index,q_index);
+        }
+        const double bb = this->b_bias * this->beta;
+        const double bb2 = pow(bb,2);
+
+        return pow(k,2) * m1 * m2 + bb * k * (m1*n2 + n1*m2) + bb2 * n1 * n2;
+    };
+    //return integrate(integrand, k_low, k_high, this->k_steps, simpson());
+
+    return integrate_simps(integrand, k_low, k_high, steps);
 }

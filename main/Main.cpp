@@ -71,11 +71,11 @@ int main(int argc, char* argv[])
         file << kappa << " " << res2 << endl;
     } 
     file.close();
+    
     */
     
-    
-    //Fisher fish(params,"Fisher3.dat");
-    //cout << "The result is = " << fish.F("ombh2","ombh2")<< endl;
+    Fisher fish(params,"Fisher.dat");
+    cout << "The result is = " << fish.F("ombh2","ombh2")<< endl;
     /*
     double k1 = 0.5;
     double k2 = 0.7;
@@ -102,11 +102,36 @@ int main(int argc, char* argv[])
     }
     file.close();
     */
-    
+    /*
+    clock_t t1,t2;
+    float diff1,diff2,diff3;
     SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
+    check.plot_intjj(2000, 8.0, 500, "test.dat");
+    //check.plot_integrand_z(2000, 0.3, 0.5, 500, "integrand_z_new.dat");
+    double k1 = 0.6;
+    double k2 = 0.6;
+    for (int l = 4000; l < 4025; l++){
+        double cl1 = check.corr_Tb_rsd(l, k1, k2, 0.0001, 2, 0, 0, 0);
+        t1 = clock();
+        double cl2 = check.corr_Tb_MN(l, k1, k2, 0.0001, 2, 0, 0, 0);
+        t2 = clock();
+        diff1 = ((float)t2 - (float)t1)/CLOCKS_PER_SEC;
+        cout << l << " Rsd: " << cl1 << " " << cl2 << endl; 
+        t1 = clock();
+        double cl3 = check.corr_Tb(l, k1, k2, 0.0001, 2, 0, 0, 0);
+        t2 = clock();
+        diff2 = ((float)t2 - (float)t1)/CLOCKS_PER_SEC;
+        t1 = clock();
+        double cl4 = check.corr_Tb_MM(l, k1, k2, 0.0001, 2, 0, 0, 0);
+        t2 = clock();
+        diff3 = ((float)t2 - (float)t1)/CLOCKS_PER_SEC;
+
+        cout << "no Rsd: " << cl3 << " " << cl4 << " ratio = " << cl1/cl3  << endl;
+        cout << "Time: " << diff1 << " " << diff2 << " " << diff3 << " " << diff1/diff2 << endl;
+    }
+    */
     //check.plot_integrad_z(221, 0.4, 0.4, 1000, "test.dat");
     //for (int l = 10; l < 1000; l++) 
-    check.plot_intjj(5000, 8.0, 200, "test.dat");
 
 
     //CosmoWrite write(params, &Pk_index, &Tb_index, &q_index);

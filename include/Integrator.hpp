@@ -54,6 +54,11 @@ double integrate_simps(Function f, double a, double b, int steps)
         extrastep = 1;
 
     }
+    if (steps <= 0)
+    {
+        cout << "ERROR, integrating with negative steps" << endl;
+        cout << steps;
+    }
     double stepsize = (b-a)/(double)(steps+extrastep);
     double res = f(a) + f(b);
 

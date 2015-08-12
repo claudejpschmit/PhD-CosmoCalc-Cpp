@@ -23,6 +23,12 @@ class SanityChecker : public CosmoCalc {
 
         double Cl_gauss(int l, double k1, double k2, double k_low,\
                 double k_high, int Pk_index, int Tb_index, int q_index);
+        double Cl_gauss_fewerZ(int l, double k1, double k2, double k_low,\
+                double k_high, int Pk_index, int Tb_index, int q_index);
 
+        double corr_Tb_MM(int l, double k1, double k2, double k_low,\
+            double k_high, int Pk_index, int Tb_index, int q_index);
+        double corr_Tb_MN(int l, double k1, double k2, double k_low,\
+            double k_high, int Pk_index, int Tb_index, int q_index);
 
 };
