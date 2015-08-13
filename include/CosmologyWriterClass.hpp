@@ -31,7 +31,8 @@ class CosmoWrite : public CosmoCalc {
         void calculate_xHI(double zmin, double zmax, int step);
         void calculate_Ts(double zmin, double zmax, int step);
         void calculate_Tk(double zmin, double zmax, int step);
-        void calculate_P_compare(double k_low, double k_high, int kstep, double z_low, double z_high, int zstep);
+        void calculate_P_compare(double k_low, double k_high, int kstep,\
+                double z_low, double z_high, int zstep);
         void calculate_bessels(int l);
         void calculate_bessels_basic(int l);
         void calculate_bessels_exact(int l); 
@@ -40,7 +41,9 @@ class CosmoWrite : public CosmoCalc {
         void calculate_integrandMM(int l, double k1, double k2, int step);
         void calculate_integrandMN(int l, double k1, double k2, int step);
         void calculate_integrandNN(int l, double k1, double k2, int step);
-        
+
+        void calculate_integrand_kappa_norsd(int l, double k1, double k2, int step);         
+        void calculate_integrand_kappa_rsd(int l, double k1, double k2, int step);
         void calculate_integrandlong(int l, double k1, double k2, int step);
         void calculate_integrandsimple(int l, double k1, double k2, int step);
 

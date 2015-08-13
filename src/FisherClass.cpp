@@ -56,7 +56,7 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
     return Cl;
 }
 mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange,\
-        vector<double> bessels)
+        spline1dinterpolant bessels)
 {
     mat Cl = randu<mat>(krange.size(),krange.size());
     for (unsigned int i = 0; i < krange.size(); ++i) {
@@ -73,7 +73,7 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
     return Cl;
 }
 mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange,\
-        vector<double> bessels, vector<double> bessels_lminus1)
+        spline1dinterpolant bessels, spline1dinterpolant bessels_lminus1)
 {
     mat Cl = randu<mat>(krange.size(),krange.size());
     for (unsigned int i = 0; i < krange.size(); ++i) {
@@ -293,7 +293,7 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     return res;
 }
 vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
-        int *Tb_index, int *q_index, vector<double> krange, vector<double> bessels)
+        int *Tb_index, int *q_index, vector<double> krange, spline1dinterpolant bessels)
 {
     map<string,double> working_params = fiducial_params;
     double h = this->var_params[param_key];
@@ -371,8 +371,8 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     return res;
 }
 vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
-        int *Tb_index, int *q_index, vector<double> krange, vector<double> bessels,\
-        vector<double> bessels_lminus1)
+        int *Tb_index, int *q_index, vector<double> krange, spline1dinterpolant bessels,\
+        spline1dinterpolant bessels_lminus1)
 {
     map<string,double> working_params = fiducial_params;
     double h = this->var_params[param_key];
@@ -492,7 +492,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     return 0.5 * trace(product);
 }
 double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
-        int *Tb_index, int *q_index, vector<double> bessels)
+        int *Tb_index, int *q_index, spline1dinterpolant bessels)
 {
     vector<vector<double>> Cl_alpha, Cl_beta;
     //This determines the size of the Cl matrices.
@@ -533,7 +533,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     return 0.5 * trace(product);
 }
 double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
-        int *Tb_index, int *q_index, vector<double> bessels, vector<double> bessels_lminus1)
+        int *Tb_index, int *q_index, spline1dinterpolant bessels, spline1dinterpolant bessels_lminus1)
 {
     vector<vector<double>> Cl_alpha, Cl_beta;
     //This determines the size of the Cl matrices.
@@ -622,15 +622,12 @@ double Fisher::F(string param_key1, string param_key2)
 #pragma omp for reduction (+:sum)
         for (int l = l0; l <= lmax; ++l) {
             
-            vector<double> bessels = this->CALC->generate_bessels(l);
-            vector<double> bessels_lminus1 = this->CALC->generate_bessels(l-1);
             cout << "Computation of Fl starts for l = " << l << endl;
             double fl = this->compute_Fl(l, param_key1, param_key2, &Pk_index,\
-                    &Tb_index, &q_index, bessels, bessels_lminus1);
+                    &Tb_index, &q_index);
             cout << "fl with l = " << l << " is: " << fl << endl;
             Fl_file << l << " " << fl << endl;
             sum += (2*l + 1) * fl;
-            //delete bessel_list;
         }
     }
     return sum;

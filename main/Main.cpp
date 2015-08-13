@@ -25,14 +25,12 @@ using namespace alglib;
 
 int main(int argc, char* argv[])
 {
-    map<string, double> params;
+    map<string,double> params;
     
-    // Uncomment for Cl_compare
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0;
 
-        
     Fisher fish(params,"Fisher_rsd.dat");
     cout << "The result is = " << fish.F("ombh2", "ombh2")<< endl;
    

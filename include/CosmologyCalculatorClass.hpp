@@ -384,10 +384,10 @@ class CosmoCalc : public CosmoBasis {
         double Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index,\
                 int Tb_index, int q_index);
         double Cl(int l, double k1, double k2, double k_low, double k_high,\
-                int Pk_index, int Tb_index, int q_index, vector<double> bessels);
+                int Pk_index, int Tb_index, int q_index, spline1dinterpolant bessels);
         double Cl(int l, double k1, double k2, double k_low, double k_high,\
-                int Pk_index, int Tb_index, int q_index, vector<double> bessels,\
-                vector<double> bessels_lminus1);
+                int Pk_index, int Tb_index, int q_index, spline1dinterpolant bessels,\
+                spline1dinterpolant bessels_lminus1);
         double Cl_simplified(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_simplified2(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_simplified3(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
@@ -409,7 +409,7 @@ class CosmoCalc : public CosmoBasis {
         double corr_Tb(int l, double k1, double k2, double k_low, double k_high,\
                 int Pk_index, int Tb_index, int q_index);
         double corr_Tb(int l, double k1, double k2, double k_low,\
-                double k_high, int Pk_index, int Tb_index, int q_index, vector<double> bessels);
+                double k_high, int Pk_index, int Tb_index, int q_index, spline1dinterpolant bessels);
 
        /** 
          * Determines the critical density at a redshift [kg/m^3].
@@ -421,7 +421,7 @@ class CosmoCalc : public CosmoBasis {
                            double k_low, double k_high, int Pk_index, int Tb_index, int q_index);
         double corr_Tb_rsd(int l, double k1, double k2, double k_low,\
                            double k_high, int Pk_index, int Tb_index, int q_index,\
-                           vector<double> bessels, vector<double> bessels_lminus1);
+                           spline1dinterpolant bessels, spline1dinterpolant bessels_lminus1);
 
         /** 
          * Determines the critical density at a redshift [kg/m^3].
@@ -431,7 +431,7 @@ class CosmoCalc : public CosmoBasis {
 
         double M(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double M(int l, double k1, double kappa, int Pk_index, int Tb_index, int q_index,\
-                vector<double> bessels);
+                spline1dinterpolant bessels);
         /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
@@ -465,18 +465,24 @@ class CosmoCalc : public CosmoBasis {
 
         double N_bar(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double N_bar(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index,\
-                     vector<double> bessels, vector<double> bessels_lminus1);
+                     spline1dinterpolant bessels, spline1dinterpolant bessels_lminus1);
 
         double integrandMM(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
         double integrandMN(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
         double integrandNN(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
         
-        double integrandlong(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
-        double integrandsimple(int l, double k1, double k2, double k, int Pk_index, int Tb_index, int q_index);
+        double integrandlong(int l, double k1, double k2, double k, int Pk_index,\
+                int Tb_index, int q_index);
+        double integrandsimple(int l, double k1, double k2, double k, int Pk_index,\
+                int Tb_index, int q_index);
         double help_long(int l, double kp, double kappa, int Pk_index, int Tb_index, int q_index);
-        
-        vector<double> generate_bessels(int l);
-        double j_interp_cubic(vector<double> bessels, double x);
+        double integrand_kappa_norsd(int l, double k1, double k2, double kappa, int Pk_index,\
+                int Tb_index, int q_index);
+        double integrand_kappa_rsd(int l, double k1, double k2, double kappa, int Pk_index,\
+                int Tb_index, int q_index);
+
+        spline1dinterpolant generate_bessels(int l);
+        double j_interp_cubic(spline1dinterpolant bessels, double x);
 
     protected:
 

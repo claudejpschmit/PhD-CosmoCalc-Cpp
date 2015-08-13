@@ -450,14 +450,14 @@ void CosmoWrite::calculate_integrandMM(int l, double k1, double k2, int step)
     ofstream file;
     string filename = "output/integrandMM_"+to_string(k1)+"_"+to_string(k2)+".dat";
     file.open(filename);
-    file << "# This file contains the integrand k^2 MM  from 0.001 to 5 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# This file contains the integrand k^2 MM  from 0.0001 to 2 for k1 = " << k1 << " and k2 = "<< k2 << endl;
     file << "# Column 1: k (the one that is integrated over)" << endl;
     file << "# Column 2: k^2 MM" << endl;
 
-    double stepsize = (5-0.001)/(double)step;
+    double stepsize = (2-0.0001)/(double)step;
     double y1, x;
     for (int i = 0; i < step; i++) {
-        x = 0.001 + i*stepsize;
+        x = 0.0001 + i*stepsize;
         y1 = this->integrandMM(l,k1,k2,x,0,0,0);
         file << x << " " << y1 << endl;
     }
@@ -495,6 +495,48 @@ void CosmoWrite::calculate_integrandNN(int l, double k1, double k2, int step)
     for (int i = 0; i < step; i++) {
         x = 0.001 + i*stepsize;
         y1 = this->integrandNN(l,k1,k2,x,0,0,0);
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+
+void CosmoWrite::calculate_integrand_kappa_norsd(int l, double k1, double k2, int step) 
+{
+    ofstream file;
+    stringstream filename;
+    filename << "output/integrand_kappa_norsd_l" << l << "_" << k1 << "_" << k2 << ".dat";
+    file.open(filename.str());
+    file << "# This file contains the integrand kappa^2 MM for l = " << l <<\
+        " from 0.0001 to 1 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# Column 1: kappa" << endl;
+    file << "# Column 2: kappa^2 MM_l=" << l << endl;
+
+    double stepsize = (1-0.0001)/(double)step;
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = 0.0001 + i*stepsize;
+        y1 = this->integrand_kappa_norsd(l,k1,k2,x,0,0,0);
+        file << x << " " << y1 << endl;
+    }
+    file.close();
+}
+
+void CosmoWrite::calculate_integrand_kappa_rsd(int l, double k1, double k2, int step)
+{
+    ofstream file;
+    stringstream filename;
+    filename << "output/integrand_kappa_rsd_l" << l << "_" << k1 << "_" << k2 << ".dat";
+    file.open(filename.str());
+    file << "# This file contains the integrand (kappa^2 MM + bbeta (MN + NM) + bbeta^2 NN) for l = " <<\
+        l << " from 0.0001 to 1 for k1 = " << k1 << " and k2 = "<< k2 << endl;
+    file << "# Column 1: kappa" << endl;
+    file << "# Column 2: kappa^2 MM_l=" << l << endl;
+
+    double stepsize = (1-0.0001)/(double)step;
+    double y1, x;
+    for (int i = 0; i < step; i++) {
+        x = 0.0001 + i*stepsize;
+        y1 = this->integrand_kappa_rsd(l,k1,k2,x,0,0,0);
         file << x << " " << y1 << endl;
     }
     file.close();
@@ -640,9 +682,8 @@ void CosmoWrite::calculate_Cl_full(int l, double k, double k_min, double k_max, 
     int step = (k_max - k_min)/k_stepsize;
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
-        y = this->corr_Tb_new(l,k,x,0.0001,1.0,0,0,0);
         y2 = this->corr_Tb(l,k,x,0.0001,1.0,0,0,0);
-        file << x << " " << y << " " << y2 << " " << abs(y2 - y)/abs(y) << endl;
+        file << x << " " << y2 << endl;
     }
     file.close();
 }
