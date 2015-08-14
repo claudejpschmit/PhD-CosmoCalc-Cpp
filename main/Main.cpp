@@ -30,10 +30,24 @@ int main(int argc, char* argv[])
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0;
-     
+    clock_t t1,t2;
+    float d1;
     Fisher fish(params,"Fisher_norsd.dat");
+    t1 = clock();
     cout << "The result is = " << fish.F("ombh2", "ombh2")<< endl;
-   
+    t2 = clock();
+    d1 = ((float)t2 - (float)t1)/CLOCKS_PER_SEC;
+    cout << "time1 : " << d1 << endl;
+
+    Fisher fish2(params,"Fisher_norsd.dat");
+
+    t1 = clock();
+    cout << "The result is = " << fish2.new_F("ombh2", "ombh2")<< endl;
+    t2 = clock();
+    d1 = ((float)t2 - (float)t1)/CLOCKS_PER_SEC;
+    cout << "New Time = " << d1 << endl;
+
+
     return 0;
 }
 

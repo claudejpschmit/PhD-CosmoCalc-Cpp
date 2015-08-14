@@ -218,6 +218,87 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
     return x*res;
 }
 
+
+
+mat Fisher::new_Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
+        int *Tb_index, int *q_index, vector<double> krange)
+{
+    map<string,double> working_params = fiducial_params;
+    double h = this->var_params[param_key];
+    double x = working_params[param_key];
+    mat res = randu<mat>(krange.size(),krange.size());
+    mat f1matrix = randu<mat>(krange.size(),krange.size());
+    mat f2matrix = randu<mat>(krange.size(),krange.size());
+    mat f3matrix = randu<mat>(krange.size(),krange.size());
+    mat f4matrix = randu<mat>(krange.size(),krange.size());
+    
+    working_params[param_key] = x + 2 * h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    for (unsigned int i = 0; i < krange.size(); ++i) {
+        double k1 = krange[i];
+        for (unsigned int j = i; j < krange.size(); ++j) {
+            double k2 = krange[j];
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+            f1matrix(i,j) = res;
+            f1matrix(j,i) = res;
+        }
+    }
+
+    working_params[param_key] = x + h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    for (unsigned int i = 0; i < krange.size(); ++i) {
+        double k1 = krange[i];
+        for (unsigned int j = i; j < krange.size(); ++j) {
+            double k2 = krange[j];
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+            f2matrix(i,j) = res;
+            f2matrix(j,i) = res;
+        }
+    }
+
+    working_params[param_key] = x - h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    for (unsigned int i = 0; i < krange.size(); ++i) {
+        double k1 = krange[i];
+        for (unsigned int j = i; j < krange.size(); ++j) {
+            double k2 = krange[j];
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+            f3matrix(i,j) = res;
+            f3matrix(j,i) = res;
+        }
+    }
+
+    working_params[param_key] = x - 2 * h;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+    for (unsigned int i = 0; i < krange.size(); ++i) {
+        double k1 = krange[i];
+        for (unsigned int j = i; j < krange.size(); ++j) {
+            double k2 = krange[j];
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+            f4matrix(i,j) = res;
+            f4matrix(j,i) = res;
+        }
+    }
+
+    working_params[param_key] = x;
+    this->update_Model(working_params, Pk_index, Tb_index, q_index);
+
+    double num;
+    for (unsigned int i = 0; i < krange.size(); ++i) {
+        for (unsigned int j = 0; j < krange.size(); ++j) {
+            num = -f1matrix(i,j) + 8*f2matrix(i,j) - 8*f3matrix(i,j) +\
+                  f4matrix(i,j);
+            num = num / (12.0 * h);    
+            res(i,j) = num;
+        }
+    }
+    return res;
+}
+
+
+
+
+
 vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         int *Tb_index, int *q_index, vector<double> krange)
 {
@@ -450,6 +531,39 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
     return res;
 }
 
+double Fisher::new_compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
+        int *Tb_index, int *q_index)
+{
+    //This determines the size of the Cl matrices.
+    int ksteps_Cl = 4;
+    vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
+
+    mat Cl = randu<mat>(krange.size(),krange.size());
+    mat Cl_inv = Cl;
+
+    cout << "... derivative matrix calulation started" << endl;
+    mat Cl_a = this->new_Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange);
+    mat Cl_b = randu<mat>(krange.size(),krange.size());
+    if (param_key1 == param_key2)
+        Cl_b = Cl_a;
+    else
+        Cl_b = this->new_Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange);
+
+    cout << "-> The derivative matrices are done for l = " << l << endl;
+    cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
+
+    Cl = compute_Cl(l, *Pk_index, *Tb_index, *q_index, krange);
+    Cl_inv = Cl.i();
+
+    cout << "-> Cl & Cl_inv are done for l = " << l << endl;
+
+    mat product = Cl_a * Cl_inv;
+    product = product * Cl_b;
+    product = product * Cl_inv;
+
+    return 0.5 * trace(product);
+}
+
 double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
         int *Tb_index, int *q_index)
 {
@@ -597,6 +711,42 @@ void Fisher::initializer(string param_key, int *Pk_index, int *Tb_index, int *q_
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 }
 
+double Fisher::new_F(string param_key1, string param_key2)
+{
+    // TODO: write a function that initializes all the interpolants, so that I can immediately call
+    //       everything in parallel.
+    int Pk_index, Tb_index, q_index;
+    if (param_key1 == param_key2)
+        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+    else {
+        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+        initializer(param_key2, &Pk_index, &Tb_index, &q_index);
+    }
+    int l0 = 1000;
+    int lmax = 1001;
+    double sum = 0;
+    // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
+
+    // The following line parallelizes the code
+    // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
+    // to define how many threads should be used.
+
+//#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+//    {
+//#pragma omp for reduction (+:sum)
+        for (int l = l0; l < lmax; ++l) {
+            
+            cout << "Computation of Fl starts for l = " << l << endl;
+            double fl = this->new_compute_Fl(l, param_key1, param_key2, &Pk_index,\
+                    &Tb_index, &q_index);
+            cout << "fl with l = " << l << " is: " << fl << endl;
+            Fl_file << l << " " << fl << endl;
+            sum += (2*l + 1) * fl;
+        }
+//    }
+    return sum;
+}
+
 double Fisher::F(string param_key1, string param_key2)
 {
     // TODO: write a function that initializes all the interpolants, so that I can immediately call
@@ -609,7 +759,7 @@ double Fisher::F(string param_key1, string param_key2)
         initializer(param_key2, &Pk_index, &Tb_index, &q_index);
     }
     int l0 = 1000;
-    int lmax = 2000;
+    int lmax = 1001;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
 
@@ -617,10 +767,10 @@ double Fisher::F(string param_key1, string param_key2)
     // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
     // to define how many threads should be used.
 
-#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
-    {
-#pragma omp for reduction (+:sum)
-        for (int l = l0; l <= lmax; ++l) {
+//#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+//    {
+//#pragma omp for reduction (+:sum)
+        for (int l = l0; l < lmax; ++l) {
             
             cout << "Computation of Fl starts for l = " << l << endl;
             double fl = this->compute_Fl(l, param_key1, param_key2, &Pk_index,\
@@ -629,7 +779,7 @@ double Fisher::F(string param_key1, string param_key2)
             Fl_file << l << " " << fl << endl;
             sum += (2*l + 1) * fl;
         }
-    }
+//    }
     return sum;
 }
 
