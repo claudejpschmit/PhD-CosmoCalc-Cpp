@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0;
-
-    Fisher fish(params,"Fisher_rsd.dat");
+     
+    Fisher fish(params,"Fisher_norsd.dat");
     cout << "The result is = " << fish.F("ombh2", "ombh2")<< endl;
    
     return 0;

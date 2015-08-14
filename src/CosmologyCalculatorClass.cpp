@@ -63,8 +63,8 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     //double lambda = this->current_params["ombh2"];
     //cout << lambda << endl;
     //return pow(lambda, l) * (k1+k2);
-    //return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
-    return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
+    return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
+    //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
     //return this->Cl_simplified(l, k1, k2);
     //return this->Cl_simplified_rsd(l,k1,k2);
     //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
@@ -1261,7 +1261,7 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
     } else {
         low = (double)l/(10000);
     }
-    double lower_kappa_bound;
+    double lower_kappa_bound;// = k_low;
     if (low > k_low)
         lower_kappa_bound = low;
     else
@@ -1270,7 +1270,7 @@ double CosmoCalc::corr_Tb(int l, double k1, double k2, double k_low,\
     //This determines the upper bound of the kappa integral
     double higher_kappa_bound = max(k1,k2) + 0.1;
     
-    int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
+    int steps = (int)(abs(higher_kappa_bound - lower_kappa_bound)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
 
