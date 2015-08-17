@@ -218,9 +218,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
     return x*res;
 }
 
-
-
-mat Fisher::new_Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
+mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         int *Tb_index, int *q_index, vector<double> krange)
 {
     map<string,double> working_params = fiducial_params;
@@ -231,7 +229,6 @@ mat Fisher::new_Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
     mat f2matrix = randu<mat>(krange.size(),krange.size());
     mat f3matrix = randu<mat>(krange.size(),krange.size());
     mat f4matrix = randu<mat>(krange.size(),krange.size());
-    
     working_params[param_key] = x + 2 * h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
@@ -241,7 +238,6 @@ mat Fisher::new_Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
             double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
             f1matrix(i,j) = res;
             f1matrix(j,i) = res;
-            cout << "i = " << i << ", j = " << j << endl;
         }
     }
 
@@ -280,7 +276,7 @@ mat Fisher::new_Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
             f4matrix(j,i) = res;
         }
     }
-
+    
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
@@ -293,248 +289,178 @@ mat Fisher::new_Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
             res(i,j) = num;
         }
     }
-    return res;
-}
-
-
-
-
-
-vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
-        int *Tb_index, int *q_index, vector<double> krange)
-{
-    map<string,double> working_params = fiducial_params;
-    double h = this->var_params[param_key];
-    double x = working_params[param_key];
-    vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
-    vector<double> row;
-    working_params[param_key] = x + 2 * h;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            double cl = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
-            row.push_back(cl);
-            cout << "i = " << i << ", j = " << j << endl;
-
-        }
-        f1matrix.push_back(row);
-    }
-    working_params[param_key] = x + h;
-
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
-        }
-        f2matrix.push_back(row);
-    }
-
-    working_params[param_key] = x - h;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
-        }
-        f3matrix.push_back(row);
-    }
-
-    working_params[param_key] = x - 2 * h;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index));
-        }
-        f4matrix.push_back(row);
-    }
-
-    working_params[param_key] = x;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-
-    double num;
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            num = -f1matrix[i][j] + 8*f2matrix[i][j] - 8*f3matrix[i][j] +\
-                  f4matrix[i][j];
-            num = num / (12.0 * h);    
-            row.push_back(num);
-        }
-        res.push_back(row);
-    }
 
     return res;
 }
-vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
+
+mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         int *Tb_index, int *q_index, vector<double> krange, spline1dinterpolant bessels)
 {
     map<string,double> working_params = fiducial_params;
     double h = this->var_params[param_key];
     double x = working_params[param_key];
-    vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
-    vector<double> row;
+    mat res = randu<mat>(krange.size(),krange.size());
+    mat f1matrix = randu<mat>(krange.size(),krange.size());
+    mat f2matrix = randu<mat>(krange.size(),krange.size());
+    mat f3matrix = randu<mat>(krange.size(),krange.size());
+    mat f4matrix = randu<mat>(krange.size(),krange.size());
     working_params[param_key] = x + 2 * h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            double cl = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
                     *Tb_index, *q_index, bessels);
-            row.push_back(cl);
-        }
-        f1matrix.push_back(row);
-    }
-    working_params[param_key] = x + h;
 
+            f1matrix(i,j) = res;
+            f1matrix(j,i) = res;
+        }
+    }
+
+    working_params[param_key] = x + h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
-                        *Tb_index, *q_index, bessels));
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+                    *Tb_index, *q_index, bessels);
+
+            f2matrix(i,j) = res;
+            f2matrix(j,i) = res;
         }
-        f2matrix.push_back(row);
     }
 
     working_params[param_key] = x - h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
-                        *Tb_index, *q_index, bessels));
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+                    *Tb_index, *q_index, bessels);
+
+            f3matrix(i,j) = res;
+            f3matrix(j,i) = res;
         }
-        f3matrix.push_back(row);
     }
 
     working_params[param_key] = x - 2 * h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
-                        *Tb_index, *q_index, bessels));
-        }
-        f4matrix.push_back(row);
-    }
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+                    *Tb_index, *q_index, bessels);
 
+            f4matrix(i,j) = res;
+            f4matrix(j,i) = res;
+        }
+    }
+    
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
     double num;
     for (unsigned int i = 0; i < krange.size(); ++i) {
-        row.clear();
         for (unsigned int j = 0; j < krange.size(); ++j) {
-            num = -f1matrix[i][j] + 8*f2matrix[i][j] - 8*f3matrix[i][j] +\
-                  f4matrix[i][j];
+            num = -f1matrix(i,j) + 8*f2matrix(i,j) - 8*f3matrix(i,j) +\
+                  f4matrix(i,j);
             num = num / (12.0 * h);    
-            row.push_back(num);
+            res(i,j) = num;
         }
-        res.push_back(row);
     }
 
     return res;
 }
-vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
+
+mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         int *Tb_index, int *q_index, vector<double> krange, spline1dinterpolant bessels,\
         spline1dinterpolant bessels_lminus1)
 {
     map<string,double> working_params = fiducial_params;
     double h = this->var_params[param_key];
     double x = working_params[param_key];
-    vector<vector<double>> res, f1matrix, f2matrix, f3matrix, f4matrix;
-    vector<double> row;
+    mat res = randu<mat>(krange.size(),krange.size());
+    mat f1matrix = randu<mat>(krange.size(),krange.size());
+    mat f2matrix = randu<mat>(krange.size(),krange.size());
+    mat f3matrix = randu<mat>(krange.size(),krange.size());
+    mat f4matrix = randu<mat>(krange.size(),krange.size());
     working_params[param_key] = x + 2 * h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            double cl = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
                     *Tb_index, *q_index, bessels, bessels_lminus1);
-            row.push_back(cl);
-        }
-        f1matrix.push_back(row);
-    }
-    working_params[param_key] = x + h;
 
+            f1matrix(i,j) = res;
+            f1matrix(j,i) = res;
+        }
+    }
+
+    working_params[param_key] = x + h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
-                        *Tb_index, *q_index, bessels, bessels_lminus1));
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+                    *Tb_index, *q_index, bessels, bessels_lminus1);
+
+            f2matrix(i,j) = res;
+            f2matrix(j,i) = res;
         }
-        f2matrix.push_back(row);
     }
 
     working_params[param_key] = x - h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
-                        *Tb_index, *q_index, bessels, bessels_lminus1));
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+                    *Tb_index, *q_index, bessels, bessels_lminus1);
+
+            f3matrix(i,j) = res;
+            f3matrix(j,i) = res;
         }
-        f3matrix.push_back(row);
     }
 
     working_params[param_key] = x - 2 * h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
     for (unsigned int i = 0; i < krange.size(); ++i) {
         double k1 = krange[i];
-        row.clear();
-        for (unsigned int j = 0; j < krange.size(); ++j) {
+        for (unsigned int j = i; j < krange.size(); ++j) {
             double k2 = krange[j];
-            row.push_back(this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
-                        *Tb_index, *q_index, bessels, bessels_lminus1));
-        }
-        f4matrix.push_back(row);
-    }
+            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index,\
+                    *Tb_index, *q_index, bessels, bessels_lminus1);
 
+            f4matrix(i,j) = res;
+            f4matrix(j,i) = res;
+        }
+    }
+    
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
     double num;
     for (unsigned int i = 0; i < krange.size(); ++i) {
-        row.clear();
         for (unsigned int j = 0; j < krange.size(); ++j) {
-            num = -f1matrix[i][j] + 8*f2matrix[i][j] - 8*f3matrix[i][j] +\
-                  f4matrix[i][j];
+            num = -f1matrix(i,j) + 8*f2matrix(i,j) - 8*f3matrix(i,j) +\
+                  f4matrix(i,j);
             num = num / (12.0 * h);    
-            row.push_back(num);
+            res(i,j) = num;
         }
-        res.push_back(row);
     }
 
     return res;
 }
 
-double Fisher::new_compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
+double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
         int *Tb_index, int *q_index)
 {
     //This determines the size of the Cl matrices.
@@ -545,12 +471,12 @@ double Fisher::new_compute_Fl(int l, string param_key1, string param_key2, int *
     mat Cl_inv = Cl;
 
     cout << "... derivative matrix calulation started" << endl;
-    mat Cl_a = this->new_Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange);
+    mat Cl_a = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange);
     mat Cl_b = randu<mat>(krange.size(),krange.size());
     if (param_key1 == param_key2)
         Cl_b = Cl_a;
     else
-        Cl_b = this->new_Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange);
+        Cl_b = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange);
 
     cout << "-> The derivative matrices are done for l = " << l << endl;
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
@@ -567,51 +493,9 @@ double Fisher::new_compute_Fl(int l, string param_key1, string param_key2, int *
     return 0.5 * trace(product);
 }
 
-double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
-        int *Tb_index, int *q_index)
-{
-    vector<vector<double>> Cl_alpha, Cl_beta;
-    //This determines the size of the Cl matrices.
-    int ksteps_Cl = 4;
-    vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
-
-    mat Cl = randu<mat>(krange.size(),krange.size());
-    mat Cl_inv = Cl;
-
-    cout << "... derivative matrix calulation started" << endl;
-    Cl_alpha = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange);
-    if (param_key1 == param_key2)
-        Cl_beta = Cl_alpha;
-    else
-        Cl_beta = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange);
-
-    cout << "-> The derivative matrices are done for l = " << l << endl;
-    cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
-
-    Cl = compute_Cl(l, *Pk_index, *Tb_index, *q_index, krange);
-    Cl_inv = Cl.i();
-
-    cout << "-> Cl & Cl_inv are done for l = " << l << endl;
-    mat Cl_a, Cl_b;
-    Cl_a = randu<mat> (krange.size(), krange.size());
-    Cl_b = Cl_a;
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            Cl_a(i,j) = Cl_alpha[i][j];
-            Cl_b(i,j) = Cl_beta[i][j];
-        }
-    } 
-
-    mat product = Cl_a * Cl_inv;
-    product = product * Cl_b;
-    product = product * Cl_inv;
-
-    return 0.5 * trace(product);
-}
 double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
         int *Tb_index, int *q_index, spline1dinterpolant bessels)
 {
-    vector<vector<double>> Cl_alpha, Cl_beta;
     //This determines the size of the Cl matrices.
     int ksteps_Cl = 4;
     vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
@@ -620,11 +504,12 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     mat Cl_inv = Cl;
 
     cout << "... derivative matrix calulation started" << endl;
-    Cl_alpha = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange, bessels);
+    mat Cl_a = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange, bessels);
+    mat Cl_b = randu<mat>(krange.size(),krange.size());
     if (param_key1 == param_key2)
-        Cl_beta = Cl_alpha;
+        Cl_b = Cl_a;
     else
-        Cl_beta = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange, bessels);
+        Cl_b = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange, bessels);
 
     cout << "-> The derivative matrices are done for l = " << l << endl;
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
@@ -633,15 +518,6 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     Cl_inv = Cl.i();
 
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
-    mat Cl_a, Cl_b;
-    Cl_a = randu<mat> (krange.size(), krange.size());
-    Cl_b = Cl_a;
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            Cl_a(i,j) = Cl_alpha[i][j];
-            Cl_b(i,j) = Cl_beta[i][j];
-        }
-    } 
 
     mat product = Cl_a * Cl_inv;
     product = product * Cl_b;
@@ -649,10 +525,10 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
 
     return 0.5 * trace(product);
 }
+
 double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
         int *Tb_index, int *q_index, spline1dinterpolant bessels, spline1dinterpolant bessels_lminus1)
 {
-    vector<vector<double>> Cl_alpha, Cl_beta;
     //This determines the size of the Cl matrices.
     int ksteps_Cl = 4;
     vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
@@ -661,13 +537,14 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     mat Cl_inv = Cl;
 
     cout << "... derivative matrix calulation started" << endl;
-    Cl_alpha = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index, q_index, krange,\
-            bessels, bessels_lminus1);
+    mat Cl_a = this->Cl_derivative_matrix(l, param_key1, Pk_index, Tb_index,\
+            q_index, krange, bessels, bessels_lminus1);
+    mat Cl_b = randu<mat>(krange.size(),krange.size());
     if (param_key1 == param_key2)
-        Cl_beta = Cl_alpha;
+        Cl_b = Cl_a;
     else
-        Cl_beta = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index, q_index, krange,\
-                bessels, bessels_lminus1);
+        Cl_b = this->Cl_derivative_matrix(l, param_key2, Pk_index, Tb_index,\
+                q_index, krange, bessels, bessels_lminus1);
 
     cout << "-> The derivative matrices are done for l = " << l << endl;
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
@@ -676,15 +553,6 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     Cl_inv = Cl.i();
 
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
-    mat Cl_a, Cl_b;
-    Cl_a = randu<mat> (krange.size(), krange.size());
-    Cl_b = Cl_a;
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            Cl_a(i,j) = Cl_alpha[i][j];
-            Cl_b(i,j) = Cl_beta[i][j];
-        }
-    } 
 
     mat product = Cl_a * Cl_inv;
     product = product * Cl_b;
@@ -714,42 +582,6 @@ void Fisher::initializer(string param_key, int *Pk_index, int *Tb_index, int *q_
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 }
 
-double Fisher::new_F(string param_key1, string param_key2)
-{
-    // TODO: write a function that initializes all the interpolants, so that I can immediately call
-    //       everything in parallel.
-    int Pk_index, Tb_index, q_index;
-    if (param_key1 == param_key2)
-        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
-    else {
-        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
-        initializer(param_key2, &Pk_index, &Tb_index, &q_index);
-    }
-    int l0 = 1000;
-    int lmax = 1001;
-    double sum = 0;
-    // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
-
-    // The following line parallelizes the code
-    // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
-    // to define how many threads should be used.
-
-//#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
-//    {
-//#pragma omp for reduction (+:sum)
-        for (int l = l0; l < lmax; ++l) {
-            
-            cout << "Computation of Fl starts for l = " << l << endl;
-            double fl = this->new_compute_Fl(l, param_key1, param_key2, &Pk_index,\
-                    &Tb_index, &q_index);
-            cout << "fl with l = " << l << " is: " << fl << endl;
-            Fl_file << l << " " << fl << endl;
-            sum += (2*l + 1) * fl;
-        }
-//    }
-    return sum;
-}
-
 double Fisher::F(string param_key1, string param_key2)
 {
     // TODO: write a function that initializes all the interpolants, so that I can immediately call
@@ -770,9 +602,9 @@ double Fisher::F(string param_key1, string param_key2)
     // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
     // to define how many threads should be used.
 
-//#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
-//    {
-//#pragma omp for reduction (+:sum)
+#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+    {
+#pragma omp for reduction (+:sum)
         for (int l = l0; l < lmax; ++l) {
             
             cout << "Computation of Fl starts for l = " << l << endl;
@@ -782,7 +614,7 @@ double Fisher::F(string param_key1, string param_key2)
             Fl_file << l << " " << fl << endl;
             sum += (2*l + 1) * fl;
         }
-//    }
+    }
     return sum;
 }
 
