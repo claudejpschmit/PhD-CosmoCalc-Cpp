@@ -241,6 +241,7 @@ mat Fisher::new_Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
             double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
             f1matrix(i,j) = res;
             f1matrix(j,i) = res;
+            cout << "i = " << i << ", j = " << j << endl;
         }
     }
 
@@ -316,6 +317,8 @@ vector<vector<double>> Fisher::Cl_derivative_matrix(int l, string param_key, int
             double k2 = krange[j];
             double cl = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
             row.push_back(cl);
+            cout << "i = " << i << ", j = " << j << endl;
+
         }
         f1matrix.push_back(row);
     }
