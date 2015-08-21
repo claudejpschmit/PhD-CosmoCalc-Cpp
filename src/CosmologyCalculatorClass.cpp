@@ -63,7 +63,7 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     //double lambda = this->current_params["ombh2"];
     //cout << lambda << endl;
     //return pow(lambda, l) * (k1+k2);
-    return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
+    return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);// + this->Cl_noise(l,k1,k2);
     //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
     //return this->Cl_simplified(l, k1, k2);
     //return this->Cl_simplified_rsd(l,k1,k2);
@@ -102,11 +102,12 @@ double CosmoCalc::Cl_noise(int l, double k1, double k2)
 
     if (k1==k2) {
         // in mK
-        double Tsys = 700000;
+        double Tsys = 300000;
         double fcover = 1.0;
         double lmax = 5000;
         double tau = 365.25*24*60*60;
-        double prefactor = 2.0 *pi*c*c * Tsys*Tsys/(fcover*fcover * fiducial_params["df"] * lmax * lmax * tau);
+        double prefactor = 2.0 *pi*c*c * Tsys*Tsys/(fcover*fcover * fiducial_params["df"] *\
+                lmax * lmax * tau);
         double integral = integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml,\
                 this->zsteps_Ml);
         return prefactor * integral * integral;

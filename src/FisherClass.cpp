@@ -21,7 +21,6 @@ Fisher::Fisher(map<string, double> params, string Fl_filename)
     }
 
     Fl_file.open(Fl_filename);
-
     cout << "... Fisher built ..." << endl;
 }
 
@@ -460,11 +459,9 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
     return res;
 }
 
-double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
+double Fisher::compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
         int *Tb_index, int *q_index)
 {
-    //This determines the size of the Cl matrices.
-    int ksteps_Cl = 4;
     vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
 
     mat Cl = randu<mat>(krange.size(),krange.size());
@@ -493,11 +490,9 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     return 0.5 * trace(product);
 }
 
-double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
+double Fisher::compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
         int *Tb_index, int *q_index, spline1dinterpolant bessels)
 {
-    //This determines the size of the Cl matrices.
-    int ksteps_Cl = 4;
     vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
 
     mat Cl = randu<mat>(krange.size(),krange.size());
@@ -526,11 +521,9 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_i
     return 0.5 * trace(product);
 }
 
-double Fisher::compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
+double Fisher::compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
         int *Tb_index, int *q_index, spline1dinterpolant bessels, spline1dinterpolant bessels_lminus1)
 {
-    //This determines the size of the Cl matrices.
-    int ksteps_Cl = 4;
     vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
 
     mat Cl = randu<mat>(krange.size(),krange.size());
@@ -584,9 +577,8 @@ void Fisher::initializer(string param_key, int *Pk_index, int *Tb_index, int *q_
 
 double Fisher::F(string param_key1, string param_key2)
 {
-    // TODO: write a function that initializes all the interpolants, so that I can immediately call
-    //       everything in parallel.
     int Pk_index, Tb_index, q_index;
+    int ksteps_Cl = 4;
     if (param_key1 == param_key2)
         initializer(param_key1, &Pk_index, &Tb_index, &q_index);
     else {
@@ -594,7 +586,7 @@ double Fisher::F(string param_key1, string param_key2)
         initializer(param_key2, &Pk_index, &Tb_index, &q_index);
     }
     int l0 = 1000;
-    int lmax = 1001;
+    int lmax = 1100;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
 
@@ -602,13 +594,13 @@ double Fisher::F(string param_key1, string param_key2)
     // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
     // to define how many threads should be used.
 
-#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+#pragma omp parallel num_threads(1) private(Pk_index, Tb_index, q_index) 
     {
 #pragma omp for reduction (+:sum)
         for (int l = l0; l < lmax; ++l) {
             
             cout << "Computation of Fl starts for l = " << l << endl;
-            double fl = this->compute_Fl(l, param_key1, param_key2, &Pk_index,\
+            double fl = this->compute_Fl(l, param_key1, param_key2, ksteps_Cl, &Pk_index,\
                     &Tb_index, &q_index);
             cout << "fl with l = " << l << " is: " << fl << endl;
             Fl_file << l << " " << fl << endl;
@@ -637,4 +629,37 @@ vector<double> Fisher::give_kmodes(int l, double k_max, int steps)
         range.push_back(k_min + i * stepsize); 
     }
     return range;
+}
+
+void Fisher::Fl_varying_ksteps(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
+        int max_ksteps_Cl, int ksteps_spacing)
+{
+    // TODO: write a function that initializes all the interpolants, so that I can immediately call
+    //       everything in parallel.
+    int Pk_index, Tb_index, q_index;
+    Fl_file << "# Contains Fl's for l = " << l << ", with number of kmodes sampled ranging from " <<\
+        min_ksteps_Cl + 1 << " to " << max_ksteps_Cl + 1 << "." << endl;
+    if (param_key1 == param_key2)
+        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+    else {
+        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+        initializer(param_key2, &Pk_index, &Tb_index, &q_index);
+    }
+    
+    // The following line parallelizes the code
+    // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
+    // to define how many threads should be used.
+
+#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+    {
+#pragma omp for 
+        for (int ksteps_Cl = min_ksteps_Cl; ksteps_Cl <= max_ksteps_Cl; ksteps_Cl += ksteps_spacing) {
+            
+            cout << "Computation of Fl starts for # of kmodes = " << ksteps_Cl + 1 << endl;
+            double fl = this->compute_Fl(l, param_key1, param_key2, ksteps_Cl, &Pk_index,\
+                    &Tb_index, &q_index);
+            cout << "fl with number of k modes sampled = " << ksteps_Cl + 1 << " is: " << fl << endl;
+            Fl_file << ksteps_Cl + 1 << " " << fl << endl;            
+        }
+    }
 }

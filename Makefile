@@ -17,7 +17,7 @@ vpath .base build
 
 # Compiler required for c++ code.
 # including -ffast-math may not be as bad as anticipated.
-CXX = g++ -Wall -std=c++11 -ffast-math -s -Wno-deprecated -fopenmp
+CXX = g++ -Wall -std=c++11 -ffast-math -s -Wno-deprecated -fopenmp 
 # Compiler required for c code.
 CC = gcc -Wall -s
 # Compiler required for fortran RECFAST
@@ -25,6 +25,7 @@ FF = gfortran
 
 OPTFLAG = -O4
 ARMAFLAGS = -larmadillo
+GSLFLAGS = -lgsl -lgslcblas
 
 # This decreases the precision of the bessel functions significantly if 
 # added to the compilation of the files containing boost->sph_bess(l,x).
@@ -50,6 +51,11 @@ INCLUDES += -I../$(LIBRARIES)ODEsolver_include
 INCLUDES += -I/usr/include/boost
 LINKER = -L/usr/include/boost #-lboost_filesystem
 
+# Linking GSL
+INCLUDES += -I/usr/include
+LINKER += -L/usr/lib -lgsl -lgslcblas
+
+
 # eventually update flags for including HyRec
 ifneq ($(HYREC),)
 vpath %.c $(HYREC)
@@ -60,7 +66,7 @@ EXTERNAL += hyrectools.o helium.o hydrogen.o history.o
 endif
 
 %.o: %.cpp .base
-	cd $(WRKDIR);$(CXX) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(INCLUDES) -c ../$< -o $*.o $(ARMAFLAGS)
+	cd $(WRKDIR);$(CXX) $(OPTFLAG) $(OMPFLAG) $(CCFLAG) $(INCLUDES) -c ../$< -o $*.o $(ARMAFLAGS) $(GSLFLAGS)
 
 # This line creates the CLASS objects.
 %.o: %.c .base
@@ -79,7 +85,7 @@ MAIN = Main.o
 all: calc class_test 
 
 calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(GLOBAL21CM) $(ODE) $(MAIN) 
-	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm $(ARMAFLAGS)
+	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc $(addprefix build/, $(notdir $^)) -lm $(ARMAFLAGS) $(GSLFLAGS)
 
 class_test: $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(CLASS) 
 	cd $(MDIR);$(CC) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o class_test $(addprefix build/, $(notdir $^)) -lm

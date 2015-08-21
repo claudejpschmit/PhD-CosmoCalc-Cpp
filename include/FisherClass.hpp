@@ -35,17 +35,20 @@ class Fisher {
                 int *Tb_index, int *q_index, vector<double> krange, spline1dinterpolant bessels,\
                 spline1dinterpolant bessels_lminus1);
     
-        double compute_Fl(int l, string param_key1, string param_key2,\
+        double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl,\
                 int *Pk_index, int *Tb_index, int *q_index);
-        double compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
+        double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
                 int *Tb_index, int *q_index, spline1dinterpolant bessels);
-        double compute_Fl(int l, string param_key1, string param_key2, int *Pk_index,\
+        double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
                 int *Tb_index, int *q_index, spline1dinterpolant bessels,\
                 spline1dinterpolant bessels_lminus1);
 
         void initializer(string param_key, int *Pk_index, int *Tb_index, int *q_index);
 
         double F(string param_key1, string param_key2);
+        void Fl_varying_ksteps(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
+                int max_ksteps_Cl, int ksteps_spacing);
+
 
     private:
         vector<double> give_kmodes(int l, double kmax, int steps);

@@ -1,6 +1,7 @@
 #include "SanityChecker.hpp"
 #include "Integrator.hpp"
 #include <time.h>
+#include <gsl/gsl_integration.h>
 
 SanityChecker::SanityChecker(map<string, double> params, int *Pk_index, int *Tb_index, int *q_index)
     :
@@ -143,7 +144,7 @@ void SanityChecker::plot_integrand_z(int l, double k1, double k2, int zsteps, st
         ++steps;
     ofstream file;
     file.open(filename);
-    
+
     double delta = 2.26*pow((double)l,-0.677);
     if (delta > 0.1)
         delta = 0.1;
@@ -177,7 +178,7 @@ void SanityChecker::plot_integrand_z(int l, double k1, double k2, int zsteps, st
         };
         double integral2 = integrate_simps(integrand2, 7.0, 9.0, zsteps);
         double full = r*r / (Hf_interp(z)*1000.0) * this->Tb_interp(z,0) *\
-                        this->sph_bessel_camb(l,k1*r) * integral2;
+                      this->sph_bessel_camb(l,k1*r) * integral2;
 
         // simplified
         //
@@ -199,7 +200,7 @@ void SanityChecker::plot_integrand_z(int l, double k1, double k2, int zsteps, st
             q_delta = q_interp(z+delta, 0);
             Izd = integrate_simps(I, lower_kappa_bound, k_high, steps);  
         }
-        
+
         // Calculate a_l(z):
         auto a_integrand = [&](double kappa)
         {
@@ -227,7 +228,7 @@ void SanityChecker::plot_integrand_z(int l, double k1, double k2, int zsteps, st
         double fwtm = 2.0*sqrt(2*log(10))*sqrt(cc2);
         double zp_low = max(this->zmin_Ml, z-2*fwtm);
         double zp_high = min(this->zmax_Ml, z+2*fwtm);
-               
+
         int zp_steps = abs(zp_high - zp_low)/zp_stepsize;
         if (zp_steps % 2 == 1)
             ++zp_steps;
@@ -269,7 +270,7 @@ void SanityChecker::plot_intjj(int l, double zp, int zsteps, string filename)
 
     double rp = r_interp(zp);
     double qp = q_interp(zp, 0);
-    
+
     auto integrand1 = [&](double kappa)
     {
         double sP = sqrt(this->Pk_interp(kappa*qs[0].h,zp, 0)/hhh);
@@ -313,7 +314,7 @@ void SanityChecker::plot_intjj(int l, double zp, int zsteps, string filename)
 
         };
         double integral3 = integrate_simps(integrand3, lower_kappa_bound, k_high, steps);
-        
+
         double approx = aa * exp(-pow(z-bb,2)/(2.0*cc2));
 
         double hf = Hf_interp(z)*1000.0;
@@ -323,7 +324,6 @@ void SanityChecker::plot_intjj(int l, double zp, int zsteps, string filename)
     }
     file.close();
 }
-
 
 void SanityChecker::plot_integrand_zp(int l, double z, double k2, int zsteps, string filename)
 {
@@ -357,9 +357,9 @@ void SanityChecker::plot_integrand_zp(int l, double z, double k2, int zsteps, st
         cout << integral3 << endl;
         //double integral3 = integrate_simps(integrand3, 0.001, 2.0, kappa_steps);
         double result = rp*rp / (Hf_interp(zp)*1000.0) * this->Tb_interp(zp, 0) *\
-            this->sph_bessel_camb(l,k2*rp) * integral3;
-        
-       
+                        this->sph_bessel_camb(l,k2*rp) * integral3;
+
+
         file << zp << " " << result << endl;
     }
     file.close();
@@ -418,7 +418,7 @@ double SanityChecker::Cl_gauss(int l, double k1, double k2, double k_low,double 
             q_delta = q_interp(z+delta, q_index);
             Izd = integrate_simps(I, lower_kappa_bound, k_high, steps);  
         }
-        
+
         // Calculate a_l(z):
         auto a_integrand = [&](double kappa)
         {
@@ -506,7 +506,7 @@ double SanityChecker::Cl_gauss_fewerZ(int l, double k1, double k2, double k_low,
             q_delta = q_interp(z+delta, q_index);
             Izd = integrate_simps(I, lower_kappa_bound, k_high, steps);  
         }
-        
+
         // Calculate a_l(z):
         auto a_integrand = [&](double kappa)
         {
@@ -534,7 +534,7 @@ double SanityChecker::Cl_gauss_fewerZ(int l, double k1, double k2, double k_low,
         double fwtm = 2.0*sqrt(2*log(10))*sqrt(cc2);
         double zp_low = max(this->zmin_Ml, z-2*fwtm);
         double zp_high = min(this->zmax_Ml, z+2*fwtm);
-               
+
         int zp_steps = abs(zp_high - zp_low)/zp_stepsize;
         if (zp_steps % 2 == 1)
             ++zp_steps;
@@ -608,7 +608,7 @@ double SanityChecker::corr_Tb_MN(int l, double k1, double k2, double k_low,\
     int steps = (int)(abs(k_high - lower_kappa_bound)/this->k_stepsize);
     if (steps % 2 == 1)
         ++steps;
-   
+
     auto integrand = [&](double k)
     {
         double m1,n1,m2,n2;
@@ -630,4 +630,31 @@ double SanityChecker::corr_Tb_MN(int l, double k1, double k2, double k_low,\
 
     return integrate_simps(integrand, k_low, k_high, steps);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
