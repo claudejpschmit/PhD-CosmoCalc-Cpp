@@ -26,20 +26,32 @@ using namespace alglib;
 
 int main(int argc, char* argv[])
 {
-
+    /*
+    clock_t t1, t2;
     map<string,double> params;
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0; 
-    
+
     SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
     int l = 100;
     double k1 = 0.3;
-    double kappa = 0.5;
-    double res1 = check.M(l, k1, kappa, Pk_index, Tb_index, q_index);
-    double res2 = check.M_gsl(l, k1, kappa, Pk_index, Tb_index, q_index);
+    double k2 = 0.4;
+    double k_low = 0.0001;
+    double k_high = 2.0;
+    t1 = clock();
+    double res1 = check.corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
+    t2 = clock();
+    float d1 = ((float)t2-(float)t1)/CLOCKS_PER_SEC;
+    t1 = clock();
+    double res2 = check.Cl_MC(l, k1, k2, k_low, k_high,Pk_index, Tb_index, q_index);
+    t2 = clock();
+    float d2 = ((float)t2-(float)t1)/CLOCKS_PER_SEC;
     cout << res1 << " " << res2 << endl;
-    /*
+    cout << "time: " << d1 << " " << d2 << endl;
+    */
+    
+    
     map<string,double> params;    
     int Pk_index = 0;
     int Tb_index = 0;
@@ -58,7 +70,7 @@ int main(int argc, char* argv[])
     int max_ksteps_Cl = 100;
     int ksteps_spacing = 5;
     fish.Fl_varying_ksteps(l, "ombh2", "ombh2", min_ksteps_Cl, max_ksteps_Cl, ksteps_spacing);
-    */
+    
     return 0;
 }
 
