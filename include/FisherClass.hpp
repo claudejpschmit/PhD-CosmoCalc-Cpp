@@ -36,7 +36,7 @@ class Fisher {
                 spline1dinterpolant bessels_lminus1);
     
         double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl,\
-                int *Pk_index, int *Tb_index, int *q_index);
+                double *cond_num, int *Pk_index, int *Tb_index, int *q_index);
         double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
                 int *Tb_index, int *q_index, spline1dinterpolant bessels);
         double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
@@ -48,6 +48,9 @@ class Fisher {
         double F(string param_key1, string param_key2);
         void Fl_varying_ksteps(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
                 int max_ksteps_Cl, int ksteps_spacing);
+        void write_matrix(mat matrix, string filename);
+        mat read_matrix(string filename, int n_rows, int n_cols);
+        bool check_file(string filename);
 
 
     private:

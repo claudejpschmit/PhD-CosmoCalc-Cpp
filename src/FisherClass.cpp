@@ -42,14 +42,34 @@ void Fisher::update_Model(map<string, double> new_params, int *Pk_index, int *Tb
 mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange)
 {
     mat Cl = randu<mat>(krange.size(),krange.size());
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        for (unsigned int j = i; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, Pk_index, Tb_index, q_index);
-            Cl(i,j) = res;
-            Cl(j,i) = res;
+    
+    // Remove the lines below and the if/else statement when not reading/writing matrix
+    stringstream matrix_filename;
+    string suffix = "nrnn";
+    matrix_filename << "output/matrices/Cl_" << l << "_"<<\
+        krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
+        fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
+    if (check_file(matrix_filename.str()))
+    {
+        cout << "///reading matrix from file///" << endl;
+        Cl = read_matrix(matrix_filename.str(),krange.size(),krange.size());
+    }
+    else
+    {
+        cout << "///calculating matrix///" << endl;
+
+        for (unsigned int i = 0; i < krange.size(); ++i) {
+            double k1 = krange[i];
+            for (unsigned int j = i; j < krange.size(); ++j) {
+                double k2 = krange[j];
+                double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, Pk_index, Tb_index, q_index);
+                Cl(i,j) = res;
+                Cl(j,i) = res;
+            }
         }
+        
+        //!!!!!!!!!!! this line also needs to be removed if not writing.
+        write_matrix(Cl, matrix_filename.str());
     }
 
     return Cl;
@@ -210,7 +230,7 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
 
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    
+
     double num = -f1 + 8*f2 - 8*f3 + f4;
     double res = num /(12*h);
 
@@ -220,75 +240,95 @@ double Fisher::Cl_loglog_derivative(int l, string param_key,\
 mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         int *Tb_index, int *q_index, vector<double> krange)
 {
-    map<string,double> working_params = fiducial_params;
-    double h = this->var_params[param_key];
-    double x = working_params[param_key];
     mat res = randu<mat>(krange.size(),krange.size());
-    mat f1matrix = randu<mat>(krange.size(),krange.size());
-    mat f2matrix = randu<mat>(krange.size(),krange.size());
-    mat f3matrix = randu<mat>(krange.size(),krange.size());
-    mat f4matrix = randu<mat>(krange.size(),krange.size());
-    working_params[param_key] = x + 2 * h;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        for (unsigned int j = i; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
-            f1matrix(i,j) = res;
-            f1matrix(j,i) = res;
-        }
-    }
 
-    working_params[param_key] = x + h;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        for (unsigned int j = i; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
-            f2matrix(i,j) = res;
-            f2matrix(j,i) = res;
-        }
+    // Remove the lines below and the if/else statement when not reading/writing matrix
+    stringstream matrix_filename;
+    string suffix = "nrnn";
+    matrix_filename << "output/matrices/Cla_" << param_key << "_"<< l << "_"<<\
+        krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
+        fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
+    if (check_file(matrix_filename.str()))
+    {
+        cout << "///reading matrix from file///" << endl;
+        res = read_matrix(matrix_filename.str(),krange.size(),krange.size());
     }
+    else
+    {
+        cout << "///calculating matrix///" << endl;
 
-    working_params[param_key] = x - h;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        for (unsigned int j = i; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
-            f3matrix(i,j) = res;
-            f3matrix(j,i) = res;
+        map<string,double> working_params = fiducial_params;
+        double h = this->var_params[param_key];
+        double x = working_params[param_key];
+        mat f1matrix = randu<mat>(krange.size(),krange.size());
+        mat f2matrix = randu<mat>(krange.size(),krange.size());
+        mat f3matrix = randu<mat>(krange.size(),krange.size());
+        mat f4matrix = randu<mat>(krange.size(),krange.size());
+        working_params[param_key] = x + 2 * h;
+        this->update_Model(working_params, Pk_index, Tb_index, q_index);
+        for (unsigned int i = 0; i < krange.size(); ++i) {
+            double k1 = krange[i];
+            for (unsigned int j = i; j < krange.size(); ++j) {
+                double k2 = krange[j];
+                double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+                f1matrix(i,j) = res;
+                f1matrix(j,i) = res;
+            }
         }
-    }
 
-    working_params[param_key] = x - 2 * h;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        double k1 = krange[i];
-        for (unsigned int j = i; j < krange.size(); ++j) {
-            double k2 = krange[j];
-            double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
-            f4matrix(i,j) = res;
-            f4matrix(j,i) = res;
+        working_params[param_key] = x + h;
+        this->update_Model(working_params, Pk_index, Tb_index, q_index);
+        for (unsigned int i = 0; i < krange.size(); ++i) {
+            double k1 = krange[i];
+            for (unsigned int j = i; j < krange.size(); ++j) {
+                double k2 = krange[j];
+                double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+                f2matrix(i,j) = res;
+                f2matrix(j,i) = res;
+            }
         }
-    }
-    
-    working_params[param_key] = x;
-    this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
-    double num;
-    for (unsigned int i = 0; i < krange.size(); ++i) {
-        for (unsigned int j = 0; j < krange.size(); ++j) {
-            num = -f1matrix(i,j) + 8*f2matrix(i,j) - 8*f3matrix(i,j) +\
-                  f4matrix(i,j);
-            num = num / (12.0 * h);    
-            res(i,j) = num;
+        working_params[param_key] = x - h;
+        this->update_Model(working_params, Pk_index, Tb_index, q_index);
+        for (unsigned int i = 0; i < krange.size(); ++i) {
+            double k1 = krange[i];
+            for (unsigned int j = i; j < krange.size(); ++j) {
+                double k2 = krange[j];
+                double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+                f3matrix(i,j) = res;
+                f3matrix(j,i) = res;
+            }
         }
-    }
 
+        working_params[param_key] = x - 2 * h;
+        this->update_Model(working_params, Pk_index, Tb_index, q_index);
+        for (unsigned int i = 0; i < krange.size(); ++i) {
+            double k1 = krange[i];
+            for (unsigned int j = i; j < krange.size(); ++j) {
+                double k2 = krange[j];
+                double res = this->CALC->Cl(l, k1, k2, this->kmin, this->kmax, *Pk_index, *Tb_index, *q_index);
+                f4matrix(i,j) = res;
+                f4matrix(j,i) = res;
+            }
+        }
+
+        working_params[param_key] = x;
+        this->update_Model(working_params, Pk_index, Tb_index, q_index);
+
+        double num;
+        for (unsigned int i = 0; i < krange.size(); ++i) {
+            for (unsigned int j = 0; j < krange.size(); ++j) {
+                num = -f1matrix(i,j) + 8*f2matrix(i,j) - 8*f3matrix(i,j) +\
+                      f4matrix(i,j);
+                num = num / (12.0 * h);    
+                res(i,j) = num;
+            }
+        }
+
+
+        //!!!!!!!!!!! this line also needs to be removed if not writing.
+        write_matrix(res, matrix_filename.str());
+    }
     return res;
 }
 
@@ -358,7 +398,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
             f4matrix(j,i) = res;
         }
     }
-    
+
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
@@ -442,7 +482,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
             f4matrix(j,i) = res;
         }
     }
-    
+
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
@@ -459,8 +499,8 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
     return res;
 }
 
-double Fisher::compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
-        int *Tb_index, int *q_index)
+double Fisher::compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, double *cond_num,\
+        int *Pk_index, int *Tb_index, int *q_index)
 {
     vector<double> krange = give_kmodes(l, this->fiducial_params["kmax"], ksteps_Cl); 
 
@@ -479,6 +519,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int kstep
     cout << "... The Cl and Cl_inv matrices will be calculated for l = " << l << endl;
 
     Cl = compute_Cl(l, *Pk_index, *Tb_index, *q_index, krange);
+    *cond_num = cond(Cl);
     Cl_inv = Cl.i();
 
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
@@ -561,16 +602,16 @@ void Fisher::initializer(string param_key, int *Pk_index, int *Tb_index, int *q_
     double x = working_params[param_key];
     working_params[param_key] = x + 2 * h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    
+
     working_params[param_key] = x + h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    
+
     working_params[param_key] = x - h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    
+
     working_params[param_key] = x - 2 * h;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
-    
+
     working_params[param_key] = x;
     this->update_Model(working_params, Pk_index, Tb_index, q_index);
 }
@@ -586,7 +627,7 @@ double Fisher::F(string param_key1, string param_key2)
         initializer(param_key2, &Pk_index, &Tb_index, &q_index);
     }
     int l0 = 1000;
-    int lmax = 1100;
+    int lmax = 2000;
     double sum = 0;
     // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
 
@@ -598,12 +639,12 @@ double Fisher::F(string param_key1, string param_key2)
     {
 #pragma omp for reduction (+:sum)
         for (int l = l0; l < lmax; ++l) {
-            
+            double cond_num = 0;
             cout << "Computation of Fl starts for l = " << l << endl;
-            double fl = this->compute_Fl(l, param_key1, param_key2, ksteps_Cl, &Pk_index,\
+            double fl = this->compute_Fl(l, param_key1, param_key2, ksteps_Cl, &cond_num, &Pk_index,\
                     &Tb_index, &q_index);
             cout << "fl with l = " << l << " is: " << fl << endl;
-            Fl_file << l << " " << fl << endl;
+            Fl_file << l << " " << fl << " " << cond_num << endl;
             sum += (2*l + 1) * fl;
         }
     }
@@ -638,14 +679,15 @@ void Fisher::Fl_varying_ksteps(int l, string param_key1, string param_key2, int 
     //       everything in parallel.
     int Pk_index, Tb_index, q_index;
     Fl_file << "# Contains Fl's for l = " << l << ", with number of kmodes sampled ranging from " <<\
-        min_ksteps_Cl + 1 << " to " << max_ksteps_Cl + 1 << "." << endl;
+        min_ksteps_Cl + 1 << " to " << max_ksteps_Cl + 1 <<\
+        ". Also, the condition number of the covariance matrix is included in the third column." << endl;
     if (param_key1 == param_key2)
         initializer(param_key1, &Pk_index, &Tb_index, &q_index);
     else {
         initializer(param_key1, &Pk_index, &Tb_index, &q_index);
         initializer(param_key2, &Pk_index, &Tb_index, &q_index);
     }
-    
+
     // The following line parallelizes the code
     // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
     // to define how many threads should be used.
@@ -654,12 +696,61 @@ void Fisher::Fl_varying_ksteps(int l, string param_key1, string param_key2, int 
     {
 #pragma omp for 
         for (int ksteps_Cl = min_ksteps_Cl; ksteps_Cl <= max_ksteps_Cl; ksteps_Cl += ksteps_spacing) {
-            
+            double cond_num = 0;
             cout << "Computation of Fl starts for # of kmodes = " << ksteps_Cl + 1 << endl;
-            double fl = this->compute_Fl(l, param_key1, param_key2, ksteps_Cl, &Pk_index,\
+            double fl = this->compute_Fl(l, param_key1, param_key2, ksteps_Cl, &cond_num, &Pk_index,\
                     &Tb_index, &q_index);
             cout << "fl with number of k modes sampled = " << ksteps_Cl + 1 << " is: " << fl << endl;
-            Fl_file << ksteps_Cl + 1 << " " << fl << endl;            
+            Fl_file << ksteps_Cl + 1 << " " << fl << " " << cond_num << endl;            
         }
     }
+}
+
+bool Fisher::check_file(string filename)
+{
+    //returns true if the file already exists.
+    ifstream file(filename);
+    bool res;
+    if (file.good())
+        res = true;
+    else 
+        res = false; 
+    file.close();
+    return res;
+}
+
+void Fisher::write_matrix(mat matrix, string filename)
+{
+    //Writing matrix to binary file.
+    ofstream outfile;
+    outfile.open(filename, ios::binary | ios::out);
+    for (int i = 0; i < matrix.n_rows; i++)
+    {
+        for (int j = 0; j < matrix.n_cols; j++)
+        {
+            double x = matrix(i,j);
+            outfile.write(reinterpret_cast<char*>(&x), sizeof(double));
+        }
+    }
+    outfile.close();
+}
+
+mat Fisher::read_matrix(string filename, int n_rows, int n_cols)
+{ 
+    //To read matrix file written by Fisher::write_matrix(...).
+    mat result;
+    result = randu<mat>(n_rows, n_cols);
+    ifstream infile;
+    infile.open(filename, ios::binary | ios::in);
+    double value = 0;
+    for (int i = 0; i < n_rows; i++)
+    {
+        for (int j = 0; j < n_cols; j++)
+        {
+            infile.read(reinterpret_cast<char*>(&value), sizeof(double));
+            result(i,j) = value;
+        }
+    }
+    infile.close();
+    return result;
 }

@@ -57,18 +57,18 @@ int main(int argc, char* argv[])
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0;
-  
-    //Fisher fish(params, "Fisher_norsd.dat");
-    //cout << fish.F("ombh2", "ombh2") << endl;
     
+    //Fisher fish(params, "aaa.dat");
+    //cout << fish.F("ombh2", "ombh2") << endl;
     params.insert(pair<string,double>("kmax",1));
     params.insert(pair<string,double>("zmax",8));
     params.insert(pair<string,double>("zsteps",500));
 
-    Fisher fish(params,"Fisher_singlel_kmax_1_wNoise.dat");
+    //Fisher fish(params,"Fisher_singlel_kmax_1_new.dat");
+    Fisher fish(params, "bla.dat");
     int l = 1000;
     int min_ksteps_Cl = 4;
-    int max_ksteps_Cl = 100;
+    int max_ksteps_Cl = 6;
     int ksteps_spacing = 5;
     fish.Fl_varying_ksteps(l, "ombh2", "ombh2", min_ksteps_Cl, max_ksteps_Cl, ksteps_spacing);
     

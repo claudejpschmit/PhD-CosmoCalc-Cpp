@@ -66,7 +66,7 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);// + this->Cl_noise(l,k1,k2);
     //return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
     //return this->Cl_simplified(l, k1, k2);
-    //return this->Cl_simplified_rsd(l,k1,k2);
+    //return this->Cl_simplified_rsd(l,k1,k2,Pk_index,Tb_index,q_index);
     //return this->Cl_simplified(l,k1,k2) + this->Cl_noise(l,k1,k2);
     //return this->Cl_new(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);
     //return this->Cl_new_analyticTb(l,k1,k2,k_low,k_high, 8, Pk_index, Tb_index, q_index);

@@ -2,6 +2,14 @@ PhD-CosmoCalc-Cpp
 =================
 
 This is the C++ version of the PhD-CosmoCalc program, used to calculate basic cosmological functions and Fisher matrix analysis of the 21cm Brightness Temperature fluctuations. It utilizes Lesgourgues et al's CLASS code, available at class-code.net. All necessary files are included in this project (due to compatibility requirements), so no external download is required. 
+## Dependencies
+
+The following libraries are used and should be installed before this code can be used:
+
+	Armadillo C++ library,
+	Boost,
+	GSL_19.
+
 
 ## Programming Style
 
