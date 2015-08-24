@@ -18,7 +18,8 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include "SanityChecker.hpp"
 #include "LevinIntegrator.hpp"
-#include <gsl/gsl_integration.h>
+//#include <gsl/gsl_integration.h>
+
 
 using namespace std;
 using namespace arma;

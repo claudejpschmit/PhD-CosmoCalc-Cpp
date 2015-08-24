@@ -66,12 +66,11 @@ class SanityChecker : public CosmoCalc {
             gsl_function F;
             F.function = &M_integrand_gsl;
             F.params = &params;
-            gsl_integration_cquad_workspace *w = gsl_integration_cquad_workspace_alloc(100000);
+            gsl_integration_workspace *w = gsl_integration_workspace_alloc(100000);
             double result, error;
-            size_t steps;
-            gsl_integration_cquad(&F, 7, 9, 0, 9*1e-1, w, &result, &error, &steps); 
-            cout << "error = " << error << ", steps = " << steps << endl;
-            gsl_integration_cquad_workspace_free(w);
+            gsl_integration_qag(&F, 7, 9, 0, 1e-5, 1000, 6, w, &result, &error); 
+            cout << "error = " << error << endl;
+            gsl_integration_workspace_free(w);
             return this->prefactor_Ml * result;
         }
         struct my_M_integrand_params
@@ -136,13 +135,12 @@ class SanityChecker : public CosmoCalc {
             gsl_function F;
             F.function = &Kappa_integrand;
             F.params = &params;
-            gsl_integration_cquad_workspace *w = gsl_integration_cquad_workspace_alloc(100000);
+            gsl_integration_workspace *w = gsl_integration_workspace_alloc(100000);
             double result, error;
-            size_t steps;
-            gsl_integration_cquad(&F, lower_kappa_bound, higher_kappa_bound, 0, 1e-5, w,\
-                    &result, &error, &steps); 
-            cout << "error = " << error << ", steps = " << steps << endl;
-            gsl_integration_cquad_workspace_free(w);
+            gsl_integration_qag(&F, lower_kappa_bound, higher_kappa_bound, 0, 1e-5, 10000, 6, w,\
+                    &result, &error); 
+            cout << "error = " << error << endl;
+            gsl_integration_workspace_free(w);
             return result;
 
         } 
@@ -230,6 +228,4 @@ class SanityChecker : public CosmoCalc {
             return result;
 
         }
-
-
 };
