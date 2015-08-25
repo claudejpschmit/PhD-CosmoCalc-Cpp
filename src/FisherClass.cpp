@@ -45,7 +45,7 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
     
     // Remove the lines below and the if/else statement when not reading/writing matrix
     stringstream matrix_filename;
-    string suffix = "nrnn";
+    string suffix = "nrn";
     matrix_filename << "output/matrices/Cl_" << l << "_"<<\
         krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
         fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
@@ -244,7 +244,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
 
     // Remove the lines below and the if/else statement when not reading/writing matrix
     stringstream matrix_filename;
-    string suffix = "nrnn";
+    string suffix = "nrn";
     matrix_filename << "output/matrices/Cla_" << param_key << "_"<< l << "_"<<\
         krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
         fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";

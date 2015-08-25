@@ -71,7 +71,11 @@ int main(int argc, char* argv[])
     int max_ksteps_Cl = 6;
     int ksteps_spacing = 5;
     fish.Fl_varying_ksteps(l, "ombh2", "ombh2", min_ksteps_Cl, max_ksteps_Cl, ksteps_spacing);
-    
+    mat A = fish.read_matrix("output/matrices/Cl_1000_1_5_7_8_nrnn.bin",5,5);  
+    mat B = fish.read_matrix("output/matrices/Cl_1000_1_5_7_8_nrn.bin",5,5); 
+    cout << A << endl;
+    cout << "-------------------------" << endl;
+    cout << B << endl;
     return 0;
 }
 
