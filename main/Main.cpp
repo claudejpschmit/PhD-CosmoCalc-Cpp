@@ -57,25 +57,35 @@ int main(int argc, char* argv[])
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0;
-    
+     
     //Fisher fish(params, "aaa.dat");
     //cout << fish.F("ombh2", "ombh2") << endl;
     params.insert(pair<string,double>("kmax",1));
     params.insert(pair<string,double>("zmax",8));
     params.insert(pair<string,double>("zsteps",500));
+    Fisher fish(params, "Fisher_norsd_lowzmax_lowkstepsize.dat");
+    cout << fish.F_fixed_kstepsize("ombh2", "ombh2") << endl;
 
-    //Fisher fish(params,"Fisher_singlel_kmax_1_new.dat");
-    Fisher fish(params, "bla.dat");
-    int l = 1000;
-    int min_ksteps_Cl = 4;
-    int max_ksteps_Cl = 6;
-    int ksteps_spacing = 5;
-    fish.Fl_varying_ksteps(l, "ombh2", "ombh2", min_ksteps_Cl, max_ksteps_Cl, ksteps_spacing);
-    mat A = fish.read_matrix("output/matrices/Cl_1000_1_5_7_8_nrnn.bin",5,5);  
-    mat B = fish.read_matrix("output/matrices/Cl_1000_1_5_7_8_nrn.bin",5,5); 
-    cout << A << endl;
-    cout << "-------------------------" << endl;
-    cout << B << endl;
+    //CosmoWrite writer(params, &Pk_index, &Tb_index, &q_index);
+    //writer.calculate_Cl_full(100, 0.3, 0.001, 1, 0.001);
+    
+    //Fisher fish(params,"Fisher_singlel_2000_kmax_1.dat");
+    //Fisher fish(params, "bla2.dat");
+    //mat A  = fish.read_matrix("output/matrices/Cl_1000_0.108649_1_65_7_8_nrnn.bin",65,65);
+    //mat B = pinv(A,0.001);
+    //cout << A * B << endl;
+    //mat B  = fish.read_matrix("output/matrices/Cl_1000_1_5_7_8_nrnn.bin",5,5);
+    //cout << A << endl;
+    //cout << "-------------" << endl;
+    //cout << B << endl;
+   
+    //int l = 2000;
+    //int min_ksteps_Cl = 34;
+    //int max_ksteps_Cl = 60;
+    //int ksteps_spacing = 5;
+   
+    //fish.Fl_varying_ksteps_smart(l, "ombh2", "ombh2", min_ksteps_Cl, max_ksteps_Cl);
+    //fish.Fl_varying_ksteps(l, "ombh2", "ombh2", min_ksteps_Cl, max_ksteps_Cl, ksteps_spacing);
     return 0;
 }
 

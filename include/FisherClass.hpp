@@ -17,11 +17,7 @@ class Fisher {
 
         void update_Model(map<string, double> new_params, int *Pk_index, int *Tb_index, int *q_index);
         mat compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange);
-        mat compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange,\
-                spline1dinterpolant bessels);
-        mat compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange,\
-                spline1dinterpolant bessels, spline1dinterpolant bessels_lminus1);
-
+        
         double Cl_derivative(int l, string param_key, double k1, double k2,\
                 int *Pk_index, int *Tb_index, int *q_index);
         double Cl_loglog_derivative(int l, string param_key, double k1, double k2,\
@@ -29,25 +25,22 @@ class Fisher {
 
         mat Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
                 int *Tb_index, int *q_index, vector<double> krange);
-        mat Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
-                int *Tb_index, int *q_index, vector<double> krange, spline1dinterpolant bessels);
-        mat Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
-                int *Tb_index, int *q_index, vector<double> krange, spline1dinterpolant bessels,\
-                spline1dinterpolant bessels_lminus1);
-    
+            
         double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl,\
                 double *cond_num, int *Pk_index, int *Tb_index, int *q_index);
-        double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
-                int *Tb_index, int *q_index, spline1dinterpolant bessels);
-        double compute_Fl(int l, string param_key1, string param_key2, int ksteps_Cl, int *Pk_index,\
-                int *Tb_index, int *q_index, spline1dinterpolant bessels,\
-                spline1dinterpolant bessels_lminus1);
+        double compute_Fl(int l, string param_key1, string param_key2, double kstepsize,\
+                double *cond_num, int *Pk_index, int *Tb_index, int *q_index);
 
         void initializer(string param_key, int *Pk_index, int *Tb_index, int *q_index);
 
         double F(string param_key1, string param_key2);
+        double F_fixed_kstepsize(string param_key1, string param_key2);
+
         void Fl_varying_ksteps(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
                 int max_ksteps_Cl, int ksteps_spacing);
+        void Fl_varying_ksteps_smart(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
+                int max_ksteps_Cl);
+
         void write_matrix(mat matrix, string filename);
         mat read_matrix(string filename, int n_rows, int n_cols);
         bool check_file(string filename);
@@ -55,6 +48,7 @@ class Fisher {
 
     private:
         vector<double> give_kmodes(int l, double kmax, int steps);
+        vector<double> give_kmodes(int l, double k_max, double kstepsize);
 
         ofstream Fl_file;
         CosmoCalc *CALC;
