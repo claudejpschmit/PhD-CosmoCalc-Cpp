@@ -414,8 +414,7 @@ double Fisher::F(string param_key1, string param_key2)
                     &Tb_index, &q_index);
             ss2 << "fl with l = " << l << " is: " << fl << "\n";
             cout << ss2.str();
-            res << l << " " << fl << " " << cond_num << "\n";
-            Fl_file << res.str();
+            Fl_file << l << " " << fl << " " << cond_num << endl;
             sum += (2*l + 1) * fl;
         }
     }
@@ -453,8 +452,8 @@ double Fisher::F_fixed_kstepsize(string param_key1, string param_key2)
                     &Tb_index, &q_index);
             ss2 << "fl with l = " << l << " is: " << fl << "\n";
             cout << ss2.str();
-            res << l << " " << fl << " " << cond_num << "\n";
-            Fl_file << res.str();
+            res << l << " " << fl << " " << cond_num;
+            Fl_file << res.str() << endl;
             sum += (2*l + 1) * fl;
         }
     }
