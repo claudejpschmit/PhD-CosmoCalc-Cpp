@@ -102,10 +102,11 @@ double CosmoCalc::Cl_noise(int l, double k1, double k2)
 
     if (k1==k2) {
         // in mK
-        double Tsys = 300000;
-        double fcover = 1.0;
-        double lmax = 5000;
-        double tau = 365.25*24*60*60;
+        double Tsys = fiducial_params["Tsys"];
+        double fcover = fiducial_params["fcover"];
+        double lmax = fiducial_params["lmax_noise"];
+        // in seconds
+        double tau = fiducial_params["tau_noise"];
         double prefactor = 2.0 *pi*c*c * Tsys*Tsys/(fcover*fcover * fiducial_params["df"] *\
                 lmax * lmax * tau);
         double integral = integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml,\

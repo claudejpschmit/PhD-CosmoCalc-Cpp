@@ -63,8 +63,9 @@ int main(int argc, char* argv[])
     params.insert(pair<string,double>("kmax",1));
     params.insert(pair<string,double>("zmax",8));
     params.insert(pair<string,double>("zsteps",500));
-    Fisher fish(params, "Fisher_norsd_lowzmax_lowkstepsize.dat");
-    cout << fish.F_fixed_kstepsize("ombh2", "ombh2") << endl;
+    Fisher fish(params, "delete_me.dat");
+    fish.F_fixed_kstepsize();
+    //cout << fish.F_fixed_kstepsize("ombh2", "ombh2") << endl;
 
     //CosmoWrite writer(params, &Pk_index, &Tb_index, &q_index);
     //writer.calculate_Cl_full(100, 0.3, 0.001, 1, 0.001);

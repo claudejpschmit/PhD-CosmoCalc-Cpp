@@ -35,6 +35,7 @@ class Fisher {
 
         double F(string param_key1, string param_key2);
         double F_fixed_kstepsize(string param_key1, string param_key2);
+        double F_fixed_kstepsize();
 
         void Fl_varying_ksteps(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
                 int max_ksteps_Cl, int ksteps_spacing);
@@ -44,6 +45,8 @@ class Fisher {
         void write_matrix(mat matrix, string filename);
         mat read_matrix(string filename, int n_rows, int n_cols);
         bool check_file(string filename);
+        string update_runinfo(string noise, string rsd, int lmin, int lmax,\
+                int lstepsize, double kstepsize);
 
 
     private:

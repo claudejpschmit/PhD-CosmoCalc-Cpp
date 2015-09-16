@@ -452,7 +452,7 @@ double Fisher::F_fixed_kstepsize(string param_key1, string param_key2)
                     &Tb_index, &q_index);
             ss2 << "fl with l = " << l << " is: " << fl << "\n";
             cout << ss2.str();
-            res << l << " " << fl << " " << cond_num;
+            res << l << " " << fl << " " << cond_num << "\n";
             Fl_file << res.str() << endl;
             sum += (2*l + 1) * fl;
         }
@@ -638,3 +638,306 @@ mat Fisher::read_matrix(string filename, int n_rows, int n_cols)
     infile.close();
     return result;
 }
+
+string Fisher::update_runinfo(string noise, string rsd, int lmin, int lmax,\
+        int lstepsize, double kstepsize)
+{
+    int run_number = 0;
+    stringstream filename;
+    filename << "output/Fisher/";
+    //set_runnumber();
+    ifstream run_info_file_in;
+    run_info_file_in.open("output/Fisher/RUN_INFO.dat");
+    vector<string> run_info;
+    string first_line;
+    getline(run_info_file_in, first_line);
+    char last_ch = first_line.back();
+    char slast_ch = first_line.at(first_line.length() - 2);
+    if (slast_ch == '0'){
+        stringstream buff;
+        buff << last_ch;
+        istringstream(buff.str()) >> run_number;
+    } else {
+        stringstream buff;
+
+        buff << slast_ch << last_ch;
+        istringstream(buff.str()) >> run_number;
+    }
+    run_number++;
+    stringstream buffss;
+    if (run_number < 10)
+    {
+        buffss << "HIGHEST RUN NUMBER COMPLETED: 0" << run_number;
+        filename << "0" << run_number << "_Fisher_";
+    } else {
+        buffss << "HIGHEST RUN NUMBER COMPLETED: " << run_number;
+        filename << run_number << "_Fisher_";
+    }
+
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    while (run_info_file_in.good())
+    {
+        string buffs;
+        getline(run_info_file_in, buffs);
+        run_info.push_back(buffs);
+    }
+    run_info_file_in.close();
+    run_info.pop_back(); 
+    // append new information to run_info
+
+    buffss.str("");
+    buffss << " ";
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << "### run number " << run_number << " ###";
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << "# numerical parameter values used #";
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " zmin           = " << fiducial_params["zmin"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " zmax           = " << fiducial_params["zmax"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " zsteps         = " << fiducial_params["zsteps"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " Pk_steps       = " << fiducial_params["Pk_steps"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " kmin           = " << fiducial_params["kmin"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " kmax           = " << fiducial_params["kmax"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " k_stepsize     = " << fiducial_params["k_stepsize"];
+    run_info.push_back(buffss.str());
+    
+    buffss.str("");
+    buffss << "# physical parameter values used #";
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " ombh2          = " << fiducial_params["ombh2"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " omch2          = " << fiducial_params["omch2"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " omnuh2         = " << fiducial_params["omnuh2"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " omk            = " << fiducial_params["omk"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " hubble         = " << fiducial_params["hubble"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " T_CMB          = " << fiducial_params["T_CMB"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " sigma8         = " << fiducial_params["sigma8"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " 100*theta_s    = " << fiducial_params["100*theta_s"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " tau_reio       = " << fiducial_params["tau_reio"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " k_pivot        = " << fiducial_params["k_pivot"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " YHe            = " << fiducial_params["YHe"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " fstar          = " << fiducial_params["fstar"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " fesc           = " << fiducial_params["fesc"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " nion           = " << fiducial_params["nion"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " flya           = " << fiducial_params["flya"];
+    run_info.push_back(buffss.str());
+
+    buffss.str("");
+    buffss << "# g21 flags #";
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " popflag        = " << fiducial_params["popflag"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " xrayflag       = " << fiducial_params["xrayflag"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " lyaxrayflag    = " << fiducial_params["lyaxrayflag"];
+    run_info.push_back(buffss.str());
+    
+    buffss.str("");
+    buffss << "# Noise #";
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " noise included = " << noise;
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " Ae             = " << fiducial_params["Ae"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " df             = " << fiducial_params["df"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " Tsys           = " << fiducial_params["Tsys"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " fcover         = " << fiducial_params["fcover"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " lmax_noise     = " << fiducial_params["lmax_noise"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " tau_noise      = " << fiducial_params["tau_noise"];
+    run_info.push_back(buffss.str());
+
+    buffss.str("");
+    buffss << "# Other #";
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " rsd included   = " << rsd;
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " lmin           = " << lmin;
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " lmax           = " << lmax;
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " lstepsize      = " << lstepsize;
+    run_info.push_back(buffss.str());
+    buffss.str("");
+    buffss << " k_mode stepsize= " << kstepsize;
+    run_info.push_back(buffss.str());
+    
+    //then write it all to file.
+    ofstream run_info_file_out;
+    run_info_file_out.open("output/Fisher/RUN_INFO.dat");
+    for (int i = 0; i < run_info.size(); i++){
+        run_info_file_out << run_info[i] << endl;
+    }
+    run_info_file_out.close();
+
+    return filename.str();
+}
+
+double Fisher::F_fixed_kstepsize()
+{
+    string noise = "N";
+    string rsd = "N";
+    int lmin = 1000;
+    int lmax = 3000;
+    int lsteps = 21;
+    int lstepsize = ((double)(lmax-lmin))/(double)lsteps;
+    double kstepsize = 0.0178;
+    string filename_prefix = update_runinfo(noise, rsd, lmin, lmax, lstepsize, kstepsize);
+    stringstream filename;
+    filename << filename_prefix;
+
+    // add whichever parameters that we want to marginalize over.
+    vector<string> param_keys;
+    param_keys.push_back("ombh2");
+    param_keys.push_back("omch2");
+    param_keys.push_back("hubble");
+    param_keys.push_back("sigma8");
+    param_keys.push_back("fesc");
+    param_keys.push_back("fstar");
+    param_keys.push_back("T_CMB"); 
+    
+    // now compute F_ab's (symmetric hence = F_ba's)
+    for (int i = 0; i < param_keys.size(); i++) {
+        for (int j = i; j < param_keys.size(); j++) {
+            string param_key1 = param_keys[i];
+            string param_key2 = param_keys[j];
+            filename << param_key1 << "_" << param_key2 << ".dat";
+            ofstream outfile;
+            outfile.open(filename.str());
+            int Pk_index, Tb_index, q_index;
+            double kstepsize = 0.0178;
+            if (param_key1 == param_key2)
+                initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+            else {
+                initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+                initializer(param_key2, &Pk_index, &Tb_index, &q_index);
+            }
+            double sum = 0;
+            // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
+
+            // The following line parallelizes the code
+            // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
+            // to define how many threads should be used.
+
+            #pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+            {
+                #pragma omp for reduction (+:sum)
+                for (int k = 1; k <= lsteps; ++k) {
+                    int l = lmin + k * lstepsize;
+                    stringstream ss, ss2, res;
+                    double cond_num = 0;
+                    ss << "Computation of Fl starts for l = " << l << "\n";
+                    cout << ss.str();
+                    double fl = this->compute_Fl(l, param_key1, param_key2, kstepsize,\
+                            &cond_num, &Pk_index, &Tb_index, &q_index);
+                    ss2 << "fl with l = " << l << " is: " << fl << "\n";
+                    cout << ss2.str();
+                    res << l << " " << fl << " " << cond_num << "\n";
+                    outfile << res.str() << endl;
+                    sum += (2*l + 1) * fl;
+                }
+            }
+            outfile.close();
+        }
+    }
+/*
+    int Pk_index, Tb_index, q_index;
+    double kstepsize = 0.0178;
+    if (param_key1 == param_key2)
+        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+    else {
+        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+        initializer(param_key2, &Pk_index, &Tb_index, &q_index);
+    }
+    int l0 = 1000;
+    int lmax = 2000;
+    double sum = 0;
+    // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
+
+    // The following line parallelizes the code
+    // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
+    // to define how many threads should be used.
+
+#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+    {
+#pragma omp for reduction (+:sum)
+        for (int l = l0; l < lmax; ++l) {
+            stringstream ss, ss2, res;
+            double cond_num = 0;
+            ss << "Computation of Fl starts for l = " << l << "\n";
+            cout << ss.str();
+            double fl = this->compute_Fl(l, param_key1, param_key2, kstepsize, &cond_num, &Pk_index,\
+                    &Tb_index, &q_index);
+            ss2 << "fl with l = " << l << " is: " << fl << "\n";
+            cout << ss2.str();
+            res << l << " " << fl << " " << cond_num << "\n";
+            Fl_file << res.str() << endl;
+            sum += (2*l + 1) * fl;
+        }
+    }
+    return sum;
+    */
+    return 0;
+}
+

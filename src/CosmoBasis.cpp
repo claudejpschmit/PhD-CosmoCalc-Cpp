@@ -92,6 +92,10 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("Ae",0.1));
     //df = frequency bandwidth
     this->fiducial_params.insert(pair<string,double>("df",0.05));
+    this->fiducial_params.insert(pair<string,double>("Tsys",300000));
+    this->fiducial_params.insert(pair<string,double>("fcover",1.0));
+    this->fiducial_params.insert(pair<string,double>("lmax_noise",5000));
+    this->fiducial_params.insert(pair<string,double>("tau_noise",31557600));
 }
 
 map<string, double> CosmoBasis::give_current_params()
