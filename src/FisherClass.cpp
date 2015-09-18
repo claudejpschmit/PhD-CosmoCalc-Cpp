@@ -860,9 +860,10 @@ double Fisher::F_fixed_kstepsize()
     // now compute F_ab's (symmetric hence = F_ba's)
     for (int i = 0; i < param_keys.size(); i++) {
         for (int j = i; j < param_keys.size(); j++) {
+            filename.str("");
             string param_key1 = param_keys[i];
             string param_key2 = param_keys[j];
-            filename << param_key1 << "_" << param_key2 << ".dat";
+            filename << filename_prefix << param_key1 << "_" << param_key2 << ".dat";
             ofstream outfile;
             outfile.open(filename.str());
             int Pk_index, Tb_index, q_index;
