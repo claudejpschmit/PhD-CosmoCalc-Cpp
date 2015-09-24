@@ -17,7 +17,6 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     this->Pk_steps = this->fiducial_params["Pk_steps"];
     this->k_stepsize = this->fiducial_params["k_stepsize"];
     //this->zmax_interp = this->fiducial_params["zmax_interp"];
-
     //generate object that is the CAMB interface.
     CAMB = new CAMB_CALLER;
 
@@ -28,7 +27,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
 
     this->update_q(fiducial_params, q_index);
     //this->update_q_prime();
-
+    
     //this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     cout << "... Dependencies calculated ..." << endl;
     cout << "... precalculating inverse r ..." << endl;
@@ -36,7 +35,9 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     cout << "... r inverse is calculated ..." << endl;
     cout << "... Initializing Pk interpolator ..." << endl;
     //this->update_Pk_interpolator(this->fiducial_params);
+    
     this->update_Pk_interpolator_direct(this->fiducial_params, Pk_index);
+    
     //this->update_Pk_interpolator_full(this->fiducial_params);
     cout << "... Pks calculated ..." << endl;
 
@@ -719,7 +720,7 @@ void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
                 params["fstar"] == Tbs[i].fstar && params["fesc"] == Tbs[i].fesc &&\
                 params["nion"] == Tbs[i].nion && params["fx"] == Tbs[i].fx &&\
                 params["flya"] == Tbs[i].flya) {
-
+            cout << "found precalculated G21" << endl;
             do_calc = false;
             *Tb_index = i;
             break;
@@ -843,7 +844,7 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *P
     for (unsigned int i = 0; i < Pks.size(); ++i) {
         if (params["ombh2"] == Pks[i].ombh2 && params["omnuh2"] == Pks[i].omnuh2 &&\
                 params["omch2"] == Pks[i].omch2 && params["omk"] == Pks[i].omk &&\
-                params["hubble"] == Pks[i].hubble) {
+                params["hubble"] == Pks[i].hubble && params["T_CMB"] == Pks[i].tcmb){
 
             do_calc = false;
             *Pk_index = i;
@@ -859,6 +860,7 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *P
         interp.omch2 = params["omch2"];
         interp.omk = params["omk"];
         interp.hubble = params["hubble"];
+        interp.tcmb = params["T_CMB"];
 
         CAMB->call(params);    
         vector<double> vk = CAMB->get_k_values();
@@ -894,6 +896,7 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *P
         *Pk_index = Pks.size() - 1;
     }
 }
+
 double CosmoCalc::Pk_interp(double k, double z, int Pk_index)
 {
     return spline2dcalc(Pks[Pk_index].interpolator, k, z);

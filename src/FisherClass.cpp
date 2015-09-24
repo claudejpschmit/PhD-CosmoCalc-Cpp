@@ -2,6 +2,8 @@
 #include <fstream>
 #include <time.h>
 
+// IMPORTANT: Every parameter that I want to vary needs to be added to model_params_keys[]!!!
+
 Fisher::Fisher(map<string, double> params, string Fl_filename)
 {
     cout << "... Beginning to build FisherClass ..." << endl;
@@ -11,8 +13,9 @@ Fisher::Fisher(map<string, double> params, string Fl_filename)
     this->fiducial_params = CALC->give_fiducial_params();
     kmin = this->fiducial_params["kmin"];
     kmax = this->fiducial_params["kmax"];
-    string model_params_keys[] = {"ombh2", "omch2", "omnuh2", "omk", "hubble"};
-    for (int i = 0; i < 5; ++i) {
+    model_params_keys = {"ombh2", "omch2", "omnuh2", "omk", "hubble",\
+                                        "T_CMB", "n_s", "fesc", "fstar"};
+    for (int i = 0; i < model_params_keys.size(); ++i) {
         string key = model_params_keys[i];
         if (current_params[key] == 0.0)
             var_params.insert(pair<string,double>(key,0.0001));
@@ -32,6 +35,7 @@ Fisher::~Fisher()
 
 void Fisher::update_Model(map<string, double> new_params, int *Pk_index, int *Tb_index, int *q_index)
 {
+    cout << "model is being updated" << endl;
     //generate params should not be necessary anymore...
     this->CALC->update_q(new_params, q_index);
     this->CALC->update_Pk_interpolator_direct(new_params, Pk_index);
@@ -231,6 +235,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         mat f3matrix = randu<mat>(krange.size(),krange.size());
         mat f4matrix = randu<mat>(krange.size(),krange.size());
         working_params[param_key] = x + 2 * h;
+        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -243,6 +248,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x + h;
+        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -255,6 +261,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x - h;
+        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -267,6 +274,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x - 2 * h;
+        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -279,6 +287,7 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x;
+        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
         double num;
@@ -838,31 +847,21 @@ double Fisher::F_fixed_kstepsize()
 {
     string noise = "N";
     string rsd = "N";
-    int lmin = 1000;
-    int lmax = 3000;
-    int lsteps = 21;
+    int lmin = 400;
+    int lmax = 1000;
+    int lsteps = 7;
     int lstepsize = ((double)(lmax-lmin))/(double)lsteps;
     double kstepsize = 0.0178;
     string filename_prefix = update_runinfo(noise, rsd, lmin, lmax, lstepsize, kstepsize);
     stringstream filename;
     filename << filename_prefix;
 
-    // add whichever parameters that we want to marginalize over.
-    vector<string> param_keys;
-    param_keys.push_back("ombh2");
-    param_keys.push_back("omch2");
-    param_keys.push_back("hubble");
-    param_keys.push_back("sigma8");
-    param_keys.push_back("fesc");
-    param_keys.push_back("fstar");
-    param_keys.push_back("T_CMB"); 
-    
     // now compute F_ab's (symmetric hence = F_ba's)
-    for (int i = 0; i < param_keys.size(); i++) {
-        for (int j = i; j < param_keys.size(); j++) {
+    for (int i = 0; i < model_params_keys.size(); i++) {
+        for (int j = i; j < model_params_keys.size(); j++) {
             filename.str("");
-            string param_key1 = param_keys[i];
-            string param_key2 = param_keys[j];
+            string param_key1 = model_params_keys[i];
+            string param_key2 = model_params_keys[j];
             filename << filename_prefix << param_key1 << "_" << param_key2 << ".dat";
             ofstream outfile;
             outfile.open(filename.str());
@@ -902,43 +901,118 @@ double Fisher::F_fixed_kstepsize()
             outfile.close();
         }
     }
-/*
-    int Pk_index, Tb_index, q_index;
-    double kstepsize = 0.0178;
-    if (param_key1 == param_key2)
-        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
-    else {
-        initializer(param_key1, &Pk_index, &Tb_index, &q_index);
-        initializer(param_key2, &Pk_index, &Tb_index, &q_index);
-    }
-    int l0 = 1000;
-    int lmax = 2000;
-    double sum = 0;
-    // IMPORTANT! l has to start at 1 since Nl_bar has j_(l-1) in it!
 
-    // The following line parallelizes the code
-    // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
-    // to define how many threads should be used.
-
-#pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
-    {
-#pragma omp for reduction (+:sum)
-        for (int l = l0; l < lmax; ++l) {
-            stringstream ss, ss2, res;
-            double cond_num = 0;
-            ss << "Computation of Fl starts for l = " << l << "\n";
-            cout << ss.str();
-            double fl = this->compute_Fl(l, param_key1, param_key2, kstepsize, &cond_num, &Pk_index,\
-                    &Tb_index, &q_index);
-            ss2 << "fl with l = " << l << " is: " << fl << "\n";
-            cout << ss2.str();
-            res << l << " " << fl << " " << cond_num << "\n";
-            Fl_file << res.str() << endl;
-            sum += (2*l + 1) * fl;
-        }
-    }
-    return sum;
-    */
     return 0;
 }
 
+mat Fisher::build_Fisher_inverse(vector<string> filenames_Fl)
+{
+    struct F_values 
+    {
+        string key1, key2;
+        double value;
+    };
+    //keep a list of parameter keys that have been used.
+    vector<string> parameter_keys;
+    vector<F_values> F_ab;
+    for (int i = 0; i < filenames_Fl.size(); i++)
+    {
+        cout << filenames_Fl[i] << endl;
+        //First order file
+        stringstream command_buff;
+        command_buff << "python OrderFile.py " << filenames_Fl[i];
+        char* command = new char[command_buff.str().length() + 1];
+        strcpy(command, command_buff.str().c_str());
+        system(command);
+        delete command;
+        //Analyse filename so that we know what is in the file.
+        int uscore_count = 0;
+        string key1, key2;
+        for (char & c : filenames_Fl[i])
+        {
+            if (c == '_' || c == '.')
+                uscore_count++;
+            if (uscore_count == 2 && c != '_')
+                key1 += c;
+            if (uscore_count == 3 && c != '_')
+                key2 += c;
+        }
+        //Read in the data
+        ifstream file;
+        file.open(filenames_Fl[i]);
+        string line;
+        vector<int> l;
+        vector<double> F_l;
+        while (getline(file,line))
+        {
+            int col1;
+            double col2;
+            istringstream ss(line);
+            ss >> col1 >> col2;
+            l.push_back(col1);
+            F_l.push_back(col2);
+            cout << col1 << " " <<col2 << endl;
+        }
+        file.close();
+        
+        //Then, construct the Fisher element F_key1_key2
+        F_values F_ab_value;
+        bool k1new = true;
+        bool k2new = true;
+        for (int j = 0; j < parameter_keys.size(); j++)
+        {
+            if (parameter_keys[j] == key1)
+                k1new = false;
+            if (parameter_keys[j] == key2)
+                k2new = false;
+        }
+        if (k1new)
+            parameter_keys.push_back(key1);
+        if (k2new)
+            parameter_keys.push_back(key2);
+
+
+        F_ab_value.key1 = key1;
+        F_ab_value.key2 = key2;
+        double v = 0;
+        int l_difference = l[1] - l[0];
+         //here we sum up all F_l contributions - check what the right formula for this is.
+        for (int j = 0; j < l.size() - 1; j++)
+        {
+            v += (2 * l[j] + 1) * F_l[j] * l_difference;
+        }
+         //The last one we only add once.
+        v += (2 * l[l.size()-1] + 1) * F_l[l.size()-1];
+        F_ab_value.value = v;
+        cout << v << endl; 
+        F_ab.push_back(F_ab_value);
+    }
+    //now we have all the necessary information in the F_ab vector
+    //the only thing left is to put it in matrix form.
+    
+    //size of the matrix is
+    //int n = (-1+sqrt(1+8*filenames_Fl.size()))/2;
+    int n = parameter_keys.size();
+    cout << n << endl;
+    mat F = randu<mat>(n,n);
+    mat Finv = randu<mat>(n,n);
+    //fill the F matrix.
+    for (int i = 0; i < parameter_keys.size(); i++)
+    {
+        for (int j = 0; j < parameter_keys.size();j++)
+        {
+            string key1, key2;
+            key1 = parameter_keys[i];
+            key2 = parameter_keys[j];
+            int F_ab_index = 0;
+            for (int k = 0; k < F_ab.size(); k++)
+            {
+                if ((F_ab[k].key1 == key1 && F_ab[k].key2 == key2) ||\
+                        (F_ab[k].key1 == key2 && F_ab[k].key2 == key1))
+                    F(i,j) = F_ab[k].value;
+            }
+        }
+    }
+    cout << F << endl;
+    return Finv;
+}

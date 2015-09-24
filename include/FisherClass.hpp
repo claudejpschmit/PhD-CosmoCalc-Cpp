@@ -47,14 +47,14 @@ class Fisher {
         bool check_file(string filename);
         string update_runinfo(string noise, string rsd, int lmin, int lmax,\
                 int lstepsize, double kstepsize);
-
+        mat build_Fisher_inverse(vector<string> filenames_Fl); 
 
     private:
         vector<double> give_kmodes(int l, double kmax, int steps);
         vector<double> give_kmodes(int l, double k_max, double kstepsize);
-
-        ofstream Fl_file;
+        vector<string> model_params_keys;
         CosmoCalc *CALC;
+        ofstream Fl_file;
         map<string, double> current_params, fiducial_params, var_params;
         double kmin, kmax;
         vector<double> abcisses_done, logderivs_calculated,\

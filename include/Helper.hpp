@@ -8,7 +8,7 @@ using namespace std;
 using namespace alglib;
 
 struct Pk_interpolator {
-    double ombh2, omnuh2, omch2, omk, hubble;
+    double ombh2, omnuh2, omch2, omk, hubble, tcmb;
     spline2dinterpolant interpolator;
 };
 

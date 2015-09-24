@@ -20,10 +20,11 @@ class CAMB_CALLER {
         vector<string> file_content;
         vector<double> k_values;
         vector<vector<double>> Pz_values;
-        string parameter_names [8];
+        string parameter_names [10];
         void update_params_ini(map<string, double> params);
         void update_params_ini_full(map<string, double> params);
         void create_output_file();
         void read_matterpower_files(int nfiles);
         bool run_first_time;
+        int num_params;
 };

@@ -60,13 +60,28 @@ int main(int argc, char* argv[])
      
     //Fisher fish(params, "aaa.dat");
     //cout << fish.F("ombh2", "ombh2") << endl;
-    params.insert(pair<string,double>("kmax",1));
-    params.insert(pair<string,double>("zmax",8));
-    params.insert(pair<string,double>("zsteps",500));
+    //params.insert(pair<string,double>("kmax",1));
+    //params.insert(pair<string,double>("zmax",8));
+    //params.insert(pair<string,double>("zsteps",500));
+    //params.insert(pair<string,double>("omnuh2", 0.0007));
+    //CosmoCalc CALC(params, &Pk_index,&Tb_index,&q_index);
     Fisher fish(params, "delete_me.dat");
-    fish.F_fixed_kstepsize();
+    vector<double> krange;
+    krange.push_back(0.1);
+    krange.push_back(0.2);
+    krange.push_back(0.3);
+    vector<string> filenames = {"02_delete_ombh2_hubble.dat","02_delete_hubble_hubble.dat","02_delete_ombh2_ombh2.dat" };
+    fish.build_Fisher_inverse( filenames);
+    //mat B = fish.Cl_derivative_matrix(1000, "fesc", &Pk_index,\
+        &Tb_index, &q_index, krange);
+    //cout << B << endl;
+    //cout << setprecision(10) << CALC.Tb_interp(10,Tb_index) << endl;
+    //cout << CALC.Pk_interp(0.1,8,Pk_index) << endl; 
+    //fish.F_fixed_kstepsize();
     //cout << fish.F_fixed_kstepsize("ombh2", "ombh2") << endl;
 
+    //mat A = fish.read_matrix("output/matrices/Cla_fesc_2995_0.325404_1.0018_39_7_8_nrnn.bin",39,39);
+    //cout << A << endl;
     //CosmoWrite writer(params, &Pk_index, &Tb_index, &q_index);
     //writer.calculate_Cl_full(100, 0.3, 0.001, 1, 0.001);
     
