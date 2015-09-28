@@ -3,9 +3,11 @@
 #include "stdafx.h"
 #include "interpolation.h"
 #include <vector>
-
+#include <armadillo>
+#include <string>
 using namespace std;
 using namespace alglib;
+using namespace arma;
 
 struct Pk_interpolator {
     double ombh2, omnuh2, omch2, omk, hubble, tcmb;
@@ -27,5 +29,14 @@ struct q_interpolator {
 struct Tb_analytic_interpolator {
     double ombh2, omnuh2, omch2, hubble, t_cmb;
     spline1dinterpolant interpolator;
+};
+
+struct Fisher_return_pair {
+    mat matrix;
+    vector<vector<vector<string>>> matrix_indecies;
+};
+
+struct Ellipse {
+    double a2, b2, theta;
 };
 

@@ -13,8 +13,7 @@ Fisher::Fisher(map<string, double> params, string Fl_filename)
     this->fiducial_params = CALC->give_fiducial_params();
     kmin = this->fiducial_params["kmin"];
     kmax = this->fiducial_params["kmax"];
-    model_params_keys = {"ombh2", "omch2", "omnuh2", "omk", "hubble",\
-                                        "T_CMB", "n_s", "fesc", "fstar"};
+    model_params_keys = {"ombh2", "omch2", "hubble", "fesc", "fstar"};
     for (int i = 0; i < model_params_keys.size(); ++i) {
         string key = model_params_keys[i];
         if (current_params[key] == 0.0)
@@ -22,7 +21,12 @@ Fisher::Fisher(map<string, double> params, string Fl_filename)
         else
             var_params.insert(pair<string,double>(key,current_params[key]/100));
     }
-
+    noise = false;
+    rsd = false;
+    if (fiducial_params["noise"] == 1.0)
+        noise = true;
+    if (fiducial_params["rsd"] == 1.0)
+        rsd = true;
     Fl_file.open(Fl_filename);
     cout << "... Fisher built ..." << endl;
 }
@@ -49,7 +53,15 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
     
     // Remove the lines below and the if/else statement when not reading/writing matrix
     stringstream matrix_filename;
-    string suffix = "nrnn";
+    string suffix;
+    if (noise && rsd)
+        suffix = "rn";
+    else if (noise && !rsd)
+        suffix = "nrn";
+    else if (!noise && rsd)
+        suffix = "rnn";
+    else if (!noise && !rsd)
+        suffix = "nrnn";
     matrix_filename << "output/matrices/Cl_" << l << "_"<<\
         krange[0] << "_" << krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
         fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
@@ -214,7 +226,15 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
 
     // Remove the lines below and the if/else statement when not reading/writing matrix
     stringstream matrix_filename;
-    string suffix = "nrnn";
+    string suffix;
+    if (noise && rsd)
+        suffix = "rn";
+    else if (noise && !rsd)
+        suffix = "nrn";
+    else if (!noise && rsd)
+        suffix = "rnn";
+    else if (!noise && !rsd)
+        suffix = "nrnn";
     matrix_filename << "output/matrices/Cla_" << param_key << "_"<< l << "_" <<\
         krange[0] << "_" << krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
         fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
@@ -235,7 +255,6 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         mat f3matrix = randu<mat>(krange.size(),krange.size());
         mat f4matrix = randu<mat>(krange.size(),krange.size());
         working_params[param_key] = x + 2 * h;
-        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -248,7 +267,6 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x + h;
-        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -261,7 +279,6 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x - h;
-        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -274,7 +291,6 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x - 2 * h;
-        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
@@ -287,7 +303,6 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
         }
 
         working_params[param_key] = x;
-        cout << param_key << " is " << working_params[param_key] << endl;
         this->update_Model(working_params, Pk_index, Tb_index, q_index);
 
         double num;
@@ -648,9 +663,16 @@ mat Fisher::read_matrix(string filename, int n_rows, int n_cols)
     return result;
 }
 
-string Fisher::update_runinfo(string noise, string rsd, int lmin, int lmax,\
+string Fisher::update_runinfo(int lmin, int lmax,\
         int lstepsize, double kstepsize)
 {
+    string noise_incl = "N";
+    string rsd_incl = "N";
+    if (noise)
+        noise_incl = "Y";
+    if (rsd)
+        rsd_incl = "Y";
+
     int run_number = 0;
     stringstream filename;
     filename << "output/Fisher/";
@@ -792,7 +814,7 @@ string Fisher::update_runinfo(string noise, string rsd, int lmin, int lmax,\
     buffss << "# Noise #";
     run_info.push_back(buffss.str());
     buffss.str("");
-    buffss << " noise included = " << noise;
+    buffss << " noise included = " << noise_incl;
     run_info.push_back(buffss.str());
     buffss.str("");
     buffss << " Ae             = " << fiducial_params["Ae"];
@@ -817,7 +839,7 @@ string Fisher::update_runinfo(string noise, string rsd, int lmin, int lmax,\
     buffss << "# Other #";
     run_info.push_back(buffss.str());
     buffss.str("");
-    buffss << " rsd included   = " << rsd;
+    buffss << " rsd included   = " << rsd_incl;
     run_info.push_back(buffss.str());
     buffss.str("");
     buffss << " lmin           = " << lmin;
@@ -843,16 +865,11 @@ string Fisher::update_runinfo(string noise, string rsd, int lmin, int lmax,\
     return filename.str();
 }
 
-double Fisher::F_fixed_kstepsize()
+double Fisher::F_fixed_kstepsize(int lmin, int lmax, int lsteps)
 {
-    string noise = "N";
-    string rsd = "N";
-    int lmin = 400;
-    int lmax = 1000;
-    int lsteps = 7;
     int lstepsize = ((double)(lmax-lmin))/(double)lsteps;
     double kstepsize = 0.0178;
-    string filename_prefix = update_runinfo(noise, rsd, lmin, lmax, lstepsize, kstepsize);
+    string filename_prefix = update_runinfo(lmin, lmax, lstepsize, kstepsize);
     stringstream filename;
     filename << filename_prefix;
 
@@ -905,8 +922,9 @@ double Fisher::F_fixed_kstepsize()
     return 0;
 }
 
-mat Fisher::build_Fisher_inverse(vector<string> filenames_Fl)
+Fisher_return_pair Fisher::build_Fisher_inverse(vector<string> filenames_Fl)
 {
+    Fisher_return_pair RESULT;
     struct F_values 
     {
         string key1, key2;
@@ -989,30 +1007,72 @@ mat Fisher::build_Fisher_inverse(vector<string> filenames_Fl)
     }
     //now we have all the necessary information in the F_ab vector
     //the only thing left is to put it in matrix form.
-    
+    vector<vector<vector<string>>> indecies;
     //size of the matrix is
     //int n = (-1+sqrt(1+8*filenames_Fl.size()))/2;
     int n = parameter_keys.size();
     cout << n << endl;
     mat F = randu<mat>(n,n);
-    mat Finv = randu<mat>(n,n);
     //fill the F matrix.
     for (int i = 0; i < parameter_keys.size(); i++)
     {
+        vector<vector<string>> row;
         for (int j = 0; j < parameter_keys.size();j++)
         {
             string key1, key2;
+            vector<string> row_element;
             key1 = parameter_keys[i];
             key2 = parameter_keys[j];
             int F_ab_index = 0;
             for (int k = 0; k < F_ab.size(); k++)
             {
                 if ((F_ab[k].key1 == key1 && F_ab[k].key2 == key2) ||\
-                        (F_ab[k].key1 == key2 && F_ab[k].key2 == key1))
+                        (F_ab[k].key1 == key2 && F_ab[k].key2 == key1)){
                     F(i,j) = F_ab[k].value;
+                    if (i<j){
+                        row_element.push_back(key1);
+                        row_element.push_back(key2);
+                    }
+                    else {
+                        row_element.push_back(key2);
+                        row_element.push_back(key1);
+                    }
+
+                }
             }
+
+            row.push_back(row_element);
         }
+        indecies.push_back(row);
     }
-    cout << F << endl;
-    return Finv;
+    RESULT.matrix = F.i();
+    RESULT.matrix_indecies = indecies;
+    return RESULT;
+}
+
+Ellipse Fisher::find_error_ellipse(Fisher_return_pair finv, string param1, string param2)
+{
+    int index1, index2;
+    index1 = -1;
+    index2 = -1;
+    for (int i = 0; i < finv.matrix_indecies.size(); i++) {
+        if ((index1 < 0) && (finv.matrix_indecies[0][i][1] == param1))  
+            index1 = i;
+        if ((index2 < 0) && (finv.matrix_indecies[0][i][1] == param2))  
+            index2 = i;
+    }
+    if (index1 > index2){
+        int buff = index1;
+        index1 = index2;
+        index2 = buff;
+    }
+    double sig_xx, sig_xy, sig_yy;
+    sig_xx = finv.matrix(index1, index1);
+    sig_xy = finv.matrix(index1, index2);
+    sig_yy = finv.matrix(index2, index2);
+    Ellipse ellipse;
+    ellipse.a2 = (sig_xx + sig_yy)/2.0 + sqrt(pow(sig_xx - sig_yy,2)/4.0 + pow(sig_xy,2));
+    ellipse.b2 = (sig_xx + sig_yy)/2.0 - sqrt(pow(sig_xx - sig_yy,2)/4.0 + pow(sig_xy,2));
+    ellipse.theta = 0.5 * atan(2.0 * sig_xy/(sig_xx - sig_yy));
+    return ellipse;
 }

@@ -66,18 +66,41 @@ int main(int argc, char* argv[])
     //params.insert(pair<string,double>("omnuh2", 0.0007));
     //CosmoCalc CALC(params, &Pk_index,&Tb_index,&q_index);
     Fisher fish(params, "delete_me.dat");
-    vector<double> krange;
-    krange.push_back(0.1);
-    krange.push_back(0.2);
-    krange.push_back(0.3);
-    vector<string> filenames = {"02_delete_ombh2_hubble.dat","02_delete_hubble_hubble.dat","02_delete_ombh2_ombh2.dat" };
-    fish.build_Fisher_inverse( filenames);
+    //vector<double> krange;
+    //krange.push_back(0.1);
+    //krange.push_back(0.2);
+    //krange.push_back(0.3);
+    //vector<string> filenames = {"output/Fisher/03_Fisher_ombh2_hubble.dat",\
+    //                            "output/Fisher/03_Fisher_hubble_hubble.dat",\
+    //                            "output/Fisher/03_Fisher_ombh2_ombh2.dat",\
+    //                            "output/Fisher/03_Fisher_ombh2_omch2.dat",\ 
+    //                            "output/Fisher/03_Fisher_omch2_omch2.dat",\
+    //                            "output/Fisher/03_Fisher_omch2_hubble.dat"};
+    vector<string> filenames = {"02_delete_ombh2_hubble.dat",\
+                                "02_delete_hubble_hubble.dat",\
+                                "02_delete_ombh2_ombh2.dat",\
+                                "02_delete_ombh2_omch2.dat",\ 
+                                "02_delete_omch2_omch2.dat",\
+                                "02_delete_omch2_hubble.dat"};
+
+    Fisher_return_pair finv = fish.build_Fisher_inverse( filenames);
+    cout << finv.matrix << endl;
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            cout << finv.matrix_indecies[i][j][0] << "_" << finv.matrix_indecies[i][j][1] << "   ";
+        }
+        cout << endl;
+    }
+    Ellipse ellipse = fish.find_error_ellipse(finv, "ombh2", "omch2");
+    cout << ellipse.a2 << endl;
+    cout << ellipse.b2 << endl;
+    cout << ellipse.theta << endl;
     //mat B = fish.Cl_derivative_matrix(1000, "fesc", &Pk_index,\
         &Tb_index, &q_index, krange);
     //cout << B << endl;
     //cout << setprecision(10) << CALC.Tb_interp(10,Tb_index) << endl;
     //cout << CALC.Pk_interp(0.1,8,Pk_index) << endl; 
-    //fish.F_fixed_kstepsize();
+    //fish.F_fixed_kstepsize(1000,5000,35);
     //cout << fish.F_fixed_kstepsize("ombh2", "ombh2") << endl;
 
     //mat A = fish.read_matrix("output/matrices/Cla_fesc_2995_0.325404_1.0018_39_7_8_nrnn.bin",39,39);

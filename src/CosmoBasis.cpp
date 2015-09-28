@@ -95,7 +95,15 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("Tsys",300000));
     this->fiducial_params.insert(pair<string,double>("fcover",1.0));
     this->fiducial_params.insert(pair<string,double>("lmax_noise",5000));
+    //standard is 1 year
     this->fiducial_params.insert(pair<string,double>("tau_noise",31557600));
+
+    //Parameters determining the functionality of the program
+    //1 = true
+    //0 = false
+    this->fiducial_params.insert(pair<string,double>("noise",1.0));
+    this->fiducial_params.insert(pair<string,double>("rsd",1.0));
+
 }
 
 map<string, double> CosmoBasis::give_current_params()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CosmologyCalculatorClass.hpp"
+#include "Helper.hpp"
 #include <armadillo>
 #include <fstream>
 #include <string>
@@ -35,7 +36,7 @@ class Fisher {
 
         double F(string param_key1, string param_key2);
         double F_fixed_kstepsize(string param_key1, string param_key2);
-        double F_fixed_kstepsize();
+        double F_fixed_kstepsize(int lmin, int lmax, int lsteps);
 
         void Fl_varying_ksteps(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
                 int max_ksteps_Cl, int ksteps_spacing);
@@ -45,9 +46,11 @@ class Fisher {
         void write_matrix(mat matrix, string filename);
         mat read_matrix(string filename, int n_rows, int n_cols);
         bool check_file(string filename);
-        string update_runinfo(string noise, string rsd, int lmin, int lmax,\
+        string update_runinfo(int lmin, int lmax,\
                 int lstepsize, double kstepsize);
-        mat build_Fisher_inverse(vector<string> filenames_Fl); 
+        Fisher_return_pair build_Fisher_inverse(vector<string> filenames_Fl);
+        Ellipse find_error_ellipse(Fisher_return_pair fisher, string param1, string param2);
+
 
     private:
         vector<double> give_kmodes(int l, double kmax, int steps);
@@ -59,4 +62,5 @@ class Fisher {
         double kmin, kmax;
         vector<double> abcisses_done, logderivs_calculated,\
             abcisses_done_simple, derivs_calculated;
+        bool noise, rsd;
 };
