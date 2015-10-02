@@ -27,32 +27,6 @@ using namespace alglib;
 
 int main(int argc, char* argv[])
 {
-    /*
-    clock_t t1, t2;
-    map<string,double> params;
-    int Pk_index = 0;
-    int Tb_index = 0;
-    int q_index = 0; 
-
-    SanityChecker check(params, &Pk_index, &Tb_index, &q_index);
-    int l = 100;
-    double k1 = 0.3;
-    double k2 = 0.4;
-    double k_low = 0.0001;
-    double k_high = 2.0;
-    t1 = clock();
-    double res1 = check.corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
-    t2 = clock();
-    float d1 = ((float)t2-(float)t1)/CLOCKS_PER_SEC;
-    t1 = clock();
-    double res2 = check.Cl_MC(l, k1, k2, k_low, k_high,Pk_index, Tb_index, q_index);
-    t2 = clock();
-    float d2 = ((float)t2-(float)t1)/CLOCKS_PER_SEC;
-    cout << res1 << " " << res2 << endl;
-    cout << "time: " << d1 << " " << d2 << endl;
-    */
-    
-    
     map<string,double> params;    
     int Pk_index = 0;
     int Tb_index = 0;
@@ -60,12 +34,14 @@ int main(int argc, char* argv[])
      
     //Fisher fish(params, "aaa.dat");
     //cout << fish.F("ombh2", "ombh2") << endl;
-    //params.insert(pair<string,double>("kmax",1));
-    //params.insert(pair<string,double>("zmax",8));
-    //params.insert(pair<string,double>("zsteps",500));
+    params.insert(pair<string,double>("kmax",1));
+    params.insert(pair<string,double>("zmax",8));
+    params.insert(pair<string,double>("zsteps",500));
     //params.insert(pair<string,double>("omnuh2", 0.0007));
     //CosmoCalc CALC(params, &Pk_index,&Tb_index,&q_index);
-    Fisher fish(params, "delete_me.dat");
+    vector<string> keys = {"ombh2", "omch2", "hubble", "fesc", "fstar"};
+    Fisher fish(params, "delete_me.dat", keys);
+    fish.F_fixed_kstepsize(1000,5000,5,7);
     //vector<double> krange;
     //krange.push_back(0.1);
     //krange.push_back(0.2);
@@ -76,13 +52,13 @@ int main(int argc, char* argv[])
     //                            "output/Fisher/03_Fisher_ombh2_omch2.dat",\ 
     //                            "output/Fisher/03_Fisher_omch2_omch2.dat",\
     //                            "output/Fisher/03_Fisher_omch2_hubble.dat"};
-    vector<string> filenames = {"02_delete_ombh2_hubble.dat",\
+    /*vector<string> filenames = {"02_delete_ombh2_hubble.dat",\
                                 "02_delete_hubble_hubble.dat",\
                                 "02_delete_ombh2_ombh2.dat",\
                                 "02_delete_ombh2_omch2.dat",\ 
                                 "02_delete_omch2_omch2.dat",\
                                 "02_delete_omch2_hubble.dat"};
-
+    
     Fisher_return_pair finv = fish.build_Fisher_inverse( filenames);
     cout << finv.matrix << endl;
     for (int i = 0; i < 3; i++){
@@ -95,12 +71,12 @@ int main(int argc, char* argv[])
     cout << ellipse.a2 << endl;
     cout << ellipse.b2 << endl;
     cout << ellipse.theta << endl;
+    */
     //mat B = fish.Cl_derivative_matrix(1000, "fesc", &Pk_index,\
         &Tb_index, &q_index, krange);
     //cout << B << endl;
     //cout << setprecision(10) << CALC.Tb_interp(10,Tb_index) << endl;
     //cout << CALC.Pk_interp(0.1,8,Pk_index) << endl; 
-    //fish.F_fixed_kstepsize(1000,5000,35);
     //cout << fish.F_fixed_kstepsize("ombh2", "ombh2") << endl;
 
     //mat A = fish.read_matrix("output/matrices/Cla_fesc_2995_0.325404_1.0018_39_7_8_nrnn.bin",39,39);

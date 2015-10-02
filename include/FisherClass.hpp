@@ -13,7 +13,7 @@ using namespace arma;
 
 class Fisher {
     public:
-        Fisher(map<string, double> params, string Fl_filename);
+        Fisher(map<string, double> params, string Fl_filename, vector<string> params_keys_considered);
         ~Fisher();
 
         void update_Model(map<string, double> new_params, int *Pk_index, int *Tb_index, int *q_index);
@@ -36,7 +36,7 @@ class Fisher {
 
         double F(string param_key1, string param_key2);
         double F_fixed_kstepsize(string param_key1, string param_key2);
-        double F_fixed_kstepsize(int lmin, int lmax, int lsteps);
+        double F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread, int n_threads);
 
         void Fl_varying_ksteps(int l, string param_key1, string param_key2, int min_ksteps_Cl,\
                 int max_ksteps_Cl, int ksteps_spacing);

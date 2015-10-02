@@ -4,7 +4,7 @@
 
 // IMPORTANT: Every parameter that I want to vary needs to be added to model_params_keys[]!!!
 
-Fisher::Fisher(map<string, double> params, string Fl_filename)
+Fisher::Fisher(map<string, double> params, string Fl_filename, vector<string> params_keys_considered)
 {
     cout << "... Beginning to build FisherClass ..." << endl;
     int Pk_index, Tb_index, q_index;
@@ -13,7 +13,7 @@ Fisher::Fisher(map<string, double> params, string Fl_filename)
     this->fiducial_params = CALC->give_fiducial_params();
     kmin = this->fiducial_params["kmin"];
     kmax = this->fiducial_params["kmax"];
-    model_params_keys = {"ombh2", "omch2", "hubble", "fesc", "fstar"};
+    model_params_keys = params_keys_considered;
     for (int i = 0; i < model_params_keys.size(); ++i) {
         string key = model_params_keys[i];
         if (current_params[key] == 0.0)
@@ -865,8 +865,9 @@ string Fisher::update_runinfo(int lmin, int lmax,\
     return filename.str();
 }
 
-double Fisher::F_fixed_kstepsize(int lmin, int lmax, int lsteps)
+double Fisher::F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread, int n_threads)
 {
+    int lsteps = n_points_per_thread * n_threads;
     int lstepsize = ((double)(lmax-lmin))/(double)lsteps;
     double kstepsize = 0.0178;
     string filename_prefix = update_runinfo(lmin, lmax, lstepsize, kstepsize);
@@ -897,11 +898,16 @@ double Fisher::F_fixed_kstepsize(int lmin, int lmax, int lsteps)
             // use #pragma omp parallel num_threads(4) private(Pk_index, Tb_index, q_index) 
             // to define how many threads should be used.
 
-            #pragma omp parallel num_threads(7) private(Pk_index, Tb_index, q_index) 
+            #pragma omp parallel num_threads(n_threads) private(Pk_index, Tb_index, q_index) 
             {
                 #pragma omp for reduction (+:sum)
                 for (int k = 1; k <= lsteps; ++k) {
-                    int l = lmin + k * lstepsize;
+                    int m;
+                    if (k == lsteps)
+                        m = lsteps;
+                    else
+                        m = ((k-1)*n_threads) % (lsteps - 1) + 1;
+                    int l = lmin + m * lstepsize;
                     stringstream ss, ss2, res;
                     double cond_num = 0;
                     ss << "Computation of Fl starts for l = " << l << "\n";
