@@ -24,17 +24,23 @@ CAMB_CALLER::CAMB_CALLER()
         getline(params_ini_file, line);
         file_content.push_back(line);
     }
-    num_params = 10;
+    num_params = 11;
     parameter_names[0] = "ombh2";
     parameter_names[1] = "omch2";
     parameter_names[2] = "omnuh2";
     parameter_names[3] = "omk";
     parameter_names[4] = "hubble";
     parameter_names[5] = "temp_cmb";
-    parameter_names[6] = "scalar_spectral_index(1)";
-    parameter_names[7] = "transfer_num_redshifts";
-    parameter_names[8] = "transfer_redshift(1)";
-    parameter_names[9] = "transfer_matterpower(1)";
+    parameter_names[6] = "w";
+    parameter_names[7] = "scalar_spectral_index(1)";
+    parameter_names[8] = "transfer_num_redshifts";
+    parameter_names[9] = "transfer_redshift(1)";
+    parameter_names[10] = "transfer_matterpower(1)";
+    cout << "fine" << endl;
+
+    for (int i = 0; i < num_params; i++)
+        parameters_found.push_back(false);
+    cout << "fine" << endl;
     //look at scalar_spectral_index(1), that is n_s, but why is there a (1)?
 }
 
@@ -87,7 +93,8 @@ void CAMB_CALLER::update_params_ini_full(map<string, double> params)
         }
         for (int j = 0; j < num_params; j++) {
             //pos[j] = file_content[i].find(parameter_names[j]);
-            if (file_content[i].find(parameter_names[j]) != string::npos) {
+            if (file_content[i].find(parameter_names[j]) != string::npos && file_content[i].at(0) != '#' &&\
+                    !parameters_found[j]) {
                 found_n_params += 1;
                 string pn = parameter_names[j];
                 stringstream val;
@@ -99,6 +106,8 @@ void CAMB_CALLER::update_params_ini_full(map<string, double> params)
                     val << "matterpower_1.dat";
                 else if (pn == "temp_cmb")
                     val << params["T_CMB"];
+                else if (pn == "w")
+                    val << params["w_DE"];
                 else if (pn == "scalar_spectral_index(1)")
                     val << params["n_s"];
 
@@ -107,7 +116,7 @@ void CAMB_CALLER::update_params_ini_full(map<string, double> params)
 
                 string new_parameter = parameter_names[j] + " = " + val.str();
                 file_content[i] = new_parameter;
-
+                parameters_found[j] = true;
                 break;
             }
         }
@@ -143,7 +152,8 @@ void CAMB_CALLER::update_params_ini(map<string, double> params)
         }
         for (int j = 0; j < num_params; j++) {
             //pos[j] = file_content[i].find(parameter_names[j]);
-            if (file_content[i].find(parameter_names[j]) != string::npos) {
+            if (file_content[i].find(parameter_names[j]) != string::npos && file_content[i].at(0) != '#' &&\
+                    !parameters_found[j]) {
                 found_n_params += 1;
                 string pn = parameter_names[j];
                 stringstream val;
@@ -154,7 +164,9 @@ void CAMB_CALLER::update_params_ini(map<string, double> params)
                 else if (pn =="transfer_matterpower(1)") 
                     val << "matterpower_1.dat";
                 else if (pn == "temp_cmb")
-                    val << params["T_CMB"];  
+                    val << params["T_CMB"]; 
+                else if (pn == "w")
+                    val << params["w_DE"];
                 else if (pn == "scalar_spectral_index(1)")
                     val << params["n_s"];
                 else
@@ -162,7 +174,7 @@ void CAMB_CALLER::update_params_ini(map<string, double> params)
 
                 string new_parameter = parameter_names[j] + " = " + val.str();
                 file_content[i] = new_parameter;
-
+                parameters_found[j] = true;
                 break;
             }
         }

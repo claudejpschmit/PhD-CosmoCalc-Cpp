@@ -64,6 +64,8 @@ void CosmoBasis::check_params()
     this->fiducial_params.insert(pair<string,double>("kmin",0.0001));
     this->fiducial_params.insert(pair<string,double>("kmax",2));
     this->fiducial_params.insert(pair<string,double>("zmax_interp",10));
+    this->fiducial_params.insert(pair<string,double>("w_DE",-1));
+    
     // Do not go above 1000 different ls!!! 
 
     this->fiducial_params.insert(pair<string,double>("l_min",99));
@@ -134,6 +136,7 @@ void CosmoBasis::generate_params(map<string,double> params)
     O_V = O_tot - O_M - O_R;
     D_H = c / (1000.0 * H_0);
     t_H = 1.0 / H_0;
+    w_DE = params["w_DE"];
 
     this->current_params = params;
 }
@@ -147,7 +150,7 @@ double CosmoBasis::sph_bessel(unsigned int l, double x)
 
 double CosmoBasis::E(double z)
 {
-    return sqrt(O_V + O_R * pow(1+z,4) + O_M * pow(1+z,3) + O_k * pow(1+z,2));
+    return sqrt(O_V * pow(1+z, 3*(1+w_DE))+ O_R * pow(1+z,4) + O_M * pow(1+z,3) + O_k * pow(1+z,2));
 }
 
 

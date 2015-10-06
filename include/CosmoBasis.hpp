@@ -187,6 +187,8 @@ class CosmoBasis {
         double D_H;
         /// \brief The hubble time.
         double t_H;
+        /// \brief Dark Energy equation of state parameter
+        double w_DE;
         
         /// \brief Cosmological Bias factor..
         double b_bias;

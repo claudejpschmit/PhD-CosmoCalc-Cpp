@@ -430,7 +430,8 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
     for (unsigned int i = 0; i < qs.size(); ++i) {
         if (params["ombh2"] == qs[i].ombh2 && params["omnuh2"] == qs[i].omnuh2 &&\
                 params["omch2"] == qs[i].omch2 && params["omk"] == qs[i].omk &&\
-                params["hubble"] == qs[i].hubble && params["T_CMB"] == qs[i].t_cmb) {
+                params["hubble"] == qs[i].hubble && params["T_CMB"] == qs[i].t_cmb &&\
+                params["w_DE"] == qs[i].w_DE) {
 
             do_calc = false;
             *q_index = i;
@@ -446,6 +447,7 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         interp.omk = params["omk"];
         interp.hubble = params["hubble"];
         interp.t_cmb = params["T_CMB"];
+        interp.w_DE = params["w_DE"];
         // TODO: Do this in a way that works with parallelism....
         //UPDATE D_C to use the above parameters.
 
@@ -463,6 +465,7 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         double O_tot2 = 1.0 - O_k2;
         double O_V2 = O_tot2 - O_M2 - O_R2;
         double D_H2 = c / (1000.0 * H_02);
+        double w = params["w_DE"];
 
         real_1d_array xs, ys, hs;
         xs.setlength(this->zsteps_Ml+1);
@@ -475,12 +478,14 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
 
             auto integrand = [&](double zp)
             {
-                return 1/sqrt(O_V2 + O_R2 * pow(1+zp,4) + O_M2 * pow(1+zp,3) + O_k2 * pow(1+zp,2));
+                return 1/sqrt(O_V2 * pow(1+zp,3*(1+w)) + O_R2 * pow(1+zp,4) + O_M2 * pow(1+zp,3) +\
+                        O_k2 * pow(1+zp,2));
             };
             double Z = integrate(integrand, 0.0, z, 1000, simpson());
 
             ys[n] = D_H2 * Z;
-            hs[n] = H_02 * sqrt(O_V2 + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) + O_k2 * pow(1+z,2));
+            hs[n] = H_02 * sqrt(O_V2 * pow(1+z,3*(1+w)) + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) +\
+                    O_k2 * pow(1+z,2));
         }
         spline1dinterpolant interpolator, interpolator_Hf;
         spline1dbuildlinear(xs,ys,interpolator);
@@ -674,7 +679,7 @@ void CosmoCalc::update_G21_full(map<string,double> params, int *Tb_index)
                 params["T_CMB"] == Tbs_full[i].T_CMB && params["n_s"] == Tbs_full[i].n_s &&\
                 params["fstar"] == Tbs_full[i].fstar && params["fesc"] == Tbs_full[i].fesc &&\
                 params["nion"] == Tbs_full[i].nion && params["fx"] == Tbs_full[i].fx &&\
-                params["flya"] == Tbs_full[i].flya) {
+                params["flya"] == Tbs_full[i].flya && params["w_DE"] == Tbs_full[i].w_DE) {
 
             do_calc = false;
             *Tb_index = i;
@@ -696,6 +701,7 @@ void CosmoCalc::update_G21_full(map<string,double> params, int *Tb_index)
         interp.nion = params["nion"];
         interp.fx = params["fx"];
         interp.flya = params["flya"];
+        interp.w_DE = params["w_DE"];
 
         cout << "G21 is being updated" << endl;
         G21->updateGlobal21cm_full(params);
@@ -739,7 +745,7 @@ void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
                 params["T_CMB"] == Tbs[i].T_CMB && params["n_s"] == Tbs[i].n_s &&\
                 params["fstar"] == Tbs[i].fstar && params["fesc"] == Tbs[i].fesc &&\
                 params["nion"] == Tbs[i].nion && params["fx"] == Tbs[i].fx &&\
-                params["flya"] == Tbs[i].flya) {
+                params["flya"] == Tbs[i].flya && params["w_DE"] == Tbs[i].w_DE) {
             cout << "found precalculated G21" << endl;
             do_calc = false;
             *Tb_index = i;
@@ -761,6 +767,7 @@ void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
         interp.nion = params["nion"];
         interp.fx = params["fx"];
         interp.flya = params["flya"];
+        interp.w_DE = params["w_DE"];
 
         cout << "G21 is being updated" << endl;
         G21->updateGlobal21cm(params);
@@ -801,7 +808,7 @@ void CosmoCalc::update_Pk_interpolator_full(map<string, double> params, int *Pk_
     for (unsigned int i = 0; i < Pks_full.size(); ++i) {
         if (params["ombh2"] == Pks_full[i].ombh2 && params["omnuh2"] == Pks_full[i].omnuh2 &&\
                 params["omch2"] == Pks_full[i].omch2 && params["omk"] == Pks_full[i].omk &&\
-                params["hubble"] == Pks_full[i].hubble) {
+                params["hubble"] == Pks_full[i].hubble && params["w_DE"] == Pks_full[i].w_DE) {
 
             do_calc = false;
             *Pk_index = i;
@@ -817,6 +824,7 @@ void CosmoCalc::update_Pk_interpolator_full(map<string, double> params, int *Pk_
         interp.omch2 = params["omch2"];
         interp.omk = params["omk"];
         interp.hubble = params["hubble"];
+        interp.w_DE = params["w_DE"];
 
         CAMB->call_full(params);    
         vector<double> vk = CAMB->get_k_values();
@@ -864,7 +872,8 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *P
     for (unsigned int i = 0; i < Pks.size(); ++i) {
         if (params["ombh2"] == Pks[i].ombh2 && params["omnuh2"] == Pks[i].omnuh2 &&\
                 params["omch2"] == Pks[i].omch2 && params["omk"] == Pks[i].omk &&\
-                params["hubble"] == Pks[i].hubble && params["T_CMB"] == Pks[i].tcmb){
+                params["hubble"] == Pks[i].hubble && params["T_CMB"] == Pks[i].tcmb &&\
+                params["w_DE"] == Pks[i].w_DE ){
 
             do_calc = false;
             *Pk_index = i;
@@ -881,6 +890,7 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *P
         interp.omk = params["omk"];
         interp.hubble = params["hubble"];
         interp.tcmb = params["T_CMB"];
+        interp.w_DE = params["w_DE"];
 
         CAMB->call(params);    
         vector<double> vk = CAMB->get_k_values();

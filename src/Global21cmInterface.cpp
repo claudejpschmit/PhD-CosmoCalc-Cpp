@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 
+// What to do about Dark Energy w???
+
 Global21cmInterface::Global21cmInterface() 
 {}
 
@@ -27,6 +29,9 @@ void Global21cmInterface::updateGlobal21cm(map<string,double> params)
     double O_R = O_gamma + O_nu_rel;
     double O_k = params["omk"];
     double O_tot = 1.0 - O_k;
+
+    // This warameter is currently not used.
+    double w = params["w_DE"];
 
     om0 = omb + O_cdm + O_nu;
     lam0 = O_tot - om0 - O_R;
