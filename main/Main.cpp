@@ -18,6 +18,7 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include "SanityChecker.hpp"
 #include "LevinIntegrator.hpp"
+#include "Analyser.hpp"
 //#include <gsl/gsl_integration.h>
 
 
@@ -41,26 +42,31 @@ int main(int argc, char* argv[])
     //params.insert(pair<string,double>("omnuh2", 0.0007));
     //CosmoCalc CALC(params, &Pk_index,&Tb_index,&q_index);
     vector<string> keys = {"ombh2", "omch2", "hubble", "fesc", "fstar"};
-    Fisher fish(params, "delete_me.dat", keys);
+    //Fisher fish(params, "delete_me.dat", keys);
+    
     //fish.F_fixed_kstepsize(1000,5000,5,7);
     //vector<double> krange;
     //krange.push_back(0.1);
     //krange.push_back(0.2);
     //krange.push_back(0.3);
-    //vector<string> filenames = {"output/Fisher/03_Fisher_ombh2_hubble.dat",\
-    //                            "output/Fisher/03_Fisher_hubble_hubble.dat",\
-    //                            "output/Fisher/03_Fisher_ombh2_ombh2.dat",\
-    //                            "output/Fisher/03_Fisher_ombh2_omch2.dat",\ 
-    //                            "output/Fisher/03_Fisher_omch2_omch2.dat",\
-    //                            "output/Fisher/03_Fisher_omch2_hubble.dat"};
-    /*vector<string> filenames = {"02_delete_ombh2_hubble.dat",\
-                                "02_delete_hubble_hubble.dat",\
-                                "02_delete_ombh2_ombh2.dat",\
-                                "02_delete_ombh2_omch2.dat",\ 
-                                "02_delete_omch2_omch2.dat",\
-                                "02_delete_omch2_hubble.dat"};
-    
-    Fisher_return_pair finv = fish.build_Fisher_inverse( filenames);
+    Analyser analyse;
+    vector<string> filenames = {"output/Fisher/09_Fisher_ombh2_ombh2.dat",\
+                                "output/Fisher/09_Fisher_ombh2_omch2.dat",\
+                                "output/Fisher/09_Fisher_ombh2_hubble.dat",\
+                                "output/Fisher/09_Fisher_ombh2_fesc.dat",\
+                                "output/Fisher/09_Fisher_ombh2_fstar.dat",\
+                                "output/Fisher/09_Fisher_omch2_omch2.dat",\
+                                "output/Fisher/09_Fisher_omch2_hubble.dat",\
+                                "output/Fisher/09_Fisher_omch2_fesc.dat",\
+                                "output/Fisher/09_Fisher_omch2_fstar.dat",\
+                                "output/Fisher/09_Fisher_hubble_hubble.dat",\ 
+                                "output/Fisher/09_Fisher_hubble_fesc.dat",\
+                                "output/Fisher/09_Fisher_hubble_fstar.dat",\
+                                "output/Fisher/09_Fisher_fesc_fesc.dat",\
+                                "output/Fisher/09_Fisher_fesc_fstar.dat",\
+                                "output/Fisher/09_Fisher_fstar_fstar.dat"};
+        
+    Fisher_return_pair finv = analyse.build_Fisher_inverse(filenames);
     cout << finv.matrix << endl;
     for (int i = 0; i < 3; i++){
         for (int j = 0; j < 3; j++){
@@ -68,11 +74,11 @@ int main(int argc, char* argv[])
         }
         cout << endl;
     }
-    Ellipse ellipse = fish.find_error_ellipse(finv, "ombh2", "omch2");
+    Ellipse ellipse = analyse.find_error_ellipse(finv, "omch2", "hubble");
     cout << ellipse.a2 << endl;
     cout << ellipse.b2 << endl;
     cout << ellipse.theta << endl;
-    */
+    
     //mat B = fish.Cl_derivative_matrix(1000, "fesc", &Pk_index,\
         &Tb_index, &q_index, krange);
     //cout << B << endl;

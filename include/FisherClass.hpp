@@ -48,9 +48,6 @@ class Fisher {
         bool check_file(string filename);
         string update_runinfo(int lmin, int lmax,\
                 int lstepsize, double kstepsize);
-        Fisher_return_pair build_Fisher_inverse(vector<string> filenames_Fl);
-        Ellipse find_error_ellipse(Fisher_return_pair fisher, string param1, string param2);
-
 
     private:
         vector<double> give_kmodes(int l, double kmax, int steps);
