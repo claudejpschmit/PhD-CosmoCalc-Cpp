@@ -36,7 +36,8 @@ struct Fisher_return_pair {
     vector<vector<vector<string>>> matrix_indecies;
 };
 
+// I need x,y coordinates for the centre as well...
 struct Ellipse {
-    double a2, b2, theta;
+    double a2, b2, theta, cx, cy;
 };
 

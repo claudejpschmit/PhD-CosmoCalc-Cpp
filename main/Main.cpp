@@ -66,19 +66,10 @@ int main(int argc, char* argv[])
                                 "output/Fisher/09_Fisher_fesc_fstar.dat",\
                                 "output/Fisher/09_Fisher_fstar_fstar.dat"};
         
-    Fisher_return_pair finv = analyse.build_Fisher_inverse(filenames);
-    cout << finv.matrix << endl;
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++){
-            cout << finv.matrix_indecies[i][j][0] << "_" << finv.matrix_indecies[i][j][1] << "   ";
-        }
-        cout << endl;
-    }
-    Ellipse ellipse = analyse.find_error_ellipse(finv, "omch2", "hubble");
-    cout << ellipse.a2 << endl;
-    cout << ellipse.b2 << endl;
-    cout << ellipse.theta << endl;
-    
+    Fisher_return_pair finv = analyse.build_Fisher_inverse(keys, "09", "output/Fisher/");
+    analyse.draw_error_ellipses(finv, keys, 9);
+
+        
     //mat B = fish.Cl_derivative_matrix(1000, "fesc", &Pk_index,\
         &Tb_index, &q_index, krange);
     //cout << B << endl;

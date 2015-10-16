@@ -13,7 +13,9 @@ class Analyser {
     public:
         Analyser();
         ~Analyser();
-        Fisher_return_pair build_Fisher_inverse(vector<string> filenames_Fl);
-        Ellipse find_error_ellipse(Fisher_return_pair finv, string param1, string param2);
-        void draw_error_ellipse(Ellipse ellipse, string param1, string param2);
+        // TODO: These functions should be private and I
+        // should have some public functions that do all of this at once.
+        Fisher_return_pair build_Fisher_inverse(vector<string> param_keys, string run_prefix, string path);
+        Ellipse find_error_ellipse(Fisher_return_pair finv, string param1, string param2, int run_number);
+        void draw_error_ellipses(Fisher_return_pair finv, vector<string> param_keys, int run_number);
 };
