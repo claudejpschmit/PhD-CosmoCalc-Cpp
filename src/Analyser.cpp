@@ -65,36 +65,41 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
             F_ab_value.key1 = param_keys[i];
             F_ab_value.key2 = param_keys[j];
             double v = 0;
+            // set to true for single mode analysis
+            bool DEBUG_single_mode = true;
 
-            real_1d_array ls, fs;
-            ls.setlength(l.size());
-            fs.setlength(F_l.size());
-            for (int n = 0; n < l.size(); n++) {
-                ls[n] = l[n];
-                fs[n] = F_l[n];
-            }
-            spline1dinterpolant Fl_interp; 
-            spline1dbuildcubic(ls,fs,Fl_interp);
+            if (DEBUG_single_mode)
+                v = (2*l[0]+1) * F_l[0];
+            else {
+                real_1d_array ls, fs;
+                ls.setlength(l.size());
+                fs.setlength(F_l.size());
+                for (int n = 0; n < l.size(); n++) {
+                    ls[n] = l[n];
+                    fs[n] = F_l[n];
+                }
+                spline1dinterpolant Fl_interp; 
+                spline1dbuildcubic(ls,fs,Fl_interp);
 
-            for (int k = l[0]; k <= l[l.size()-1]; k++)
-            {
-                double fk = spline1dcalc(Fl_interp, k);
-                v += (2*k + 1) * fk; 
-            }
-           
-            // Uncomment this code to plot the results of the interpolation.
-            /*
-            if (i == 0 and j == 1){
-                ofstream fileF("Fisher_interpolation.dat");
                 for (int k = l[0]; k <= l[l.size()-1]; k++)
                 {
                     double fk = spline1dcalc(Fl_interp, k);
-                    fileF << k << " " << fk << endl;
+                    v += (2*k + 1) * fk; 
                 }
-                fileF.close();
             }
-            */
-            
+            // Uncomment this code to plot the results of the interpolation.
+            /*
+               if (i == 0 and j == 1){
+               ofstream fileF("Fisher_interpolation.dat");
+               for (int k = l[0]; k <= l[l.size()-1]; k++)
+               {
+               double fk = spline1dcalc(Fl_interp, k);
+               fileF << k << " " << fk << endl;
+               }
+               fileF.close();
+               }
+               */
+
             F_ab_value.value = v;
             F_ab.push_back(F_ab_value);
         }
