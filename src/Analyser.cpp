@@ -1,4 +1,8 @@
 #include "Analyser.hpp"
+#include "stdafx.h"
+#include "interpolation.h"
+
+using namespace alglib;
 
 Analyser::Analyser()
 {}
@@ -22,7 +26,6 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
     {
         for (int j = i; j < num_params; j++)
         {
-
             //generate the relevant filenames
             string filename = path + run_prefix + "_Fisher_" + param_keys[i] +\
                               "_" + param_keys[j] + ".dat";
@@ -50,6 +53,7 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
                 int col1;
                 double col2;
                 istringstream ss(line);
+                // This makes sure that the condition number in col3 is NOT read!
                 ss >> col1 >> col2;
                 l.push_back(col1);
                 F_l.push_back(col2);
@@ -61,39 +65,36 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
             F_ab_value.key1 = param_keys[i];
             F_ab_value.key2 = param_keys[j];
             double v = 0;
-            v = (2*l[0] + 1) * F_l[0];
-            //This is probably quite inefficient, but it works
+
+            real_1d_array ls, fs;
+            ls.setlength(l.size());
+            fs.setlength(F_l.size());
+            for (int n = 0; n < l.size(); n++) {
+                ls[n] = l[n];
+                fs[n] = F_l[n];
+            }
+            spline1dinterpolant Fl_interp; 
+            spline1dbuildcubic(ls,fs,Fl_interp);
+
+            for (int k = l[0]; k <= l[l.size()-1]; k++)
+            {
+                double fk = spline1dcalc(Fl_interp, k);
+                v += (2*k + 1) * fk; 
+            }
+           
+            // Uncomment this code to plot the results of the interpolation.
             /*
-               for (int k = l[0]; k <= l[l.size()-1]; k++)
-               {
-               int index_low, index_high;
-               for (int m = 0; m < l.size() - 1; m++)
-               {
-               if (k >= l[m] && k <= l[m+1])
-               {
-               index_low = m;
-               index_high = m+1;
-               break;
-               }
-               }
-               double x1 = l[index_low];
-               double x2 = l[index_high];
-               double dx = x2-x1; 
-               double y1 = F_l[index_low];
-               double y2 = F_l[index_high];
-               double dy = y2-y1;
-            // interpolate linearly
-            double fk = (dy/dx)*k + (x2*y1-x1*y2)/dx;  
-            v += (2*k + 1) * fk;
+            if (i == 0 and j == 1){
+                ofstream fileF("Fisher_interpolation.dat");
+                for (int k = l[0]; k <= l[l.size()-1]; k++)
+                {
+                    double fk = spline1dcalc(Fl_interp, k);
+                    fileF << k << " " << fk << endl;
+                }
+                fileF.close();
             }
             */
-            //here we sum up all F_l contributions - check what the right formula for this is.
-            //int l_difference = l[1] - l[0];
-            //for (int k = 0; k < l.size() - 1; k++)
-            //{
-            //    v += (2 * l[k] + 1) * F_l[k] * l_difference;
-            //}
-            //The last one we only add once.
+            
             F_ab_value.value = v;
             F_ab.push_back(F_ab_value);
         }
@@ -102,7 +103,7 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
     //the only thing left is to put it in matrix form.
     vector<vector<vector<string>>> indecies;
     //size of the matrix is
-    //int n = (-1+sqrt(1+8*filenames_Fl.size()))/2;
+    //int n = (-1+sqrt(1+8*         ofstream filenames_Fl.size()))/2;
     mat F = randu<mat>(num_params,num_params);
     //fill the F matrix.
     for (int i = 0; i < num_params; i++)
@@ -137,15 +138,26 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
         indecies.push_back(row);
     }
     /*
-    cout << F << endl;
-    vec eigenval;
-    mat eigenvec;
-    eig_sym(eigenval, eigenvec, F.i());
-    cout << "e-values" << endl;
-    for (int k = 0; k < 5; k++)
-        cout << eigenval(k) << endl;
-    */
+       cout << F << endl;
+       vec eigenval;
+       mat eigenvec;
+       eig_sym(eigenval, eigenvec, F.i());
+       cout << "e-values" << endl;
+       for (int k = 0; k < 5; k++)
+       cout << eigenval(k) << endl;
+       */
+    bool ERROR = false;
     RESULT.matrix = pinv(F);
+    for (int i = 0; i < num_params; i++)
+        if (RESULT.matrix(i,i) < 0)
+            ERROR = true;
+    if (ERROR) {
+        cout << "    ERROR: inverse Fisher has negative diagonal elements." << endl;
+        cout << "           The Fisher matrix found is:" << endl;
+        cout << F << endl;
+        cout << "           The inverse Fisher matrix found is:" << endl;
+        cout << RESULT.matrix << endl;
+    }
     RESULT.matrix_indecies = indecies;
     return RESULT;
 }
@@ -241,6 +253,7 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv, vector<string> param
     string filename = "ellipse_info.tmp.dat";
     ofstream ellipse_file(filename);
     ellipse_file << num_params << endl;
+    bool ERROR = false;
     for (int i = 0; i<error_ellipses.size(); i++)
     {
         ellipse_file << error_ellipses[i].a2 << endl;
@@ -248,21 +261,28 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv, vector<string> param
         ellipse_file << error_ellipses[i].theta << endl;
         ellipse_file << error_ellipses[i].cx << endl;
         ellipse_file << error_ellipses[i].cy << endl;
+        if (error_ellipses[i].a2 <= 0 || error_ellipses[i].b2 <= 0)
+            ERROR = true;
     }
-    
-    //write a temporary file with the parameter names & pass to drawer
-    ofstream param_file("paramfile.tmp.dat");
-    for (int i = 0; i < num_params; i++)
+    if (!ERROR)
     {
-        param_file << param_keys[i] << endl;
+        //write a temporary file with the parameter names & pass to drawer
+        ofstream param_file("paramfile.tmp.dat");
+        for (int i = 0; i < num_params; i++)
+        {
+            param_file << param_keys[i] << endl;
+        }
+        param_file.close();
+        stringstream command_buff;
+        command_buff << "python plotEllipses.py " << filename << " paramfile.tmp.dat";
+        char* command = new char[command_buff.str().length() + 1];
+        strcpy(command, command_buff.str().c_str());
+        system(command);
+        delete command;
+        system("rm paramfile.tmp.dat");   
     }
-    param_file.close();
-    stringstream command_buff;
-    command_buff << "python plotEllipses.py " << filename << " paramfile.tmp.dat";
-    char* command = new char[command_buff.str().length() + 1];
-    strcpy(command, command_buff.str().c_str());
-    system(command);
-    delete command;
+    else {
+        cout << "    ERROR: some ellipses are ill-defined with a^2 < 0 or b^2 < 0." << endl;
+    }
     system("rm ellipse_info.tmp.dat");
-    system("rm paramfile.tmp.dat");   
 }

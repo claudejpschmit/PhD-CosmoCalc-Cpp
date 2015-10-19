@@ -33,7 +33,6 @@ int main(int argc, char* argv[])
     int Tb_index = 0;
     int q_index = 0;
      
-    //Fisher fish(params, "aaa.dat");
     //cout << fish.F("ombh2", "ombh2") << endl;
     params.insert(pair<string,double>("kmax",1));
     params.insert(pair<string,double>("zmax",8));
@@ -50,22 +49,6 @@ int main(int argc, char* argv[])
     //krange.push_back(0.2);
     //krange.push_back(0.3);
     Analyser analyse;
-    vector<string> filenames = {"output/Fisher/09_Fisher_ombh2_ombh2.dat",\
-                                "output/Fisher/09_Fisher_ombh2_omch2.dat",\
-                                "output/Fisher/09_Fisher_ombh2_hubble.dat",\
-                                "output/Fisher/09_Fisher_ombh2_fesc.dat",\
-                                "output/Fisher/09_Fisher_ombh2_fstar.dat",\
-                                "output/Fisher/09_Fisher_omch2_omch2.dat",\
-                                "output/Fisher/09_Fisher_omch2_hubble.dat",\
-                                "output/Fisher/09_Fisher_omch2_fesc.dat",\
-                                "output/Fisher/09_Fisher_omch2_fstar.dat",\
-                                "output/Fisher/09_Fisher_hubble_hubble.dat",\ 
-                                "output/Fisher/09_Fisher_hubble_fesc.dat",\
-                                "output/Fisher/09_Fisher_hubble_fstar.dat",\
-                                "output/Fisher/09_Fisher_fesc_fesc.dat",\
-                                "output/Fisher/09_Fisher_fesc_fstar.dat",\
-                                "output/Fisher/09_Fisher_fstar_fstar.dat"};
-        
     Fisher_return_pair finv = analyse.build_Fisher_inverse(keys, "09", "output/Fisher/");
     analyse.draw_error_ellipses(finv, keys, 9);
 
