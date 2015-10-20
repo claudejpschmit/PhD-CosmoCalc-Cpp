@@ -20,7 +20,7 @@ struct Tb_interpolator {
 };
 
 struct q_interpolator {
-    double ombh2, omnuh2, omch2, omk, hubble, t_cmb,w_DE;
+    double ombh2, omnuh2, omch2, omk, hubble, t_cmb, w_DE;
     double h;
     spline1dinterpolant interpolator;
     spline1dinterpolant interpolator_Hf;

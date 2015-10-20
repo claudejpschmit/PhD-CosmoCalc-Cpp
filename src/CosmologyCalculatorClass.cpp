@@ -455,7 +455,7 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         double O_tot2 = 1.0 - O_k2;
         double O_V2 = O_tot2 - O_M2 - O_R2;
         double D_H2 = c / (1000.0 * H_02);
-        double w = params["w_DE"];
+        double w2 = params["w_DE"];
 
         real_1d_array xs, ys, hs;
         xs.setlength(this->zsteps_Ml+1);
@@ -468,13 +468,13 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
 
             auto integrand = [&](double zp)
             {
-                return 1/sqrt(O_V2 * pow(1+zp,3*(1+w)) + O_R2 * pow(1+zp,4) + O_M2 * pow(1+zp,3) +\
+                return 1/sqrt(O_V2 * pow(1+zp,3*(1+w2)) + O_R2 * pow(1+zp,4) + O_M2 * pow(1+zp,3) +\
                         O_k2 * pow(1+zp,2));
             };
             double Z = integrate(integrand, 0.0, z, 1000, simpson());
 
             ys[n] = D_H2 * Z;
-            hs[n] = H_02 * sqrt(O_V2 * pow(1+z,3*(1+w)) + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) +\
+            hs[n] = H_02 * sqrt(O_V2 * pow(1+z,3*(1+w2)) + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) +\
                     O_k2 * pow(1+z,2));
         }
         spline1dinterpolant interpolator, interpolator_Hf;

@@ -380,7 +380,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, double ks
     Cl = compute_Cl(l, *Pk_index, *Tb_index, *q_index, krange);
     *cond_num = cond(Cl);
     //Cl_inv = Cl.i();
-    Cl_inv = pinv(Cl, 0.0001);
+    Cl_inv = pinv(Cl);
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
 
     mat product = Cl_a * Cl_inv;
@@ -777,6 +777,9 @@ string Fisher::update_runinfo(int lmin, int lmax,\
     buffss << " sigma8         = " << fiducial_params["sigma8"];
     run_info.push_back(buffss.str());
     buffss.str("");
+    buffss << " w_DE           = " << fiducial_params["w_DE"];
+    run_info.push_back(buffss.str());
+    buffss.str("");
     buffss << " 100*theta_s    = " << fiducial_params["100*theta_s"];
     run_info.push_back(buffss.str());
     buffss.str("");
@@ -887,11 +890,13 @@ double Fisher::F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread, in
             filename << filename_prefix << param_key1 << "_" << param_key2 << ".dat";
             ofstream outfile;
             outfile.open(filename.str());
-            int Pk_index, Tb_index, q_index;
+            int Pk_index = 0;
+            int Tb_index = 0;
+            int q_index = 0;
             double kstepsize = 0.0178;
-            if (param_key1 == param_key2)
+            if (param_key1 == param_key2) {
                 initializer(param_key1, &Pk_index, &Tb_index, &q_index);
-            else {
+            } else {
                 initializer(param_key1, &Pk_index, &Tb_index, &q_index);
                 initializer(param_key2, &Pk_index, &Tb_index, &q_index);
             }
@@ -904,6 +909,15 @@ double Fisher::F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread, in
 
             #pragma omp parallel num_threads(n_threads) private(Pk_index, Tb_index, q_index) 
             {
+                //somehow this is necessary to fix a memory bug, that I don't know why it 
+                //occurs between before and after parallelization
+                if (param_key1 == param_key2) {
+                    initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+                } else {
+                    initializer(param_key1, &Pk_index, &Tb_index, &q_index);
+                    initializer(param_key2, &Pk_index, &Tb_index, &q_index);
+                }
+
                 #pragma omp for reduction (+:sum)
                 for (int k = 1; k <= lsteps; ++k) {
                     int m;
