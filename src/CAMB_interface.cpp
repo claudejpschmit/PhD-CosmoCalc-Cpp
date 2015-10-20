@@ -36,11 +36,9 @@ CAMB_CALLER::CAMB_CALLER()
     parameter_names[8] = "transfer_num_redshifts";
     parameter_names[9] = "transfer_redshift(1)";
     parameter_names[10] = "transfer_matterpower(1)";
-    cout << "fine" << endl;
 
     for (int i = 0; i < num_params; i++)
         parameters_found.push_back(false);
-    cout << "fine" << endl;
     //look at scalar_spectral_index(1), that is n_s, but why is there a (1)?
 }
 

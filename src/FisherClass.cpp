@@ -92,7 +92,7 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
     if (noise) {
         for (unsigned int i = 0; i < krange.size(); ++i) {
             double k1 = krange[i];
-            Cl(i,i) += this->CALC->Cl_noise(l,k1,k2);  
+            Cl(i,i) += this->CALC->Cl_noise(l,k1,k1);  
         }
     }
 
@@ -348,7 +348,7 @@ double Fisher::compute_Fl(int l, string param_key1, string param_key2, int kstep
     Cl = compute_Cl(l, *Pk_index, *Tb_index, *q_index, krange);
     *cond_num = cond(Cl);
     //Cl_inv = Cl.i();
-    Cl_inv = pinv(Cl, 0.0001);
+    Cl_inv = pinv(Cl);
     cout << "-> Cl & Cl_inv are done for l = " << l << endl;
 
     mat product = Cl_a * Cl_inv;
