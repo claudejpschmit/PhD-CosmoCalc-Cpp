@@ -54,14 +54,10 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
     // Remove the lines below and the if/else statement when not reading/writing matrix
     stringstream matrix_filename;
     string suffix;
-    if (noise && rsd)
-        suffix = "rn";
-    else if (noise && !rsd)
-        suffix = "nrn";
-    else if (!noise && rsd)
-        suffix = "rnn";
-    else if (!noise && !rsd)
-        suffix = "nrnn";
+    if (rsd)
+        suffix = "r";
+    else 
+        suffix = "nr";
     matrix_filename << "output/matrices/Cl_" << l << "_"<<\
         krange[0] << "_" << krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
         fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
@@ -86,6 +82,18 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
         
         //!!!!!!!!!!! this line also needs to be removed if not writing.
         write_matrix(Cl, matrix_filename.str());
+    }
+
+    //Now calculating the noise everytime, because:
+    // a) it doesn't need much time
+    // b) I save the covariance matrix without the noise which enables
+    //    me to look at both cases at the same time.
+    // c) I can easily test different noise formulae.
+    if (noise) {
+        for (unsigned int i = 0; i < krange.size(); ++i) {
+            double k1 = krange[i];
+            Cl(i,i) += this->CALC->Cl_noise(l,k1,k2);  
+        }
     }
 
     return Cl;

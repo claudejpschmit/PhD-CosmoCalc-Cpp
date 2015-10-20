@@ -61,25 +61,15 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
 
 double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index)
 {
-    bool noise = false;
     bool rsd = false;
-    if (fiducial_params["noise"] == 1.0)
-        noise = true;
     if (fiducial_params["rsd"] == 1.0)
         rsd = true;
 
-    if (rsd && noise)
-        return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index) +\
-            this->Cl_noise(l,k1,k2);
-    else if (rsd && !noise)
+    if (rsd)
         return this->corr_Tb_rsd(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
-    else if (!rsd && noise)
-        return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index) +\
-            this->Cl_noise(l,k1,k2);
-    else if (!rsd && !noise)
+    else 
         return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
-
-
+    
     //double lambda = this->current_params["ombh2"];
     //cout << lambda << endl;
     //return pow(lambda, l) * (k1+k2);
