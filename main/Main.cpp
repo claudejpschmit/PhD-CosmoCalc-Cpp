@@ -18,7 +18,6 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include "SanityChecker.hpp"
 #include "LevinIntegrator.hpp"
-#include "Analyser.hpp"
 //#include <gsl/gsl_integration.h>
 
 
@@ -28,31 +27,26 @@ using namespace alglib;
 
 int main(int argc, char* argv[])
 {
+
     map<string,double> params;    
     int Pk_index = 0;
     int Tb_index = 0;
     int q_index = 0;
      
-    //cout << fish.F("ombh2", "ombh2") << endl;
     params.insert(pair<string,double>("kmax",1));
     params.insert(pair<string,double>("zmax",8));
     params.insert(pair<string,double>("zsteps",500));
     params.insert(pair<string,double>("w_DE",-0.9));
     //params.insert(pair<string,double>("omnuh2", 0.0007));
-    //CosmoCalc CALC(params, &Pk_index,&Tb_index,&q_index);
     vector<string> keys = {"ombh2", "omch2", "hubble", "fesc", "fstar"};
-    //Fisher fish(params, "delete_me.dat", keys);
+    Fisher fish(params, "delete_me.dat", keys);
     
     //fish.F_fixed_kstepsize(1000,5000,5,7);
     //vector<double> krange;
     //krange.push_back(0.1);
     //krange.push_back(0.2);
     //krange.push_back(0.3);
-    Analyser analyse;
-    Fisher_return_pair finv = analyse.build_Fisher_inverse(keys, "09", "output/Fisher/");
-    analyse.draw_error_ellipses(finv, keys, 9);
 
-        
     //mat B = fish.Cl_derivative_matrix(1000, "fesc", &Pk_index,\
         &Tb_index, &q_index, krange);
     //cout << B << endl;
