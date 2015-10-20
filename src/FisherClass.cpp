@@ -227,14 +227,10 @@ mat Fisher::Cl_derivative_matrix(int l, string param_key, int *Pk_index,\
     // Remove the lines below and the if/else statement when not reading/writing matrix
     stringstream matrix_filename;
     string suffix;
-    if (noise && rsd)
-        suffix = "rn";
-    else if (noise && !rsd)
-        suffix = "nrn";
-    else if (!noise && rsd)
-        suffix = "rnn";
-    else if (!noise && !rsd)
-        suffix = "nrnn";
+    if (rsd)
+        suffix = "r";
+    else 
+        suffix = "nr";
     matrix_filename << "output/matrices/Cla_" << param_key << "_"<< l << "_" <<\
         krange[0] << "_" << krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
         fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
