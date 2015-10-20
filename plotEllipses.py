@@ -64,16 +64,17 @@ for i in range(0,num_params - 1):
                 else:
                     plt.xlabel(params[i+1], fontsize = 20)
                 ax1.xaxis.labelpad = 10
-        contour_1sig = ptc.Arc(xy = (x,y), width=w, height=h, angle=theta)
-        contour_2sig = ptc.Arc(xy = (x,y), width=2*w, height=2*h, angle=theta)
-        ellipse_1sig = ptc.Ellipse(xy = (x,y), width=w, height=h, angle=theta)
-        ellipse_2sig = ptc.Ellipse(xy = (x,y), width=2*w, height=2*h, angle=theta, alpha = 0.5)
+        alpha = 1.52
+        contour_1sig = ptc.Arc(xy = (x,y), width=alpha * w, height=alpha * h, angle=theta)
+        ellipse_1sig = ptc.Ellipse(xy = (x,y), width=alpha * w, height=alpha * h, angle=theta)
+        alpha = 2.48
+        contour_2sig = ptc.Arc(xy = (x,y), width=alpha * w, height=alpha * h, angle=theta)
+        ellipse_2sig = ptc.Ellipse(xy = (x,y), width=alpha * w, height=alpha * h, angle=theta, alpha = 0.5)
         ax1.add_artist(contour_1sig)
         ax1.add_artist(contour_2sig)
         ax1.add_artist(ellipse_1sig)
         ax1.add_artist(ellipse_2sig)
-       
-        alpha = 2.48
+        alpha = 3
         ax1.set_xlim([ x - alpha*widths[params[j]],  x + alpha*widths[params[j]]])
         ax1.set_ylim([ y - alpha*widths[params[i]],  y + alpha*widths[params[i]]])
 
