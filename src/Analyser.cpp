@@ -39,7 +39,8 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
             command_buff << "python OrderFile.py " << filename;
             char* command = new char[command_buff.str().length() + 1];
             strcpy(command, command_buff.str().c_str());
-            system(command);
+            int r = system(command);
+            (void)r;
             delete command;
 
             //Read in the data
@@ -74,7 +75,7 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
                 real_1d_array ls, fs;
                 ls.setlength(l.size());
                 fs.setlength(F_l.size());
-                for (int n = 0; n < l.size(); n++) {
+                for (unsigned int n = 0; n < l.size(); n++) {
                     ls[n] = l[n];
                     fs[n] = F_l[n];
                 }
@@ -87,18 +88,6 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
                     v += (2*k + 1) * fk; 
                 }
             }
-            // Uncomment this code to plot the results of the interpolation.
-            /*
-               if (i == 0 and j == 1){
-               ofstream fileF("Fisher_interpolation.dat");
-               for (int k = l[0]; k <= l[l.size()-1]; k++)
-               {
-               double fk = spline1dcalc(Fl_interp, k);
-               fileF << k << " " << fk << endl;
-               }
-               fileF.close();
-               }
-               */
 
             F_ab_value.value = v;
             F_ab.push_back(F_ab_value);
@@ -120,8 +109,7 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
             vector<string> row_element;
             key1 = param_keys[i];
             key2 = param_keys[j];
-            int F_ab_index = 0;
-            for (int k = 0; k < F_ab.size(); k++)
+            for (unsigned int k = 0; k < F_ab.size(); k++)
             {
                 if ((F_ab[k].key1 == key1 && F_ab[k].key2 == key2) ||\
                         (F_ab[k].key1 == key2 && F_ab[k].key2 == key1)){
@@ -174,7 +162,7 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
     int index1, index2;
     index1 = -1;
     index2 = -1;
-    for (int i = 0; i < finv.matrix_indecies.size(); i++) {
+    for (unsigned int i = 0; i < finv.matrix_indecies.size(); i++) {
         if ((index1 < 0) && (finv.matrix_indecies[0][i][1] == param1))  
             index1 = i;
         if ((index2 < 0) && (finv.matrix_indecies[0][i][1] == param2))  
@@ -268,7 +256,7 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv,\
     ofstream ellipse_file(filename);
     ellipse_file << num_params << endl;
     bool ERROR = false;
-    for (int i = 0; i<error_ellipses.size(); i++)
+    for (unsigned int i = 0; i<error_ellipses.size(); i++)
     {
         ellipse_file << error_ellipses[i].a2 << endl;
         ellipse_file << error_ellipses[i].b2 << endl;
@@ -292,9 +280,11 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv,\
             " paramfile.tmp.dat";
         char* command = new char[command_buff.str().length() + 1];
         strcpy(command, command_buff.str().c_str());
-        system(command);
+        int r = system(command);
+        (void)r;
         delete command;
-        system("rm paramfile.tmp.dat");   
+        r = system("rm paramfile.tmp.dat");
+        (void)r;
     }
     else {
         cout << "    ERROR: some ellipses are ill-defined " <<\
@@ -302,5 +292,6 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv,\
         cout << "      check for linearly dependent rows or columns." <<\
             " These can be due to degeneracies between parameters." << endl;
     }
-    system("rm ellipse_info.tmp.dat");
+    int r = system("rm ellipse_info.tmp.dat");
+    (void)r;
 }
