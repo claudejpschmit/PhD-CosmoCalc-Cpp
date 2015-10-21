@@ -10,8 +10,8 @@ Analyser::Analyser()
 Analyser::~Analyser()
 {}
 
-Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, string run_prefix,\
-        string path)
+Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
+        string run_prefix, string path)
 {
     Fisher_return_pair RESULT;
     struct F_values 
@@ -53,7 +53,7 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
                 int col1;
                 double col2;
                 istringstream ss(line);
-                // This makes sure that the condition number in col3 is NOT read!
+                // Makes sure that the condition number in col3 is NOT read!
                 ss >> col1 >> col2;
                 l.push_back(col1);
                 F_l.push_back(col2);
@@ -66,7 +66,7 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
             F_ab_value.key2 = param_keys[j];
             double v = 0;
             // set to true for single mode analysis
-            bool DEBUG_single_mode = true;
+            bool DEBUG_single_mode = false;
 
             if (DEBUG_single_mode)
                 v = (2*l[0]+1) * F_l[0];
@@ -157,7 +157,8 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
         if (RESULT.matrix(i,i) < 0)
             ERROR = true;
     if (ERROR) {
-        cout << "    ERROR: inverse Fisher has negative diagonal elements." << endl;
+        cout << "    ERROR: inverse Fisher has negative diagonal elements." <<\
+            endl;
         cout << "           The Fisher matrix found is:" << endl;
         cout << F << endl;
         cout << "           The inverse Fisher matrix found is:" << endl;
@@ -167,7 +168,8 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys, str
     return RESULT;
 }
 
-Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1, string param2, int run_number)
+Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
+        string param2, int run_number, string path)
 {
     int index1, index2;
     index1 = -1;
@@ -188,11 +190,15 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1, str
     sig_xy = finv.matrix(index1, index2);
     sig_yy = finv.matrix(index2, index2);
     Ellipse ellipse;
-    ellipse.a2 = (sig_xx + sig_yy)/2.0 + sqrt(pow(sig_xx - sig_yy,2)/4.0 + pow(sig_xy,2));
-    ellipse.b2 = (sig_xx + sig_yy)/2.0 - sqrt(pow(sig_xx - sig_yy,2)/4.0 + pow(sig_xy,2));
+    ellipse.a2 = (sig_xx + sig_yy)/2.0 + sqrt(pow(sig_xx - sig_yy,2)/4.0 +\
+            pow(sig_xy,2));
+    ellipse.b2 = (sig_xx + sig_yy)/2.0 - sqrt(pow(sig_xx - sig_yy,2)/4.0 +\
+            pow(sig_xy,2));
     //theta is in radiants
     ellipse.theta = 0.5 * atan(2.0 * sig_xy/(sig_xx - sig_yy));
-    ifstream runinfo("output/Fisher/RUN_INFO.dat");
+    stringstream runinfo_name;
+    runinfo_name << path << "RUN_INFO.dat";
+    ifstream runinfo(runinfo_name.str());
     // find line ### run number bla ###
     //   while the line is not ### run number bla+1 ### or endoffile,
     //   check for the parameter keys and read the value into cx and cy.
@@ -236,9 +242,11 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1, str
     return ellipse;
 }
 
-void Analyser::draw_error_ellipses(Fisher_return_pair finv, vector<string> param_keys, int run_number)
+void Analyser::draw_error_ellipses(Fisher_return_pair finv,\
+        vector<string> param_keys, int run_number, string path)
 {
-    // first need to know how many parameters we have, the grid size is equal to that
+    // first need to know how many parameters we have,
+    // the grid size is equal to that
     int num_params = param_keys.size();
     // for each parameter pair we need to create an ellipse 
     vector<Ellipse> error_ellipses;
@@ -248,7 +256,8 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv, vector<string> param
         {
             string param1 = param_keys[i];
             string param2 = param_keys[j];
-            Ellipse ellipse = find_error_ellipse(finv, param2, param1, run_number);
+            Ellipse ellipse = find_error_ellipse(finv, param2, param1,\
+                    run_number, path);
             error_ellipses.push_back(ellipse);
         }
     }
@@ -279,7 +288,8 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv, vector<string> param
         }
         param_file.close();
         stringstream command_buff;
-        command_buff << "python plotEllipses.py " << filename << " paramfile.tmp.dat";
+        command_buff << "python plotEllipses.py " << filename <<\
+            " paramfile.tmp.dat";
         char* command = new char[command_buff.str().length() + 1];
         strcpy(command, command_buff.str().c_str());
         system(command);
@@ -287,7 +297,10 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv, vector<string> param
         system("rm paramfile.tmp.dat");   
     }
     else {
-        cout << "    ERROR: some ellipses are ill-defined with a^2 < 0 or b^2 < 0." << endl;
+        cout << "    ERROR: some ellipses are ill-defined " <<\
+            "with a^2 < 0 or b^2 < 0." << endl;
+        cout << "      check for linearly dependent rows or columns." <<\
+            " These can be due to degeneracies between parameters." << endl;
     }
     system("rm ellipse_info.tmp.dat");
 }

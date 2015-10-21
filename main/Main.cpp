@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     params.insert(pair<string,double>("zmax",8));
     params.insert(pair<string,double>("zsteps",500));
     //params.insert(pair<string,double>("omnuh2", 0.0007));
-    vector<string> keys = {"ombh2", "omch2", "hubble", "fesc", "fstar"};
+    vector<string> keys = {"ombh2", "omch2", "hubble", "fesc", "w_DE"};
     Fisher fish(params, "delete_me.dat", keys);
     
     fish.F_fixed_kstepsize(1000,5000,5,7);
