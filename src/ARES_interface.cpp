@@ -4,7 +4,23 @@
 
 // What to do about Dark Energy w???
 
-AresInterface::AresInterface() 
+AresInterface::AresInterface()
+    :
+        omega_m_0(-1),
+        omega_b_0(-1),
+        omega_l_0(-1),
+        hubble_0(-1),
+        helium_by_mass(-1),
+        cmb_temp_0(-1),
+        sigma_8(-1),
+        primordial_index(-1),
+        fstar(-1),
+        Tmin(-1),
+        Nion(-1),
+        fesc(-1),
+        Nlw(-1),
+        cX(-1),
+        fX(-1)
 {}
 AresInterface::~AresInterface()
 {}
@@ -47,19 +63,57 @@ void AresInterface::updateAres(map<string,double> params)
     fX = params["fx"];
 
 
-    // Call run_ares.py witht the necessary parameters
+    // Call run_ares.py with the necessary parameters
+    stringstream command;
+    command << "python run_ares.py";
+    if (omega_m_0 != -1)
+        command << " --omega_m_0 " << omega_m_0;
+    if (omega_b_0 != -1)
+        command << " --omega_b_0 " << omega_b_0; 
+    if (omega_l_0 != -1)
+        command << " --omega_l_0 " << omega_l_0; 
+    if (hubble_0 != -1)
+        command << " --hubble_0 " << hubble_0; 
+    if (helium_by_mass != -1)
+        command << " --helium_by_mass " << helium_by_mass; 
+    if (cmb_temp_0 != -1)
+        command << " --cmb_temp_0 " << cmb_temp_0; 
+    if (sigma_8 != -1)
+        command << " --sigma_8 " << sigma_8; 
+    if (primordial_index != -1)
+        command << " --primordial_index " << primordial_index; 
+    if (fstar != -1)
+        command << " --fstar " << fstar; 
+    if (Tmin != -1)
+        command << " --Tmin " << Tmin; 
+    if (Nion != -1)
+        command << " --Nion " << Nion; 
+    if (fesc != -1)
+        command << " --fesc " << fesc; 
+    if (Nlw != -1)
+        command << " --Nlw " << Nlw; 
+    if (cX != -1)
+        command << " --cX " << cX;
+    if (fX != -1)
+        command << " --fX " << fX; 
     
-    
+    char* command_buff = new char[command.str().length() + 1];
+    strcpy(command_buff, command.str().c_str());
+    int r = system(command_buff);
+    (void)r;
 }
 
 void AresInterface::getTb(vector<double>* zp, vector<double>* Tbp)
 {
+    /*
     *zp = Tb_z;
     *Tbp = Tb;
+    */
 }
 
 void AresInterface::calc_Tb(double zmin, double zmax, int zsteps)
 {
+    /*
     ofstream fout;
     fout.open("output/Tb_g.dat");
     Tb_z.clear();
@@ -90,4 +144,5 @@ void AresInterface::calc_Tb(double zmin, double zmax, int zsteps)
     }
     free_dvector(result,1,3);
     fout.close();
+    */
 }
