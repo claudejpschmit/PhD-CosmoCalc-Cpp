@@ -1,14 +1,16 @@
 PhD-CosmoCalc-Cpp
 =================
 
-This is the C++ version of the PhD-CosmoCalc program, used to calculate basic cosmological functions and Fisher matrix analysis of the 21cm Brightness Temperature fluctuations. It utilizes Lesgourgues et al's CLASS code, available at class-code.net. All necessary files are included in this project (due to compatibility requirements), so no external download is required. 
+This is the C++ version of the PhD-CosmoCalc program, used to calculate basic cosmological functions and Fisher matrix analysis of the 21cm Brightness Temperature fluctuations. It utilizes the CAMB code, available at http://camb.info/. All necessary files are included in this project (due to compatibility requirements), so no external download is required. The code also requires ARES (http://ares.readthedocs.org/en/latest/index.html) for the 21cm fluctuations. Simply follow the installation guide on their website.
+
 ## Dependencies
 
 The following libraries are used and should be installed before this code can be used:
 
 	Armadillo C++ library,
 	Boost,
-	GSL_19.
+	GSL_19,
+	ARES (Accelerated Reionization Era Simulations code).
 
 
 ## Programming Style
@@ -25,20 +27,20 @@ In order to build the code, simply cd to the folder containing the Makefile and 
 
     make calc
 
-in order to generate the cosmology calculator with the excecutable 'calc'. To test whether CLASS works as intended, type:
+in order to generate the cosmology calculator with the excecutable 'calc'. 
+To compile the analysis code that produces error ellipses from Fisher calculations, type:
+
+    make analyse
     
-    make class_test
+The analyse program takes an integer that identifies the run for which the error ellipses shall be produces. Eg. one can run:
 
-This generates an excexutable that runs the standard CLASS excecutable as given from the code directly downloaded from class-code.net. To run the test, type:
+	./analyse 2
 
-    ./class_test lcdm.ini
-
-This should not generate any errors.
 Simply typing:
     
     make
 
-produces both excecutables.
+produces all excecutables.
 
 ### Building the documentation
 
