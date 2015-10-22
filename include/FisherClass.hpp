@@ -13,6 +13,7 @@ using namespace arma;
 
 class Fisher {
     public:
+        
         /**
          * Constructor for the Fisher object. 
          * This constructor initializes the following objects:
@@ -38,6 +39,49 @@ class Fisher {
          * Fl_file.
          */
         ~Fisher();
+        
+        /**
+         *
+         */
+        double F(string param_key1, string param_key2);
+        
+        /**
+         *
+         */
+        double F_fixed_kstepsize(string param_key1, string param_key2);
+        
+        /**
+         * This function determines the Fl's in some l range in a number of 
+         * parallel threads. The values are then stored in output/Fisher/.
+         * This version uses a fixed k_stepsize of 0.0178.
+         * @param lmin is the minimum of the l range.
+         * @param lmax is the maximum of the l range.
+         * @param n_points_per_thread is the number of points each thread is
+         *          determining. It is used to obtain the total number of 
+         *          lmodes calculated between the range and thus the l
+         *          stepsize.
+         * @param n_threads is the number of threads that should be used.
+         * NOTE:
+         */
+        double F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread,\
+                int n_threads);
+        
+        /**
+         *
+         */
+        void Fl_varying_ksteps(int l, string param_key1,\
+                string param_key2, int min_ksteps_Cl, int max_ksteps_Cl,\
+                int ksteps_spacing);
+
+        /**
+         *
+         */
+        void Fl_varying_ksteps_smart(int l, string param_key1,\
+                string param_key2, int min_ksteps_Cl, int max_ksteps_Cl);
+        
+    private:
+
+        // **** Functions **** //
 
         /**
          * This function updates the model used to perform the calculations
@@ -119,12 +163,14 @@ class Fisher {
         double compute_Fl(int l, string param_key1, string param_key2,\ 
                 int ksteps_Cl, double *cond_num, int *Pk_index, int *Tb_index,\
                 int *q_index);
+
         /**
          *
          */
         double compute_Fl(int l, string param_key1, string param_key2,\
                 double kstepsize, double *cond_num, int *Pk_index,\
                 int *Tb_index, int *q_index);
+
         /**
          * This function initializes the necessary interpolator objects needed
          * for the run. This is necessary so that the interpolators are ready 
@@ -141,35 +187,6 @@ class Fisher {
         void initializer(string param_key, int *Pk_index, int *Tb_index,\
                 int *q_index);
 
-        /**
-         *
-         */
-        double F(string param_key1, string param_key2);
-        
-        /**
-         *
-         */
-        double F_fixed_kstepsize(string param_key1, string param_key2);
-        
-        /**
-         *
-         */
-        double F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread,\
-                int n_threads);
-        
-        /**
-         *
-         */
-        void Fl_varying_ksteps(int l, string param_key1,\
-                string param_key2, int min_ksteps_Cl, int max_ksteps_Cl,\
-                int ksteps_spacing);
-
-        /**
-         *
-         */
-        void Fl_varying_ksteps_smart(int l, string param_key1,\
-                string param_key2, int min_ksteps_Cl, int max_ksteps_Cl);
-        
         /**
          * This function writes a matrix to a binary file.
          *
@@ -217,9 +234,6 @@ class Fisher {
         string update_runinfo(int lmin, int lmax,\
                 int lstepsize, double kstepsize);
 
-    private:
-        // **** Functions **** //
-
         /**
          *
          */
@@ -240,4 +254,5 @@ class Fisher {
         vector<double> abcisses_done, logderivs_calculated,\
             abcisses_done_simple, derivs_calculated;
         bool noise, rsd;
+
 };
