@@ -79,7 +79,7 @@ OUTPUT = output.o
 ALGLIB = alglibinternal.o alglibmisc.o ap.o dataanalysis.o diffequations.o fasttransforms.o integration.o interpolation.o linalg.o optimization.o solvers.o specialfunctions.o statistics.o
 GLOBAL21CM = dnumrecipes.o dcomplex.o dcosmology.o astrophysics.o twentyonecm.o spline.o spline2D.o
 ODE = ODE_Solver.o ODEs.o
-SRC = Integrator.o CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o Global21cmInterface.o SanityChecker.o LevinIntegrator.o
+SRC = Integrator.o CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o Global21cmInterface.o SanityChecker.o LevinIntegrator.o ARES_interface.o
 MAIN = Main.o
 ANALYSE = Analyser.o Analyse.o
 

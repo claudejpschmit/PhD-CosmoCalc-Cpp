@@ -31,7 +31,7 @@ void AresInterface::updateAres(map<string,double> params)
     hubble_0 = params["hubble"] / 100.0;
 
     // This is omega_b_0
-    omega_b_0 = params["ombh2"] / (h*h);
+    omega_b_0 = params["ombh2"] / (hubble_0*hubble_0);
 
     cmb_temp_0 = params["T_CMB"];
     double O_cdm = params["omch2"] / pow(hubble_0,2);
@@ -44,6 +44,7 @@ void AresInterface::updateAres(map<string,double> params)
 
     // This parameter is currently not used.
     double w = params["w_DE"];
+    (void)w;
 
     // This is omega_m_0
     omega_m_0 = omega_b_0 + O_cdm + O_nu;
@@ -54,14 +55,10 @@ void AresInterface::updateAres(map<string,double> params)
     // This is sigma_8
     sigma_8 = params["sigma8"];
     
-
-    omNu = O_nu;
-
     fstar = params["fstar"];
     fesc = params["fesc"];
     Nion = params["nion"];
     fX = params["fx"];
-
 
     // Call run_ares.py with the necessary parameters
     stringstream command;
