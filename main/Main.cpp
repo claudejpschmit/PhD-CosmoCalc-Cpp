@@ -18,6 +18,7 @@
 #include <boost/math/special_functions/bessel.hpp>
 #include "SanityChecker.hpp"
 #include "LevinIntegrator.hpp"
+#include "ARES_interface.hpp"
 //#include <gsl/gsl_integration.h>
 
 
@@ -33,7 +34,6 @@ int main(int argc, char* argv[])
     params.insert(pair<string,double>("zsteps",500));
     vector<string> keys = {"ombh2", "omch2", "hubble", "fesc"};
     Fisher fish(params, "delete_me.dat", keys);
-    
     fish.F_fixed_kstepsize(1000,5000,5,7);
     
     return 0;
