@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
     else 
         prefix << run_number;
 
-    vector<string> keys = {"ombh2", "omch2", "hubble", "fesc", "fstar"};
+    vector<string> keys = {"ombh2", "omch2", "hubble", "fesc"};
     Analyser analyse;
     Fisher_return_pair finv = analyse.build_Fisher_inverse(keys, prefix.str(), "output/Fisher/");
     analyse.draw_error_ellipses(finv, keys, run_number, "output/Fisher/");

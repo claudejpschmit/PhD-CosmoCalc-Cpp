@@ -79,9 +79,14 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
                     ls[n] = l[n];
                     fs[n] = F_l[n];
                 }
-                spline1dinterpolant Fl_interp; 
-                spline1dbuildcubic(ls,fs,Fl_interp);
-
+                spline1dinterpolant Fl_interp;
+                try {
+                    spline1dbuildcubic(ls,fs,Fl_interp);
+                }
+                catch(alglib::ap_error e)
+                {
+                    printf("error msg: %s\n", e.msg.c_str());
+                }
                 for (int k = l[0]; k <= l[l.size()-1]; k++)
                 {
                     double fk = spline1dcalc(Fl_interp, k);

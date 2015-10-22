@@ -61,7 +61,9 @@ class Fisher {
          *          lmodes calculated between the range and thus the l
          *          stepsize.
          * @param n_threads is the number of threads that should be used.
-         * NOTE:
+         *
+         * TODO:
+         * @return Returns 0 atm this is superfluous 
          */
         double F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread,\
                 int n_threads);
