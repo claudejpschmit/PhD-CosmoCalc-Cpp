@@ -45,10 +45,20 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     //this->create_bessel_interpolant_ALGLIB(0, this->fiducial_params["l_max"]);
     //this->create_bessel_interpolant_OWN(this->fiducial_params["l_min"],this->fiducial_params["l_max"]);
     cout << "... Bessels built ..." << endl;
+    
+    //set to true if ARES should be used,
+    //set to false if G21 should be used.
+    use_ARES = false;
 
     cout << "... generating 21cm interface ..." << endl;
-    G21 = new Global21cmInterface();
-    this->update_G21(fiducial_params, Tb_index);
+    if (!use_ARES) {
+        G21 = new Global21cmInterface();
+        this->update_G21(fiducial_params, Tb_index);
+    } 
+    else {
+        ARES = new AresInterface();
+        this->update_ARES(fiducial_params, Tb_index);
+    }
     //this->update_G21_full(fiducial_params);
     cout << "... 21cm interface built ..." << endl;
 
@@ -57,6 +67,11 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     cout << "... Tb analytic done..." << endl;
 
     cout << "... CosmoCalc built ..." << endl;
+}
+
+bool CosmoCalc::get_useAres()
+{
+    return use_ARES;
 }
 
 double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index, int Tb_index, int q_index)
@@ -788,8 +803,13 @@ void CosmoCalc::update_G21(map<string,double> params, int *Tb_index)
 
 double CosmoCalc::Tb_interp(double z, int Tb_index)
 {
-    // The * 1000.0 is so we get the result in mK
-    return spline1dcalc(Tbs[Tb_index].interpolator,z) * 1000.0;
+    if (!use_ARES) {
+        // The * 1000.0 is so we get the result in mK
+        return spline1dcalc(Tbs[Tb_index].interpolator,z) * 1000.0;
+    }
+    else {
+        return spline1dcalc(Tbs_ares[Tb_index].interpolator,z);
+    }
 }
 
 void CosmoCalc::update_ARES(map<string,double> params, int *Tb_index)

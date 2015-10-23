@@ -486,7 +486,7 @@ class CosmoCalc : public CosmoBasis {
 
         spline1dinterpolant generate_bessels(int l);
         double j_interp_cubic(spline1dinterpolant bessels, double x);
-
+        bool get_useAres();
     protected:
 
         // ------------ Functions -------------- //
@@ -494,6 +494,7 @@ class CosmoCalc : public CosmoBasis {
         void create_bessel_interpolant_ALGLIB(int lmin, int lmax);
         void create_bessel_interpolant_OWN(int lmin, int lmax);
         // ------------ Variables -------------- //
+        bool use_ARES;
         int zsteps_Ml, Pk_steps;
         int lmin_bess;
         double zmin_Ml, zmax_Ml, stepsize_Ml, prefactor_Ml, k_stepsize;

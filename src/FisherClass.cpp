@@ -43,8 +43,13 @@ void Fisher::update_Model(map<string, double> new_params, int *Pk_index, int *Tb
     //generate params should not be necessary anymore...
     this->CALC->update_q(new_params, q_index);
     this->CALC->update_Pk_interpolator_direct(new_params, Pk_index);
-    this->CALC->update_G21(new_params, Tb_index);
-    //this->CALC->update_Tb_analytic(new_params, Tb_index);
+    if (!CALC->get_useAres()) {
+        this->CALC->update_G21(new_params, Tb_index);
+    }
+    else
+        this->CALC->update_ARES(new_params, Tb_index);
+
+        //this->CALC->update_Tb_analytic(new_params, Tb_index);
 }
 
 mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<double> krange)
