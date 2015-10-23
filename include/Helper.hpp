@@ -26,8 +26,20 @@ struct Pk_interpolator {
  * with the Global21cm Code.
  */
 struct Tb_interpolator {
-    double ombh2, omnuh2, omch2, omk, hubble, s8, T_CMB, n_s,w_DE,\
+    double ombh2, omnuh2, omch2, omk, hubble, s8, T_CMB, n_s, w_DE,\
         fstar, fesc, nion, fx, flya;
+    spline1dinterpolant interpolator;
+};
+
+/**
+ * Tb_interpolator includes a value for each parameter affecting the 21cm
+ * brightness temperature fluctuations Tb(z), and an interpolation object 
+ * corresponding to those parameter values. This version is to be used
+ * with the Global21cm Code.
+ */
+struct Tb_interpolator_ares {
+    double ombh2, omnuh2, omch2, omk, hubble, s8, T_CMB, n_s, w_DE,\
+        fstar, fesc, nion, fX, Tmin, Nlw, cX, HeByMass;
     spline1dinterpolant interpolator;
 };
 

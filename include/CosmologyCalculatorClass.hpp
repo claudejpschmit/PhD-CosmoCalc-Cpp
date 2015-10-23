@@ -11,6 +11,7 @@
 #include "Global21cmInterface.hpp"
 #include "Helper.hpp"
 #include "LevinIntegrator.hpp"
+#include "ARES_interface.hpp"
 
 using namespace std;
 using namespace alglib;
@@ -40,7 +41,9 @@ class CosmoCalc : public CosmoBasis {
         void update_G21_full(map<string, double> params, int *Tb_index);
         void update_Pk_interpolator_full(map<string, double> params, int *Pk_index);
         void update_Tb_analytic(map<string, double> params, int *Tb_index);
-
+        void update_ARES(map<string, double> params, int *Tb_index);
+        
+        double Tb_interp_ARES(double z, int Tb_index);
         double Tb_analytic_interp(double z, int Tb_index);
         /**
          * Function outputs some standard cosmological calculations to the user.
@@ -410,8 +413,8 @@ class CosmoCalc : public CosmoBasis {
                 int Pk_index, int Tb_index, int q_index);
         double corr_Tb(int l, double k1, double k2, double k_low,\
                 double k_high, int Pk_index, int Tb_index, int q_index, spline1dinterpolant bessels);
-
-       /** 
+        
+        /** 
          * Determines the critical density at a redshift [kg/m^3].
          *
          * @param z is the redshift at which the critical density is calculated.
@@ -502,6 +505,7 @@ class CosmoCalc : public CosmoBasis {
 
         vector<Pk_interpolator> Pks, Pks_full;
         vector<Tb_interpolator> Tbs, Tbs_full;
+        vector<Tb_interpolator_ares> Tbs_ares;
         vector<q_interpolator> qs;
         vector<Tb_analytic_interpolator> Tbas;
 
@@ -514,6 +518,7 @@ class CosmoCalc : public CosmoBasis {
 
         CAMB_CALLER *CAMB;
         Global21cmInterface *G21;
+        AresInterface *ARES;
         //Levin *LEVIN;
        
 };

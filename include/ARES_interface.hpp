@@ -13,13 +13,12 @@ class AresInterface
     public:
         AresInterface();
         ~AresInterface();
-        
         void updateAres(map<string,double> params);
 
         void getTb(vector<double>* zp, vector<double>* Tbp);
 
     private:
-        void calc_Tb(double zmin, double zmax, int zsteps);
+        void read_Tb();
 
         vector<double> Tb_z, Tb;
 

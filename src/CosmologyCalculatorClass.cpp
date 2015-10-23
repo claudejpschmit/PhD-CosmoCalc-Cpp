@@ -792,6 +792,92 @@ double CosmoCalc::Tb_interp(double z, int Tb_index)
     return spline1dcalc(Tbs[Tb_index].interpolator,z) * 1000.0;
 }
 
+void CosmoCalc::update_ARES(map<string,double> params, int *Tb_index)
+{
+    bool do_calc = true;
+    for (unsigned int i = 0; i < Tbs_ares.size(); ++i) {
+        if (params["ombh2"] == Tbs_ares[i].ombh2 &&\
+            params["omnuh2"] == Tbs_ares[i].omnuh2 &&\
+            params["omch2"] == Tbs_ares[i].omch2 &&\ 
+            params["omk"] == Tbs_ares[i].omk &&\
+            params["hubble"] == Tbs_ares[i].hubble &&\
+            params["sigma8"] == Tbs_ares[i].s8 &&\
+            params["T_CMB"] == Tbs_ares[i].T_CMB &&\
+            params["n_s"] == Tbs_ares[i].n_s &&\
+            params["fstar"] == Tbs_ares[i].fstar &&\
+            params["fesc"] == Tbs_ares[i].fesc &&\
+            params["nion"] == Tbs_ares[i].nion &&\
+            params["fx"] == Tbs_ares[i].fX ) {
+                
+            /* **** These parameters aren't part of the fiducial parameter
+             * set, or, as is the case for w_DE, aren't used by ARES.
+                params["Tmin"] == Tbs_ares[i].Tmin &&\
+                params["w_DE"] == Tbs_ares[i].w_DE &&\
+                params["Nlw"] == Tbs_ares[i].Nlw &&\
+                params["cX"] == Tbs_ares[i].cX &&\
+                params["HeByMass"] == Tbs_ares[i].HeByMass
+            */
+            cout << "found precalculated Ares" << endl;
+            do_calc = false;
+            *Tb_index = i;
+            break;
+        }
+    }
+    if (do_calc) {
+        Tb_interpolator_ares interp;
+        interp.ombh2 = params["ombh2"];
+        interp.omnuh2 = params["omnuh2"];
+        interp.omch2 = params["omch2"];
+        interp.omk = params["omk"];
+        interp.hubble = params["hubble"];
+        interp.s8 = params["sigma8"];
+        interp.T_CMB = params["T_CMB"];
+        interp.n_s = params["n_s"];
+        interp.fstar = params["fstar"];
+        interp.fesc = params["fesc"];
+        interp.nion = params["nion"];
+        interp.fX = params["fx"];
+
+        
+        interp.w_DE = -1; //params["w_DE"];
+        interp.Tmin = -1; //params["Tmin"];
+        interp.Nlw = -1; //params["Nlw"];
+        interp.cX = -1; //params["cX"];
+        interp.HeByMass = -1; //params["HeByMass"];
+        
+
+        cout << "Ares is being updated" << endl;
+        ARES->updateAres(params);
+        vector<double> vz, vTb;
+        ARES->getTb(&vz, &vTb);
+
+        real_1d_array Ares_z, Ares_Tb;
+        Ares_z.setlength(vz.size());
+        Ares_Tb.setlength(vTb.size());
+
+        for (unsigned int i = 0; i < vz.size(); i++){
+            Ares_z[i] = vz[i];
+        }
+        for (unsigned int i = 0; i < vTb.size(); i++){
+            Ares_Tb[i] = vTb[i];
+        }
+
+        spline1dinterpolant interpolator;
+        spline1dbuildcubic(Ares_z, Ares_Tb, interpolator);
+        interp.interpolator = interpolator;
+
+        Tbs_ares.push_back(interp);
+        *Tb_index = Tbs.size() - 1;
+
+        cout << "Ares dTb update done" << endl;
+    }
+}
+
+double CosmoCalc::Tb_interp_ARES(double z, int Tb_index)
+{
+    return spline1dcalc(Tbs_ares[Tb_index].interpolator,z);
+}
+
 void CosmoCalc::update_Pk_interpolator_full(map<string, double> params, int *Pk_index)
 {
     bool do_calc = true;

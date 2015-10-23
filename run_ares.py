@@ -52,3 +52,9 @@ sim = ares.simulations.Global21cm(verbose = False, omega_m_0 = args.omega_m_0,\
         Tmin = args.Tmin, Nion = args.Nion, fesc = args.fesc, Nlw = args.Nlw,\
         cX = args.cX, fX = args.fX)
 sim.run()
+
+with open("dTb_ares.dat", 'w') as file:
+    for i in range(0,len(sim.history['z'])):
+        z = sim.history['z'][i]
+        dTb_z = sim.history['dTb'][i]
+        file.write(str(z) + " " + str(dTb_z) + "\n")

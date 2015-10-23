@@ -98,48 +98,28 @@ void AresInterface::updateAres(map<string,double> params)
     strcpy(command_buff, command.str().c_str());
     int r = system(command_buff);
     (void)r;
+    // Now read in result from file and store in Tb_z and Tb objects.
+    read_Tb();
 }
 
 void AresInterface::getTb(vector<double>* zp, vector<double>* Tbp)
-{
-    /*
+{    
     *zp = Tb_z;
-    *Tbp = Tb;
-    */
+    *Tbp = Tb;   
 }
 
-void AresInterface::calc_Tb(double zmin, double zmax, int zsteps)
+void AresInterface::read_Tb()
 {
-    /*
-    ofstream fout;
-    fout.open("output/Tb_g.dat");
+    ifstream infile("dTb_ares.dat");
+    double z, t;
     Tb_z.clear();
     Tb.clear();
-    double *result;
-    double tk,lyaflux,xi,xe;
-    double tb;
 
-    result=dvector(1,3);
-
-    //file="xc_history.dat";
-    //fout.open(file);
-
-    double z, stepsize;
-    stepsize = (zmax-zmin)/(double)zsteps;
-
-    for (int i = 0; i < zsteps; i++) {
-        z = zmin + i * stepsize;
-        a->getTIGM(z,result);
-        tk=result[1];
-        xi=result[2];
-        xe=result[3];
-        lyaflux=a->lyaFlux(z);
-        tb=(1.0-xi)*tocm->tBrightGen(z,tk,xe,lyaflux);
-        fout << z << " " << tb << endl;
+    while (infile >> z >> t)
+    {
         Tb_z.push_back(z);
-        Tb.push_back(tb);
+        Tb.push_back(t);
     }
-    free_dvector(result,1,3);
-    fout.close();
-    */
+    infile.close();
+    system("rm dTb_ares.dat");
 }
