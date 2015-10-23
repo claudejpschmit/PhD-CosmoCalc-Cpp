@@ -4,6 +4,8 @@
 #include "Integrator.hpp"
 #include <fstream>
 
+#define ARES_MACRO true
+
 CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, int *q_index)
     :
         CosmoBasis(params)
@@ -48,7 +50,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     
     //set to true if ARES should be used,
     //set to false if G21 should be used.
-    use_ARES = false;
+    use_ARES = ARES_MACRO;
 
     cout << "... generating 21cm interface ..." << endl;
     if (!use_ARES) {

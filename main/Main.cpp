@@ -30,11 +30,13 @@ int main(int argc, char* argv[])
 {
     map<string,double> params;    
     params.insert(pair<string,double>("kmax",1));
-    params.insert(pair<string,double>("zmax",8));
-    params.insert(pair<string,double>("zsteps",500));
-    vector<string> keys = {"ombh2", "omch2", "hubble", "fesc"};
+    params.insert(pair<string,double>("zmax",7.5));
+    params.insert(pair<string,double>("zsteps",250));
+    params.insert(pair<string,double>("noise",0.0));
+    params.insert(pair<string,double>("rsd",0.0));
+    vector<string> keys = {"ombh2", "omch2", "hubble"};
     Fisher fish(params, "delete_me.dat", keys);
-    fish.F_fixed_kstepsize(1000,5000,5,7);
+    fish.F_fixed_kstepsize(1000,2000,1,7);
     
     return 0;
 }
