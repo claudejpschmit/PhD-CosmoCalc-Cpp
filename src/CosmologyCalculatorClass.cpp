@@ -4,7 +4,7 @@
 #include "Integrator.hpp"
 #include <fstream>
 
-#define ARES_MACRO true
+#define ARES_MACRO false
 
 CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, int *q_index)
     :
@@ -28,7 +28,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     //this->update_Hf();
 
     this->update_q(fiducial_params, q_index);
-    //this->update_q_prime();
+    this->update_q_prime();
     
     //this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     cout << "... Dependencies calculated ..." << endl;
@@ -412,6 +412,8 @@ void CosmoCalc::update_q_prime_full()
 
 void CosmoCalc::update_q(map<string,double> params, int *q_index)
 {
+    if (params["limber"] == 1.0)
+        update_q_prime();
     bool do_calc = true;
     for (unsigned int i = 0; i < qs.size(); ++i) {
         if (params["ombh2"] == qs[i].ombh2 && params["omnuh2"] == qs[i].omnuh2 &&\
@@ -1285,14 +1287,15 @@ double CosmoCalc::Cl_simplified(int l, double k1, double k2, int Pk_index, int T
         r = r_interp(z);
         q = q_interp(z, q_index);
         const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
-        int n;
+        
+        /*int n;
         int n_old_int = (int)n_old;
         if (abs(n_old - (double)n_old_int) > 0.5)
             n = n_old_int + 1;
         else
             n = n_old_int;
-
-        qp = this->q_p_Ml[n];
+        */
+        qp = spline1dcalc(q_p_interp,z);// this->q_p_Ml[n];
         rr = r*r;
         double hh = pow(Hf_interp(z)*1000.0, 2);
         double A = rr * this->Pk_interp(((double)l + 0.5)/q * qs[q_index].h,z,Pk_index)/(pow(qs[q_index].h,3)*hh*qp) *\
