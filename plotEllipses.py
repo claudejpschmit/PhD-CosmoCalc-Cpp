@@ -40,8 +40,8 @@ for i in range(0,num_params - 1):
         y = content[ellipse_number*5 + 5]
         frame_index = (num_params-1)*i + j
         ax1 = plt.subplot(num_params-1,num_params-1, frame_index)
-        ax1.ticklabel_format(axis='y',style='sci',scilimits=(-2,2))
-        ax1.ticklabel_format(axis='x',style='sci',scilimits=(-2,2))
+        #ax1.ticklabel_format(axis='y',style='sci',scilimits=(-2,2))
+        #ax1.ticklabel_format(axis='x',style='sci',scilimits=(-2,2))
         #ax1.yaxis.get_major_formatter().set_powerlimits((0,1))
         plt.subplots_adjust(hspace = 0., wspace = 0.)
         if (j-i) > 1:
