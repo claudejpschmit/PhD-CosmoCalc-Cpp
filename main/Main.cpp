@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     params.insert(pair<string,double>("zsteps",250));
     params.insert(pair<string,double>("noise",0.0));
     params.insert(pair<string,double>("rsd",0.0));
+    params.insert(pair<string,double>("limber",1.0));
     vector<string> keys = {"ombh2", "omch2", "hubble"};
     Fisher fish(params, "delete_me.dat", keys);
     fish.F_fixed_kstepsize(1000,2000,1,7);

@@ -23,10 +23,14 @@ Fisher::Fisher(map<string, double> params, string Fl_filename, vector<string> pa
     }
     noise = false;
     rsd = false;
+    limber = false;
     if (fiducial_params["noise"] == 1.0)
         noise = true;
     if (fiducial_params["rsd"] == 1.0)
         rsd = true;
+    if (fiducial_params["limber"] == 1.0)
+        limber = true;
+
     Fl_file.open(Fl_filename);
     cout << "... Fisher built ..." << endl;
 }
@@ -63,6 +67,8 @@ mat Fisher::compute_Cl(int l, int Pk_index, int Tb_index, int q_index, vector<do
         suffix = "r";
     else 
         suffix = "nr";
+    if (limber)
+        suffix += "_limber";
     matrix_filename << "output/matrices/Cl_" << l << "_"<<\
         krange[0] << "_" << krange[krange.size()-1] << "_"<< krange.size() << "_"<<\
         fiducial_params["zmin"] << "_"<< fiducial_params["zmax"] << "_" << suffix << ".bin";
@@ -677,10 +683,13 @@ string Fisher::update_runinfo(int lmin, int lmax,\
 {
     string noise_incl = "N";
     string rsd_incl = "N";
+    string limber_incl = "N";
     if (noise)
         noise_incl = "Y";
     if (rsd)
         rsd_incl = "Y";
+    if (limber)
+        limber_incl = "Y";
 
     int run_number = 0;
     stringstream filename;
@@ -854,6 +863,9 @@ string Fisher::update_runinfo(int lmin, int lmax,\
     buffss << " rsd included   = " << rsd_incl;
     run_info.push_back(buffss.str());
     buffss.str("");
+    buffss << " limber approx  = " << limber_incl;
+    run_info.push_back(buffss.str());
+    buffss.str("");
     buffss << " lmin           = " << lmin;
     run_info.push_back(buffss.str());
     buffss.str("");
@@ -950,5 +962,3 @@ double Fisher::F_fixed_kstepsize(int lmin, int lmax, int n_points_per_thread, in
 
     return 0;
 }
-
-

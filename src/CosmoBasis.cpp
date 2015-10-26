@@ -105,7 +105,7 @@ void CosmoBasis::check_params()
     //0 = false
     this->fiducial_params.insert(pair<string,double>("noise",1.0));
     this->fiducial_params.insert(pair<string,double>("rsd",1.0));
-
+    this->fiducial_params.insert(pair<string,double>("limber",0.0));
 }
 
 map<string, double> CosmoBasis::give_current_params()

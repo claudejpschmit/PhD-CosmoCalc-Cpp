@@ -255,6 +255,6 @@ class Fisher {
         double kmin, kmax;
         vector<double> abcisses_done, logderivs_calculated,\
             abcisses_done_simple, derivs_calculated;
-        bool noise, rsd;
+        bool noise, rsd, limber;
 
 };
