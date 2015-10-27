@@ -922,7 +922,8 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *P
         if (params["ombh2"] == Pks[i].ombh2 && params["omnuh2"] == Pks[i].omnuh2 &&\
                 params["omch2"] == Pks[i].omch2 && params["omk"] == Pks[i].omk &&\
                 params["hubble"] == Pks[i].hubble && params["T_CMB"] == Pks[i].tcmb &&\
-                params["w_DE"] == Pks[i].w_DE ){
+                params["w_DE"] == Pks[i].w_DE && params["n_s"] == Pks[i].n_s &&\
+                params["A_s"] == Pks[i].A_s){
 
             do_calc = false;
             *Pk_index = i;
@@ -940,6 +941,9 @@ void CosmoCalc::update_Pk_interpolator_direct(map<string, double> params, int *P
         interp.hubble = params["hubble"];
         interp.tcmb = params["T_CMB"];
         interp.w_DE = params["w_DE"];
+        interp.n_s = params["n_s"];
+        interp.A_s = params["A_s"];
+
 
         CAMB->call(params);    
         vector<double> vk = CAMB->get_k_values();

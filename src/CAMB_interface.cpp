@@ -12,6 +12,9 @@
 //      -> add the param.ini name as the parameter_names
 //      -> add special case to update_params function
 // - else the first two steps are sufficient.
+//
+// in Helper.hpp, add a parameter variable.
+// in CosmoCalc.cpp add parameter to update_Pk_direct.
 CAMB_CALLER::CAMB_CALLER()
     :
         run_first_time(true)
@@ -24,7 +27,7 @@ CAMB_CALLER::CAMB_CALLER()
         getline(params_ini_file, line);
         file_content.push_back(line);
     }
-    num_params = 11;
+    num_params = 12;
     parameter_names[0] = "ombh2";
     parameter_names[1] = "omch2";
     parameter_names[2] = "omnuh2";
@@ -32,10 +35,11 @@ CAMB_CALLER::CAMB_CALLER()
     parameter_names[4] = "hubble";
     parameter_names[5] = "temp_cmb";
     parameter_names[6] = "w";
-    parameter_names[7] = "scalar_spectral_index(1)";
-    parameter_names[8] = "transfer_num_redshifts";
-    parameter_names[9] = "transfer_redshift(1)";
-    parameter_names[10] = "transfer_matterpower(1)";
+    parameter_names[7] = "scalar_amp(1)";
+    parameter_names[8] = "scalar_spectral_index(1)";
+    parameter_names[9] = "transfer_num_redshifts";
+    parameter_names[10] = "transfer_redshift(1)";
+    parameter_names[11] = "transfer_matterpower(1)";
 
     for (int i = 0; i < num_params; i++)
         parameters_found.push_back(false);
@@ -167,6 +171,8 @@ void CAMB_CALLER::update_params_ini(map<string, double> params)
                     val << params["w_DE"];
                 else if (pn == "scalar_spectral_index(1)")
                     val << params["n_s"];
+                else if (pn == "scalar_amp(1)")
+                    val << params["A_s"];
                 else
                     val << params[pn];
 
