@@ -53,6 +53,7 @@ struct q_interpolator {
     double h;
     spline1dinterpolant interpolator;
     spline1dinterpolant interpolator_Hf;
+    spline1dinterpolant interpolator_qp;
 };
 
 /**

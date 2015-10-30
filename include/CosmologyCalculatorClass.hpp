@@ -51,6 +51,7 @@ class CosmoCalc : public CosmoBasis {
         void show_cosmo_calcs();
         void update_q(map<string, double> params, int *q_index);
         double q_interp(double z, int q_index);
+        double qp_interp(double z, int q_index);
         double r_interp(double z);
         double Hf_interp(double z);
 
@@ -386,10 +387,10 @@ class CosmoCalc : public CosmoBasis {
 
         double Cl(int l, double k1, double k2, double k_low, double k_high, int Pk_index,\
                 int Tb_index, int q_index);
-        double Cl_simplified(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
+        double Cl_limber(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_simplified2(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_simplified3(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
-        double Cl_simplified_rsd(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
+        double Cl_limber_rsd(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         double Cl_noise(int l, double k1, double k2);
         double Cl_simplified_levin(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index);
         /** 

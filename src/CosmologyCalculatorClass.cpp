@@ -28,7 +28,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     //this->update_Hf();
 
     this->update_q(fiducial_params, q_index);
-    this->update_q_prime();
+    //this->update_q_prime();
     
     //this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
     cout << "... Dependencies calculated ..." << endl;
@@ -90,9 +90,9 @@ double CosmoCalc::Cl(int l, double k1, double k2, double k_low, double k_high, i
     else if (!rsd && !limber) 
         return this->corr_Tb(l, k1, k2, k_low, k_high, Pk_index, Tb_index, q_index);
     else if (rsd && limber)
-        return this->Cl_simplified_rsd(l,  k1, k2, Pk_index, Tb_index, q_index);
+        return this->Cl_limber_rsd(l,  k1, k2, Pk_index, Tb_index, q_index);
     else
-        return this->Cl_simplified(l, k1, k2, Pk_index, Tb_index, q_index);
+        return this->Cl_limber(l, k1, k2, Pk_index, Tb_index, q_index);
 }
 
 double CosmoCalc::Cl_noise(int l, double k1, double k2)
@@ -128,6 +128,7 @@ CosmoCalc::~CosmoCalc()
 {
     delete CAMB;
     delete G21;
+    delete ARES;
 }
 
 void CosmoCalc::show_cosmo_calcs()
@@ -412,8 +413,11 @@ void CosmoCalc::update_q_prime_full()
 
 void CosmoCalc::update_q(map<string,double> params, int *q_index)
 {
+    bool limber = false;
     if (params["limber"] == 1.0)
-        update_q_prime();
+        limber = true;
+
+    // We first update q and then q' if the limber approximation is being used..
     bool do_calc = true;
     for (unsigned int i = 0; i < qs.size(); ++i) {
         if (params["ombh2"] == qs[i].ombh2 && params["omnuh2"] == qs[i].omnuh2 &&\
@@ -437,7 +441,7 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         interp.t_cmb = params["T_CMB"];
         interp.w_DE = params["w_DE"];
         // TODO: Do this in a way that works with parallelism....
-        //UPDATE D_C to use the above parameters.
+        // UPDATE D_C to use the above parameters.
 
         double T_CMB2 = params["T_CMB"];
         double H_02 = params["hubble"];
@@ -445,7 +449,8 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         double O_b2 = params["ombh2"] / pow(h2,2);
         double O_cdm2 = params["omch2"] / pow(h2,2);
         double O_nu2 = params["omnuh2"] / pow(h2,2);
-        double O_gamma2 = pow(pi,2) * pow(T_CMB2/11605.0,4) / (15.0*8.098*pow(10,-11)*pow(h2,2));
+        double O_gamma2 = pow(pi,2) * pow(T_CMB2/11605.0,4) /\
+                          (15.0*8.098*pow(10,-11)*pow(h2,2));
         double O_nu_rel2 = O_gamma2 * 3.0 * 7.0/8.0 * pow(4.0/11.0, 4.0/3.0);
         double O_R2 = O_gamma2 + O_nu_rel2;
         double O_k2 = params["omk"];
@@ -455,10 +460,12 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
         double D_H2 = c / (1000.0 * H_02);
         double w2 = params["w_DE"];
 
-        real_1d_array xs, ys, hs;
+        real_1d_array xs, ys, qps, hs;
         xs.setlength(this->zsteps_Ml+1);
         ys.setlength(this->zsteps_Ml+1);
+        qps.setlength(this->zsteps_Ml+1);
         hs.setlength(this->zsteps_Ml+1);
+        double h = 10e-4;
         double z;
         for (int n = 0; n <= this->zsteps_Ml; ++n) {
             z = this->zmin_Ml + n * this->stepsize_Ml;
@@ -466,26 +473,38 @@ void CosmoCalc::update_q(map<string,double> params, int *q_index)
 
             auto integrand = [&](double zp)
             {
-                return 1/sqrt(O_V2 * pow(1+zp,3*(1+w2)) + O_R2 * pow(1+zp,4) + O_M2 * pow(1+zp,3) +\
-                        O_k2 * pow(1+zp,2));
+                return 1/sqrt(O_V2 * pow(1+zp,3*(1+w2)) + O_R2 * pow(1+zp,4) +\
+                        O_M2 * pow(1+zp,3) + O_k2 * pow(1+zp,2));
             };
             double Z = integrate(integrand, 0.0, z, 1000, simpson());
+            
+            if (limber) {
+                double dc1 = integrate(integrand, 0.0, z+2*h, 1000, simpson());
+                double dc2 = integrate(integrand, 0.0, z+h, 1000, simpson());
+                double dc3 = integrate(integrand, 0.0, z-h, 1000, simpson());
+                double dc4 = integrate(integrand, 0.0, z-2*h, 1000, simpson());
+                qps[n] =  abs(D_H2 * (-dc1 + 8 * dc2 - 8 * dc3 + dc4));
+            }
 
             ys[n] = D_H2 * Z;
-            hs[n] = H_02 * sqrt(O_V2 * pow(1+z,3*(1+w2)) + O_R2 * pow(1+z,4) + O_M2 * pow(1+z,3) +\
-                    O_k2 * pow(1+z,2));
+            hs[n] = H_02 * sqrt(O_V2 * pow(1+z,3*(1+w2)) + O_R2 * pow(1+z,4) +\
+                    O_M2 * pow(1+z,3) + O_k2 * pow(1+z,2));
         }
-        spline1dinterpolant interpolator, interpolator_Hf;
+        spline1dinterpolant interpolator, interpolator_Hf, interpolator_qp;
         spline1dbuildlinear(xs,ys,interpolator);
         spline1dbuildlinear(xs,hs,interpolator_Hf);
+        spline1dbuildlinear(xs,qps,interpolator_qp);
 
+        // If limber == false, the qp_interpolator will just be empty but that
+        // is fine because it won't be used in that case.
         interp.h = h2;
         interp.interpolator = interpolator;
         interp.interpolator_Hf = interpolator_Hf;
+        interp.interpolator_qp = interpolator_qp;
 
         qs.push_back(interp);
         *q_index = qs.size() - 1;
-    }
+    }    
 }
 
 double CosmoCalc::Hf_interp(double z)
@@ -496,6 +515,11 @@ double CosmoCalc::Hf_interp(double z)
 double CosmoCalc::q_interp(double z, int q_index)
 {
     return spline1dcalc(qs[q_index].interpolator,z);
+}
+
+double CosmoCalc::qp_interp(double z, int q_index)
+{
+    return spline1dcalc(qs[q_index].interpolator_qp,z);
 }
 
 double CosmoCalc::r_interp(double z)
@@ -1210,24 +1234,17 @@ double CosmoCalc::Cl_new_analyticTb(int l, double k1, double k2, double k_low,\
     return pow(this->prefactor_Ml,2) * integral1;
 }
 
-double CosmoCalc::Cl_simplified_rsd(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index)
+double CosmoCalc::Cl_limber_rsd(int l, double k1, double k2, int Pk_index,\
+        int Tb_index, int q_index)
 {
     auto integrand = [&](double z)
     {
-        const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
-        int n;
-        int n_old_int = (int)n_old;
-        if (abs(n_old - (double)n_old_int) > 0.5)
-            n = n_old_int + 1;
-        else
-            n = n_old_int;
-
         double r,rr,q,qq,qp,k1r,k2r;
         r = r_interp(z);
         rr = r*r;
         q = q_interp(z, q_index);
         qq = q*q;
-        qp = this->q_p_Ml[n];
+        qp = qp_interp(z, q_index);
         k1r = k1 * r;
         k2r = k2 * r;
         double hh = pow(Hf_interp(z)*1000.0, 2);
@@ -1253,14 +1270,16 @@ double CosmoCalc::Cl_simplified_rsd(int l, double k1, double k2, int Pk_index, i
         L2.push_back(-LL1 * k2r);
         L3.push_back(L2[0]);
         L3.push_back(-LL1 * k1r);
-        double LL2 = 2.0*(-32.0*pow(l,6) - 24.0*pow(l,5) + 48.0*pow(l,4) + 46.0*pow(l,3) - 5.0*l - 1.0);
+        double LL2 = 2.0*(-32.0*pow(l,6) - 24.0*pow(l,5) + 48.0*pow(l,4) +\
+                46.0*pow(l,3) - 5.0*l - 1.0);
         LL2 = LL2 / (double)(pow(l,3)*pow(2*l-1,2)*pow(2*l+1,4));
         //LL2 = -1.0/(double)(300*300*300);
         L4.push_back(LL2 * pow(l+1,2));
         L4.push_back(-LL2 * k2r * (l+1));
         L4.push_back(-LL2 * k1r * (l+1));       
         L4.push_back(LL2 * k1r * k2r);
-        double A = rr * pow(this->Tb_interp(z, Tb_index),2) * this->Pk_interp((double)l/q * qs[q_index].h,z,Pk_index)/\
+        double A = rr * pow(this->Tb_interp(z, Tb_index),2) *\
+                   this->Pk_interp((double)l/q * qs[q_index].h,z,Pk_index)/\
                    (pow(qs[q_index].h,3)*hh*qp);   
         double JL2 = 0;
         double JL3 = 0;
@@ -1274,39 +1293,31 @@ double CosmoCalc::Cl_simplified_rsd(int l, double k1, double k2, int Pk_index, i
         }
         double bb = this->b_bias * this->beta;
         double bb2 = bb*bb;
-        double bracket = rr/qq * Jl1 + bb*r/((1+z)*q) * (JL2+JL3) + bb2/pow(1+z,2) * JL4; 
+        double bracket = rr/qq * Jl1 + bb*r/((1+z)*q) * (JL2+JL3) +\
+                         bb2/pow(1+z,2) * JL4; 
 
         return A * bracket;
 
     };
     double prefact = pow(this->prefactor_Ml,2) * this->pi / 2.0;
-    return prefact * integrate_simps(integrand, this->zmin_Ml, this->zmax_Ml, this->zsteps_Ml);
+    return prefact * integrate_simps(integrand, this->zmin_Ml,\
+            this->zmax_Ml, this->zsteps_Ml);
 }
 
-double CosmoCalc::Cl_simplified(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index)
+double CosmoCalc::Cl_limber(int l, double k1, double k2, int Pk_index, int Tb_index, int q_index)
 {
     auto integrand = [&](double z)
     {
         double r,q,qp,rr;
         r = r_interp(z);
         q = q_interp(z, q_index);
-        const double n_old = (z - this->zmin_Ml)/this->stepsize_Ml;
-        
-        /*int n;
-        int n_old_int = (int)n_old;
-        if (abs(n_old - (double)n_old_int) > 0.5)
-            n = n_old_int + 1;
-        else
-            n = n_old_int;
-        */
-        qp = spline1dcalc(q_p_interp,z);// this->q_p_Ml[n];
+        qp = qp_interp(z, q_index);
         rr = r*r;
         double hh = pow(Hf_interp(z)*1000.0, 2);
         double A = rr * this->Pk_interp(((double)l + 0.5)/q * qs[q_index].h,z,Pk_index)/(pow(qs[q_index].h,3)*hh*qp) *\
                    pow(this->Tb_interp(z, Tb_index),2);
 
         //TODO: check whether we need to multiply py h.
-        // here: changed it back to non - interpolation, because it isn't necessary for the simplified case.
         return A * rr / (q*q) * this->sph_bessel_camb(l,k1*r) * this->sph_bessel_camb(l, k2*r);
     };
 

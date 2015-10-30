@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     params.insert(pair<string,double>("zsteps",250));
     params.insert(pair<string,double>("noise",1.0));
     params.insert(pair<string,double>("rsd",0.0));
-    params.insert(pair<string,double>("limber",0.0));
+    params.insert(pair<string,double>("limber",1.0));
     params.insert(pair<string,double>("tau_noise",3600000));//1000hours
     vector<string> keys = {"ombh2", "omch2", "hubble"};
     Fisher fish(params, "delete_me.dat", keys);
