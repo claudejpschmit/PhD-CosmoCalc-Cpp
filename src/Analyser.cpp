@@ -127,7 +127,6 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
                         row_element.push_back(key2);
                         row_element.push_back(key1);
                     }
-
                 }
             }
 
@@ -180,8 +179,10 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
     }
     double sig_xx, sig_xy, sig_yy;
     sig_xx = finv.matrix(index1, index1);
+    cout << "Marginalized error on " << finv.matrix_indecies[index1][index1][0] << " is " << sqrt(sig_xx) << endl;
     sig_xy = finv.matrix(index1, index2);
     sig_yy = finv.matrix(index2, index2);
+    cout << "Marginalized error on " << finv.matrix_indecies[index2][index2][1] << " is " << sqrt(sig_yy) << endl;
     Ellipse ellipse;
     ellipse.a2 = (sig_xx + sig_yy)/2.0 + sqrt(pow(sig_xx - sig_yy,2)/4.0 +\
             pow(sig_xy,2));
