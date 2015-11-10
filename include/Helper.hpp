@@ -84,5 +84,7 @@ struct Fisher_return_pair {
  */
 struct Ellipse {
     double a2, b2, theta, cx, cy;
+    // These are the 1sigma errors in the x and y parameters.
+    double sigma_x, sigma_y;
 };
 

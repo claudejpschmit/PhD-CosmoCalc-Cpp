@@ -22,8 +22,8 @@ latex_params = {'ombh2':'\Omega_b h^2', 'omch2':'\Omega_{CDM} h^2', 'omk':'\Omeg
 widths = {name: 0 for name in params}
 for i in range(0,num_params - 1):
     for j in range(i+1, num_params):
-        w = sqrt(content[ellipse_number*5 + 1])
-        h = sqrt(content[ellipse_number*5 + 2])
+        w = sqrt(content[ellipse_number*7 + 1])
+        h = sqrt(content[ellipse_number*7 + 2])
         
         widths[params[j]] = max(w, widths[params[j]])
         widths[params[i]] = max(h, widths[params[i]])
@@ -33,20 +33,23 @@ for i in range(0,num_params - 1):
 ellipse_number = 0
 for i in range(0,num_params - 1):
     for j in range(i+1, num_params):
-        w = 2*sqrt(content[ellipse_number*5 + 1])
-        h = 2*sqrt(content[ellipse_number*5 + 2])
-        theta = content[ellipse_number*5 + 3]
-        x = content[ellipse_number*5 + 4]
-        y = content[ellipse_number*5 + 5]
+        h = 2*sqrt(content[ellipse_number*7 + 1])
+        w = 2*sqrt(content[ellipse_number*7 + 2])
+        #Here we need to convert radiants into degrees
+        theta = 180*content[ellipse_number*7 + 3]/pi
+        x = content[ellipse_number*7 + 4]
+        y = content[ellipse_number*7 + 5]
+        sig_x = content[ellipse_number*7 + 6]
+        sig_y = content[ellipse_number*7 + 7]
         frame_index = (num_params-1)*i + j
         ax1 = plt.subplot(num_params-1,num_params-1, frame_index)
         #ax1.ticklabel_format(axis='y',style='sci',scilimits=(-2,2))
         #ax1.ticklabel_format(axis='x',style='sci',scilimits=(-2,2))
         #ax1.yaxis.get_major_formatter().set_powerlimits((0,1))
         plt.subplots_adjust(hspace = 0., wspace = 0.)
-        if (j-i) > 1:
-            ax1.xaxis.set_ticklabels([])
-            ax1.yaxis.set_ticklabels([])
+        #if (j-i) > 1:
+        #    ax1.xaxis.set_ticklabels([])
+        #    ax1.yaxis.set_ticklabels([])
         if (j-i) == 1:
             if params[i] in latex_params:
                 plt.ylabel(r'$'+latex_params[params[i]]+'$', rotation='horizontal', fontsize = 20)
@@ -74,9 +77,16 @@ for i in range(0,num_params - 1):
         ax1.add_artist(contour_2sig)
         ax1.add_artist(ellipse_1sig)
         ax1.add_artist(ellipse_2sig)
+        
+        alpha = 1.
+        contour = ptc.Arc(xy = (x,y), width=alpha * w, height=alpha * h, angle=theta)
+        ax1.add_artist(contour)
+
+        r = ptc.Rectangle((x-alpha*sig_x,y-alpha*sig_y),2*alpha*sig_x,2*alpha*sig_y,fill=False)
+        ax1.add_artist(r)
         alpha = 3
-        ax1.set_xlim([ x - alpha*widths[params[j]],  x + alpha*widths[params[j]]])
-        ax1.set_ylim([ y - alpha*widths[params[i]],  y + alpha*widths[params[i]]])
+        ax1.set_xlim([ x - alpha*sig_x,  x + alpha*sig_x])
+        ax1.set_ylim([ y - alpha*sig_y,  y + alpha*sig_y])
 
         ellipse_number += 1
 

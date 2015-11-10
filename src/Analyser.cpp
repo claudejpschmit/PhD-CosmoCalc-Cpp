@@ -172,17 +172,22 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
         if ((index2 < 0) && (finv.matrix_indecies[0][i][1] == param2))  
             index2 = i;
     }
-    if (index1 > index2){
+    //make sure that the larger index will be parameter x and the smaller one y. 
+    //This ensures that the right ellipse will be plotted later on.
+    //TODO: verify this!!!
+    if (index1 < index2){
         int buff = index1;
         index1 = index2;
         index2 = buff;
     }
     double sig_xx, sig_xy, sig_yy;
     sig_xx = finv.matrix(index1, index1);
-    cout << "Marginalized error on " << finv.matrix_indecies[index1][index1][0] << " is " << sqrt(sig_xx) << endl;
+    cout << "Marginalized error on " << finv.matrix_indecies[index1][index1][0] \
+        << " is " << sqrt(sig_xx) << endl;
     sig_xy = finv.matrix(index1, index2);
     sig_yy = finv.matrix(index2, index2);
-    cout << "Marginalized error on " << finv.matrix_indecies[index2][index2][1] << " is " << sqrt(sig_yy) << endl;
+    cout << "Marginalized error on " << finv.matrix_indecies[index2][index2][1] \
+        << " is " << sqrt(sig_yy) << endl;
     Ellipse ellipse;
     ellipse.a2 = (sig_xx + sig_yy)/2.0 + sqrt(pow(sig_xx - sig_yy,2)/4.0 +\
             pow(sig_xy,2));
@@ -231,8 +236,9 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
 
         }
     }
-
     runinfo.close();  
+    ellipse.sigma_x = sqrt(sig_xx);
+    ellipse.sigma_y = sqrt(sig_yy);
     return ellipse;
 }
 
@@ -269,6 +275,8 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv,\
         ellipse_file << error_ellipses[i].theta << endl;
         ellipse_file << error_ellipses[i].cx << endl;
         ellipse_file << error_ellipses[i].cy << endl;
+        ellipse_file << error_ellipses[i].sigma_x << endl;
+        ellipse_file << error_ellipses[i].sigma_y << endl;
         if (error_ellipses[i].a2 <= 0 || error_ellipses[i].b2 <= 0)
             ERROR = true;
     }
@@ -289,8 +297,8 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv,\
         int r = system(command);
         (void)r;
         delete command;
-        r = system("rm paramfile.tmp.dat");
-        (void)r;
+        //r = system("rm paramfile.tmp.dat");
+        //(void)r;
     }
     else {
         cout << "    ERROR: some ellipses are ill-defined " <<\
@@ -298,6 +306,6 @@ void Analyser::draw_error_ellipses(Fisher_return_pair finv,\
         cout << "      check for linearly dependent rows or columns." <<\
             " These can be due to degeneracies between parameters." << endl;
     }
-    int r = system("rm ellipse_info.tmp.dat");
-    (void)r;
+    //int r = system("rm ellipse_info.tmp.dat");
+    //(void)r;
 }
