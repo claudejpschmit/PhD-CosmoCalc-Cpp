@@ -119,14 +119,10 @@ Fisher_return_pair Analyser::build_Fisher_inverse(vector<string> param_keys,\
                 if ((F_ab[k].key1 == key1 && F_ab[k].key2 == key2) ||\
                         (F_ab[k].key1 == key2 && F_ab[k].key2 == key1)){
                     F(i,j) = F_ab[k].value;
-                    if (i<j){
-                        row_element.push_back(key1);
-                        row_element.push_back(key2);
-                    }
-                    else {
-                        row_element.push_back(key2);
-                        row_element.push_back(key1);
-                    }
+                   
+                    row_element.push_back(key1);
+                    row_element.push_back(key2);
+                
                 }
             }
 
@@ -166,20 +162,15 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
     int index1, index2;
     index1 = -1;
     index2 = -1;
+    // Go through first row of the index matrix and check the second parameter only.
     for (unsigned int i = 0; i < finv.matrix_indecies.size(); i++) {
         if ((index1 < 0) && (finv.matrix_indecies[0][i][1] == param1))  
             index1 = i;
         if ((index2 < 0) && (finv.matrix_indecies[0][i][1] == param2))  
             index2 = i;
     }
-    //make sure that the larger index will be parameter x and the smaller one y. 
-    //This ensures that the right ellipse will be plotted later on.
-    //TODO: verify this!!!
-    if (index1 < index2){
-        int buff = index1;
-        index1 = index2;
-        index2 = buff;
-    }
+   
+    cout << index1 << " " <<index2 << endl;
     double sig_xx, sig_xy, sig_yy;
     sig_xx = finv.matrix(index1, index1);
     cout << "Marginalized error on " << finv.matrix_indecies[index1][index1][0] \
@@ -188,6 +179,9 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
     sig_yy = finv.matrix(index2, index2);
     cout << "Marginalized error on " << finv.matrix_indecies[index2][index2][1] \
         << " is " << sqrt(sig_yy) << endl;
+
+    cout << sig_xx << " " << sig_xy << endl;
+    cout << sig_xy << " " << sig_yy << endl;
     Ellipse ellipse;
     ellipse.a2 = (sig_xx + sig_yy)/2.0 + sqrt(pow(sig_xx - sig_yy,2)/4.0 +\
             pow(sig_xy,2));
@@ -239,6 +233,25 @@ Ellipse Analyser::find_error_ellipse(Fisher_return_pair finv, string param1,\
     runinfo.close();  
     ellipse.sigma_x = sqrt(sig_xx);
     ellipse.sigma_y = sqrt(sig_yy);
+
+    // The larger eigenvalue should correspond to the larger sigma.
+    if (ellipse.sigma_x > ellipse.sigma_y){
+        if (ellipse.a2 < ellipse.b2) {
+            double buff = ellipse.a2;
+            ellipse.a2 = ellipse.b2;
+            ellipse.b2 = buff;
+        }
+    }
+    else if (ellipse.sigma_x < ellipse.sigma_y){
+        if (ellipse.a2 > ellipse.b2) {
+            double buff = ellipse.a2;
+            ellipse.a2 = ellipse.b2;
+            ellipse.b2 = buff;
+        }
+    }
+
+
+
     return ellipse;
 }
 

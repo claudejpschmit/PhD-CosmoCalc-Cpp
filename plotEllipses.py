@@ -12,29 +12,20 @@ with open(param_filename) as f:
     params = [line.rstrip('\n') for line in f]
 
 num_params = int(content[0])
-ellipse_number = 0
 fig, ax = plt.subplots()
 
 latex_params = {'ombh2':'\Omega_b h^2', 'omch2':'\Omega_{CDM} h^2', 'omk':'\Omega_k',\
                 'hubble':'H_0', 'fesc':'f_{esc}', 'fstar':'f_*', 'w_DE':'w',\
                 'omnuh2':'\Omega_\\nu h^2', 'T_CMB': 't_{CMB}', 'sigma8': '\sigma_8',\
                 'n_s':'n_s', 'A_s':'A_s','100*theta_s':'100 \\theta_s','nion':'N_{ion}'}
-widths = {name: 0 for name in params}
-for i in range(0,num_params - 1):
-    for j in range(i+1, num_params):
-        w = sqrt(content[ellipse_number*7 + 1])
-        h = sqrt(content[ellipse_number*7 + 2])
-        
-        widths[params[j]] = max(w, widths[params[j]])
-        widths[params[i]] = max(h, widths[params[i]])
-
-        ellipse_number += 1
 
 ellipse_number = 0
 for i in range(0,num_params - 1):
     for j in range(i+1, num_params):
-        h = 2*sqrt(content[ellipse_number*7 + 1])
-        w = 2*sqrt(content[ellipse_number*7 + 2])
+
+        #a^2 has to correspond to the height because we're plotting the x parameter on the y axis
+        w = 2*sqrt(content[ellipse_number*7 + 1])
+        h = 2*sqrt(content[ellipse_number*7 + 2])
         #Here we need to convert radiants into degrees
         theta = 180*content[ellipse_number*7 + 3]/pi
         x = content[ellipse_number*7 + 4]
@@ -47,9 +38,9 @@ for i in range(0,num_params - 1):
         #ax1.ticklabel_format(axis='x',style='sci',scilimits=(-2,2))
         #ax1.yaxis.get_major_formatter().set_powerlimits((0,1))
         plt.subplots_adjust(hspace = 0., wspace = 0.)
-        #if (j-i) > 1:
-        #    ax1.xaxis.set_ticklabels([])
-        #    ax1.yaxis.set_ticklabels([])
+        if (j-i) > 1:
+            ax1.xaxis.set_ticklabels([])
+            ax1.yaxis.set_ticklabels([])
         if (j-i) == 1:
             if params[i] in latex_params:
                 plt.ylabel(r'$'+latex_params[params[i]]+'$', rotation='horizontal', fontsize = 20)
@@ -78,12 +69,12 @@ for i in range(0,num_params - 1):
         ax1.add_artist(ellipse_1sig)
         ax1.add_artist(ellipse_2sig)
         
-        alpha = 1.
-        contour = ptc.Arc(xy = (x,y), width=alpha * w, height=alpha * h, angle=theta)
-        ax1.add_artist(contour)
+        #alpha = 1.
+        #contour = ptc.Arc(xy = (x,y), width=alpha * w, height=alpha * h, angle=theta)
+        #ax1.add_artist(contour)
+        #r = ptc.Rectangle((x-alpha*sig_x,y-alpha*sig_y),2*alpha*sig_x,2*alpha*sig_y,fill=False)
+        #ax1.add_artist(r)
 
-        r = ptc.Rectangle((x-alpha*sig_x,y-alpha*sig_y),2*alpha*sig_x,2*alpha*sig_y,fill=False)
-        ax1.add_artist(r)
         alpha = 3
         ax1.set_xlim([ x - alpha*sig_x,  x + alpha*sig_x])
         ax1.set_ylim([ y - alpha*sig_y,  y + alpha*sig_y])
