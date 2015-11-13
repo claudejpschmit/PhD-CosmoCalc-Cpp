@@ -661,7 +661,7 @@ void CosmoWrite::calculate_Cl_simple(int l, double k, double k_min, double k_max
     int step = (k_max - k_min)/k_stepsize;
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
-        y = this->Cl_simplified(l,k,x,0,0,0);
+        y = this->Cl_limber(l,k,x,0,0,0);
         file << x << " " << y << endl;
     }
     file.close();
@@ -702,7 +702,7 @@ void CosmoWrite::calculate_Cl_simple_rsd(int l, double k, double k_min, double k
     int step = (k_max - k_min)/k_stepsize;
     for (int i = 0; i < step; i++) {
         x = k_min + i*k_stepsize;
-        y = this->Cl_simplified_rsd(l,k,x,0,0,0);
+        y = this->Cl_limber_rsd(l,k,x,0,0,0);
         file << x << " " << y << endl;
     }
     file.close();
@@ -742,7 +742,7 @@ void CosmoWrite::generate_movie_Cl(int l_min, int l_max, double k, double k_min,
         int l = l_min + i;
         for (int j = 0; j < step; j++) {
             x = k_min + j*k_stepsize;
-            y = this->Cl_simplified(l,k,x,0,0,0);
+            y = this->Cl_limber(l,k,x,0,0,0);
 
             file << x << " " << y << endl;
         }

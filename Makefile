@@ -82,11 +82,15 @@ ODE = ODE_Solver.o ODEs.o
 SRC = Integrator.o CosmoBasis.o CosmologyCalculatorClass.o CosmologyWriterClass.o FisherClass.o Engine.o ClassEngine.o CAMB_interface.o Global21cmInterface.o SanityChecker.o LevinIntegrator.o ARES_interface.o
 MAIN = Main.o
 ANALYSE = Analyser.o Analyse.o
+TOMOGRAPHY = calc_tomography.o Tomography.o 
 
-all: calc class_test analyse 
+all: calc class_test analyse calc_tomography 
 
 analyse: $(ALGLIB) $(ANALYSE)
 	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o analyse $(addprefix build/, $(notdir $^)) -lm $(ARMAFLAGS) $(GSLFLAGS)
+
+calc_tomography: $(TOMOGRAPHY) $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(GLOBAL21CM)
+	cd $(MDIR);$(CXX) $(OPTFLAG) $(OPTFLAG_CLASS) $(OMPFLAG) $(LDFLAG) $(LINKER) -o calc_tomography $(addprefix build/, $(notdir $^)) -lm $(ARMAFLAGS) $(GSLFLAGS)
 
 
 calc: $(SRC) $(SOURCE) $(TOOLS) $(OUTPUT) $(EXTERNAL) $(ALGLIB) $(GLOBAL21CM) $(ODE) $(MAIN) 
@@ -110,4 +114,7 @@ clean: .base
 	rm -rf $(WRKDIR);
 	rm -f libclass.a;
 	rm calc;
-	rm class_test
+	rm class_test;
+	rm analyse;
+	rm calc_tomography
+
