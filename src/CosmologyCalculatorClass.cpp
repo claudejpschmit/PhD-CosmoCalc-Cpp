@@ -27,7 +27,7 @@ CosmoCalc::CosmoCalc(map<string, double> params, int *Pk_index, int *Tb_index, i
     //this->update_q_prime_full();
     //this->update_Hf();
 
-    //this->update_q(fiducial_params, q_index);
+    this->update_q(fiducial_params, q_index);
     //this->update_q_prime();
     
     //this->prefactor_Ml = 2*this->b_bias * this->c / this->pi;
